@@ -218,7 +218,7 @@ See **[STRUCTURE.md](./docs/STRUCTURE.md)** for complete documentation on:
 
 ## 📄 License
 
-[Your License Here]
+MIT. See [LICENSE](LICENSE).
 
 ---
 
