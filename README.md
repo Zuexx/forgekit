@@ -74,6 +74,7 @@ App runs on `http://localhost:3000`. Azure AD values in `.env.local` are optiona
 - **[App Setup](app/README.md)** — Frontend setup and structure
 - **[Forking Guide](docs/FORKING_GUIDE.md)** — Rename and harden a new product fork
 - **[Samples](docs/SAMPLES.md)** — What sample code exists and how to remove it
+- **[Security](SECURITY.md)** — Reporting and secret incident response
 
 ### Architecture
 - **[STRUCTURE.md](./docs/STRUCTURE.md)** — Complete project layout
