@@ -101,7 +101,7 @@ ForgeKit.Api/
 │
 ├── Modules/
 │   ├── HealthModule.cs
-│   └── SampleResourceModule.cs
+│   └── SampleResourceModule.cs          # Non-production endpoint convention sample
 │
 ├── Results/
 │   ├── Result.cs
@@ -111,8 +111,10 @@ ForgeKit.Api/
 │
 └── Services/
     └── Todos/
-        └── TodoService.cs
+        └── TodoService.cs              # Reference domain service for persistence conventions
 ```
+
+See [SAMPLES.md](SAMPLES.md) for the starter-kit sample inventory and removal guidance.
 
 ### Migration Projects
 
