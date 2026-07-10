@@ -69,6 +69,7 @@ App runs on `http://localhost:3000`. Azure AD values in `.env.local` are optiona
 ## 📚 Documentation
 
 ### Getting Started
+- **[Local Development](docs/LOCAL_DEVELOPMENT.md)** — Run local infrastructure and services
 - **[API Docs](docs/api/USER_GUIDE.md)** — API architecture and usage
 - **[App Setup](app/README.md)** — Frontend setup and structure
 - **[Forking Guide](docs/FORKING_GUIDE.md)** — Rename and harden a new product fork

@@ -9,6 +9,12 @@ Next.js 16 frontend for the ForgeKit monorepo. The app uses the App Router, Type
 - PostgreSQL access for Better Auth
 - API running locally when exercising backend flows
 
+The root `compose.yaml` provides a local PostgreSQL service for development:
+
+```bash
+docker compose up -d postgres
+```
+
 ## Setup
 
 Install dependencies:
