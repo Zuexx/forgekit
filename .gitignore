@@ -1,0 +1,93 @@
+# --- .NET (C#) ---
+*.swp
+*.*~
+project.lock.json
+*.pyc
+nupkg/
+appsettings.Local.json
+!appsettings.*.example
+appsettings.Staging.json
+appsettings.Production.json
+api/Api/data/
+*.db
+*.db-shm
+*.db-wal
+
+# Visual Studio Code
+.vscode/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
+debug.log
+[Ll]ogs/
+
+/api/.vs
+# --- Node.js & Next.js ---
+# dependencies
+node_modules/
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+.codegraph/
+.python-version
+
+# IDE
+.vscode/
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+!.env.*.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# --- OS & System ---
+.DS_Store
+Thumbs.db

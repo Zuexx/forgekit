@@ -1,0 +1,24 @@
+{
+    "fullName": {
+        "label": "Full Name",
+        "placeholder": "Enter you name"
+    },
+    "email": {
+        "label": "Email",
+        "placeholder": "name@example.com"
+    },
+    "password": {
+        "label": "Password",
+        "placeholder": "Enter your password (case-sensitive)"
+    },
+    "signUp": {
+        "password": {
+            "label": "Password",
+            "placeholder": "Password"
+        },
+        "confirmPassword": {
+            "label": "Confirm Password",
+            "placeholder": "Confirm Password"
+        }
+    }
+}

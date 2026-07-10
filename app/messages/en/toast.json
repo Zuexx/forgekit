@@ -1,0 +1,19 @@
+{
+    "success": {
+        "signIn": "Signed in successfully",
+        "signOut": "Signed out successfully",
+        "default": "Operation successful",
+        "fetchCurrent": "Fetched current user"
+    },
+    "error": {
+        "signIn": "Sign in failed. Please check your credentials",
+        "signOut": "Sign out failed",
+        "default": "Operation failed. Please try again",
+        "network": "Network connection failed",
+        "fetchCurrent": "Failed to fetch current user"
+    },
+    "loading": {
+        "signIn": "Signing in...",
+        "default": "Processing..."
+    }
+}

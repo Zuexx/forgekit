@@ -1,0 +1,19 @@
+{
+    "success": {
+        "signIn": "登入成功",
+        "signOut": "登出成功",
+        "default": "操作成功",
+        "fetchCurrent": "取得當前使用者成功"
+    },
+    "error": {
+        "signIn": "登入失敗，請檢查您的帳號密碼",
+        "signOut": "登出失敗",
+        "default": "操作失敗，請稍後再試",
+        "network": "網路連線失敗",
+        "fetchCurrent": "取得當前使用者失敗"
+    },
+    "loading": {
+        "signIn": "登入中...",
+        "default": "處理中..."
+    }
+}

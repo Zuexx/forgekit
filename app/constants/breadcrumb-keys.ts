@@ -1,0 +1,1 @@
+export const BREADCRUMB_KEYS = ['home'] as const

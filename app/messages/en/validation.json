@@ -1,0 +1,20 @@
+{
+    "authenticate": {
+        "name": {
+            "required": "Name is required",
+            "invalid": "Please enter your name"
+        },
+        "email": {
+            "required": "Email is required",
+            "invalid": "Please enter a valid email address"
+        },
+        "password": {
+            "required": "Password is required",
+            "min": "Password must be at least {min} characters"
+        },
+        "confirmPassword": {
+            "required": "Confirm Password is required",
+            "confirm": "Password not matched"
+        }
+    }
+}

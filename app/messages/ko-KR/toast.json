@@ -1,0 +1,19 @@
+{
+    "success": {
+        "signIn": "로그인 성공",
+        "signOut": "로그아웃 성공",
+        "default": "작업 성공",
+        "fetchCurrent": "현재 사용자 가져오기 성공"
+    },
+    "error": {
+        "signIn": "로그인 실패. 계정 정보를 확인해주세요",
+        "signOut": "로그아웃 실패",
+        "default": "작업 실패. 다시 시도해주세요",
+        "network": "네트워크 연결 실패",
+        "fetchCurrent": "현재 사용자 가져오기 실패"
+    },
+    "loading": {
+        "signIn": "로그인 중...",
+        "default": "처리 중..."
+    }
+}

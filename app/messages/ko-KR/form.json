@@ -1,0 +1,24 @@
+{
+    "fullName": {
+        "label": "이름",
+        "placeholder": "이름을 입력하세요"
+    },
+    "email": {
+        "label": "이메일",
+        "placeholder": "name@example.com"
+    },
+    "password": {
+        "label": "비밀번호",
+        "placeholder": "비밀번호를 입력하세요 (대소문자 구분)"
+    },
+    "signUp": {
+        "password": {
+            "label": "비밀번호",
+            "placeholder": "비밀번호"
+        },
+        "confirmPassword": {
+            "label": "비밀번호 확인",
+            "placeholder": "비밀번호 확인"
+        }
+    }
+}
