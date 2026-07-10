@@ -75,6 +75,7 @@ App runs on `http://localhost:3000`. Azure AD values in `.env.local` are optiona
 - **[Forking Guide](docs/FORKING_GUIDE.md)** — Rename and harden a new product fork
 - **[Samples](docs/SAMPLES.md)** — What sample code exists and how to remove it
 - **[Security](SECURITY.md)** — Reporting and secret incident response
+- **[Quality Gates](docs/QUALITY_GATES.md)** — Local verification before push or fork release
 
 ### Architecture
 - **[STRUCTURE.md](./docs/STRUCTURE.md)** — Complete project layout
@@ -169,6 +170,12 @@ pnpm build
 ```
 
 CI runs these checks along with strict OpenSpec validation and a full-history Gitleaks scan.
+
+To run the complete local gate:
+
+```bash
+./scripts/verify.sh
+```
 
 ### Code Style & Linting
 
