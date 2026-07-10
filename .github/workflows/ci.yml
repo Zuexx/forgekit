@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: api/**/*.csproj
+      - run: dotnet restore ForgeKit.sln
+      - run: dotnet build ForgeKit.sln --configuration Release --no-restore
+      - run: dotnet test ForgeKit.sln --configuration Release --no-build
+      - run: dotnet tool restore
+      - name: Verify provider migrations
+        run: |
+          for provider in Sqlite Postgres SqlServer; do
+            project="ForgeKit.Api.Migrations.${provider}"
+            dotnet ef migrations list --project "$project" --startup-project "$project" --context AppDbContext --configuration Release --no-build --no-connect
+            dotnet ef migrations list --project "$project" --startup-project "$project" --context BetterAuthDbContext --configuration Release --no-build --no-connect
+            dotnet ef migrations has-pending-model-changes --project "$project" --startup-project "$project" --context AppDbContext --configuration Release --no-build
+            dotnet ef migrations has-pending-model-changes --project "$project" --startup-project "$project" --context BetterAuthDbContext --configuration Release --no-build
+          done
+
+  app:
+    name: App
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    env:
+      DATABASE_URL: postgresql://localhost:5432/forgekit
+      BETTER_AUTH_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Generate app secret
+        run: echo "BETTER_AUTH_SECRET=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+      - run: pnpm check
+      - run: pnpm lint
+      - run: pnpm build
+
+  openspec:
+    name: OpenSpec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: npm install --global @fission-ai/openspec@1.3.1
+      - run: openspec validate --all --strict --no-interactive
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

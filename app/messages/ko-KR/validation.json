@@ -1,0 +1,20 @@
+{
+    "authenticate": {
+        "name": {
+            "required": "이름은 필수 입력 항목입니다",
+            "invalid": "이름을 입력해 주세요"
+        },
+        "email": {
+            "required": "이메일 주소를 입력해 주세요",
+            "invalid": "유효한 이메일 주소를 입력해 주세요"
+        },
+        "password": {
+            "required": "비밀번호를 입력해 주세요",
+            "min": "비밀번호는 최소 {min}자 이상이어야 합니다"
+        },
+        "confirmPassword": {
+            "required": "비밀번호 확인을 입력해 주세요",
+            "confirm": "비밀번호가 일치하지 않습니다"
+        }
+    }
+}
