@@ -164,10 +164,10 @@ When adding a new ADR:
 
 ## Related Documentation
 
-- [Exception Handling Standardization](../ADR_EXCEPTION_HANDLING.md)
-- [API Errors Guide](../API_ERRORS.md)
-- [Result Pattern Guide](../RESULT_PATTERN_GUIDE.md)
-- [Exception Handling Guide](../EXCEPTION_HANDLING_GUIDE.md)
+- [Exception Handling Standardization](../api/ADR_EXCEPTION_HANDLING.md)
+- [API Errors Guide](../api/API_ERRORS.md)
+- [Result Pattern Guide](../api/RESULT_PATTERN_GUIDE.md)
+- [Exception Handling Guide](../api/EXCEPTION_HANDLING_GUIDE.md)
 
 ## Discussion & Questions
 

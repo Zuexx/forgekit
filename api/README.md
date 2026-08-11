@@ -1,5 +1,5 @@
 # ForgeKit API
 
-API documentation has moved to the root `docs/api/` directory. Files under `api/docs/` are kept as a legacy mirror for reference; update root docs first.
+API documentation lives in [`docs/api/`](../docs/api/) and architecture decision records in [`docs/adr/`](../docs/adr/), both at the repository root.
 
 Starter-kit sample guidance lives in `../docs/SAMPLES.md`.

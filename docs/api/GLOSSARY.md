@@ -756,7 +756,7 @@ See [Abstract Validator](#abstract-validator)
 - [RESULT_PATTERN_GUIDE.md](./RESULT_PATTERN_GUIDE.md) - Result pattern deep dive
 - [FLUENT_VALIDATION_GUIDE.md](./FLUENT_VALIDATION_GUIDE.md) - Validation guide
 - [EXCEPTION_HANDLING_GUIDE.md](./EXCEPTION_HANDLING_GUIDE.md) - Exception handling
-- [docs/adr/](./adr/) - Architecture Decision Records
+- [docs/adr/](../adr/) - Architecture Decision Records
 
 ---
 
