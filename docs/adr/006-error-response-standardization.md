@@ -237,7 +237,7 @@ return BadRequest("Email is required and must be valid");
 - No correlation IDs
 - No trace information
 
-**When Better:** Very simple APIs; forgekits
+**When Better:** Very simple APIs; prototypes
 
 ---
 
@@ -386,7 +386,7 @@ GET /api/errors/VE-12345
 - Building gRPC API (has different standard)
 - GraphQL API (has different error model)
 - Simple scripts or CLIs
-- Throwaway forgekits
+- Throwaway prototypes
 - Internal utilities with single known client
 - Minimal response overhead critical
 

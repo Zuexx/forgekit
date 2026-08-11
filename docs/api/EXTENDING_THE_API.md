@@ -1210,8 +1210,8 @@ Before committing your extension, ensure:
 - [CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md) - Configuration reference
 - [FLUENT_VALIDATION_GUIDE.md](./FLUENT_VALIDATION_GUIDE.md) - Validation patterns
 - [RESULT_PATTERN_GUIDE.md](./RESULT_PATTERN_GUIDE.md) - Result pattern deep dive
-- [docs/adr/](./adr/) - Architecture Decision Records
-- [ForgeKit.Api/Samples/](../ForgeKit.Api/Samples/) - Reference implementations
+- [docs/adr/](../adr/) - Architecture Decision Records
+- [ForgeKit.Api/Samples/](../../api/ForgeKit.Api/Samples/) - Reference implementations
 
 ---
 

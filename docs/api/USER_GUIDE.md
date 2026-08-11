@@ -1667,7 +1667,7 @@ Logs: See attached log-2026-02-11.txt (line 4521)
 - [Glossary](./GLOSSARY.md) - Terms and concepts reference
 - [Commit Convention](./COMMIT_CONVENTION.md) - Git commit standards
 - [Logging Guide](./logging.md) - Logging best practices
-- [Architecture Decision Records](./adr/) - ADR documentation
+- [Architecture Decision Records](../adr/) - ADR documentation
 
 ### External Resources
 

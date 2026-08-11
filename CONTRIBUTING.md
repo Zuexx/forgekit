@@ -20,9 +20,9 @@ Be respectful and professional. We're building great things together.
 ## Before You Start
 
 ### For Backend (API) Changes
-- Read [api/docs/USER_GUIDE.md](api/docs/USER_GUIDE.md)
-- Read [api/docs/EXTENDING_THE_API.md](api/docs/EXTENDING_THE_API.md)
-- Review relevant [ADRs](api/docs/adr/)
+- Read [docs/api/USER_GUIDE.md](docs/api/USER_GUIDE.md)
+- Read [docs/api/EXTENDING_THE_API.md](docs/api/EXTENDING_THE_API.md)
+- Review relevant [ADRs](docs/adr/)
 - Check [openspec/AGENTS.md](openspec/AGENTS.md) for spec-driven development
 
 ### For Frontend (App) Changes
@@ -155,8 +155,8 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 
 ## Documentation
 
-- **API changes?** → Update [api/docs/](api/docs/)
-- **Architecture change?** → Create ADR in [api/docs/adr/](api/docs/adr/) or update [STRUCTURE.md](STRUCTURE.md)
+- **API changes?** → Update [docs/api/](docs/api/)
+- **Architecture change?** → Create ADR in [docs/adr/](docs/adr/) or update [docs/STRUCTURE.md](docs/STRUCTURE.md)
 - **New feature?** → Document in relevant README
 - **Breaking changes?** → Update CONTRIBUTING guide and migration notes
 
