@@ -23,6 +23,21 @@ forgekit/
 
 ## 🚀 Quick Start
 
+### Start a new project from this kit
+
+ForgeKit ships as a `dotnet new` template, so a new project comes out already renamed — no manual find-and-replace after cloning.
+
+```bash
+dotnet new install <path-to-this-repo>   # once
+dotnet new forgekit -n Acme.Portal       # anywhere
+```
+
+That renames the solution, projects, folders, and C# namespaces to `Acme.Portal.*`, rewrites lowercase identifiers (database names, Docker containers, frontend package name, auth cookie), and generates fresh project GUIDs.
+
+Add `--slug acmeportal` to control the lowercase identifier separately — worth doing when the project name contains dots, since it otherwise defaults to `acme.portal`.
+
+See [docs/FORKING_GUIDE.md](docs/FORKING_GUIDE.md) for what to do next and for the manual rename path.
+
 ### Prerequisites
 - **.NET 10** (for API)
 - **Node.js 24** + **pnpm 11** (for App)

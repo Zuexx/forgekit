@@ -80,7 +80,7 @@ public sealed class AppDbContextModelTests
     }
 
     [Fact]
-    public async Task Queries_ShouldExcludeSoftDeletedForgeKitEntities()
+    public async Task Queries_ShouldExcludeSoftDeletedEntities()
     {
         await using var context = CreateContext();
         var activeWorkspace = NewWorkspace("active", "Active");
