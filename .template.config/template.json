@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "zuexx",
+  "classifications": [ "Web", "Full Stack", "API", "Next.js", "Starter" ],
+  "identity": "ForgeKit.FullStack.Starter",
+  "name": "ForgeKit full-stack starter (.NET API + Next.js app)",
+  "shortName": "forgekit",
+  "description": "Monorepo starter with a .NET 10 minimal API (EF Core, multi-provider migrations, Result pattern) and a Next.js frontend (Better Auth, next-intl, shadcn/ui).",
+  "sourceName": "ForgeKit",
+  "preferNameDirectory": true,
+  "defaultName": "MyProduct",
+  "tags": {
+    "language": "C#",
+    "type": "solution"
+  },
+  "guids": [
+    "CBFA08EA-AECE-205F-7B85-326FD0B81BAD",
+    "9B9A436F-5D18-4141-B85C-A9DDAC60A8BB",
+    "6B08A7F2-0A40-4267-82B4-4BE726023398",
+    "DB38614B-EFB5-4C54-9587-235977AB3E92",
+    "8EA9A5EF-CECF-4952-84B1-537D67432736",
+    "1F79F87D-2649-4ED7-A884-B956AE3ADF12"
+  ],
+  "symbols": {
+    "slug": {
+      "type": "parameter",
+      "datatype": "text",
+      "defaultValue": "",
+      "replaces": "",
+      "description": "Lowercase identifier used for database names, Docker container names, the frontend package name, and the auth cookie prefix. Defaults to the lowercased project name."
+    },
+    "nameLower": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "lowerCase",
+      "replaces": ""
+    },
+    "effectiveSlug": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "slug",
+        "fallbackVariableName": "nameLower",
+        "defaultValue": ""
+      },
+      "replaces": "forgekit"
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            "**/.git/**",
+            "**/.git",
+            "**/.template.config/**",
+            "**/[Bb]in/**",
+            "**/[Oo]bj/**",
+            "**/node_modules/**",
+            "**/.next/**",
+            "**/.turbo/**",
+            "**/.vs/**",
+            "**/.vscode/**",
+            "**/.idea/**",
+            "**/.DS_Store",
+            "**/*.user",
+            "**/*.suo",
+            "**/appsettings.Local.json",
+            "**/.env.local",
+            "**/*.db",
+            "**/*.db-shm",
+            "**/*.db-wal",
+            "**/logs/**"
+          ]
+        },
+        {
+          "copyOnly": [
+            "app/public/**",
+            "**/*.mp4",
+            "**/*.png",
+            "**/*.jpg",
+            "**/*.jpeg",
+            "**/*.gif",
+            "**/*.ico",
+            "**/*.woff",
+            "**/*.woff2",
+            "**/*.ttf"
+          ]
+        }
+      ]
+    }
+  ]
+}

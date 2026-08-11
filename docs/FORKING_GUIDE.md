@@ -4,7 +4,42 @@ Use this guide when turning ForgeKit into a new project. The goal is to make the
 
 ## 1. Rename Project Identity
 
-Choose the product name first, then rename consistently.
+### Preferred: generate from the `dotnet new` template
+
+The repository root contains `.template.config/`, which registers ForgeKit as a `dotnet new` template. Use it instead of renaming by hand.
+
+```bash
+# once per machine, pointing at a local clone of ForgeKit
+dotnet new install /path/to/forgekit
+
+# then, from wherever the new project should live
+dotnet new forgekit -n Acme.Portal
+```
+
+The template handles:
+
+- Solution, project folder, and `.csproj` names → `Acme.Portal.Api`, `Acme.Portal.Api.Tests`, migration projects
+- C# root namespaces and `using` directives
+- Lowercase identifiers (`forgekit` → `acme.portal`): SQLite file name, `forgekit_db` connection strings, Compose project and container names, `DATABASE_URL`, `forgekit-app` package name, auth cookie prefix
+- Fresh solution and project GUIDs on every instantiation
+- Excluding `bin/`, `obj/`, `node_modules/`, `.next/`, nested `.git/` directories, `appsettings.Local.json`, `.env.local`, and local SQLite databases
+
+Pass `--slug` when the lowercase form should differ from the lowercased project name — notably for dotted names, where the default produces `acme.portal`:
+
+```bash
+dotnet new forgekit -n Acme.Portal --slug acmeportal
+```
+
+To refresh the template after pulling ForgeKit changes, re-run `dotnet new install /path/to/forgekit --force`. To remove it, `dotnet new uninstall /path/to/forgekit`.
+
+Two notes on template output:
+
+- `.claude/skills/*` are symlinks in this repository; the generated project receives real file copies instead.
+- Avoid embedding the project name inside a longer identifier (for example a method named `..ForgeKitEntities()`). The template replaces the token in place, and a dotted project name would produce invalid C#.
+
+### Manual rename
+
+If you cloned instead of generating, rename consistently.
 
 Update these items together:
 
