@@ -176,7 +176,7 @@ At minimum, update:
 - `docs/STRUCTURE.md`
 - `api/README.md`
 - `app/README.md`
-- `openspec/project.md`
+- `openspec/config.yaml` (the `context:` section)
 - ADRs if the fork changes architecture decisions
 
 Keep OpenSpec current:

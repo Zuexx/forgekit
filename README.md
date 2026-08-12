@@ -223,7 +223,7 @@ See **[STRUCTURE.md](./docs/STRUCTURE.md)** for complete documentation on:
 ## 🤝 Contributing
 
 1. Read **[CONTRIBUTING.md](./CONTRIBUTING.md)** for guidelines
-2. Check **[openspec/AGENTS.md](./openspec/AGENTS.md)** for spec-driven development
+2. Check **[AGENTS.md](./AGENTS.md)** and `openspec/config.yaml` for spec-driven development
 3. Create feature branch: `git checkout -b feature/your-feature`
 4. Commit with convention: `git commit -m "feat: description"`
 5. Push and create a pull request

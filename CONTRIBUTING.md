@@ -23,7 +23,7 @@ Be respectful and professional. We're building great things together.
 - Read [docs/api/USER_GUIDE.md](docs/api/USER_GUIDE.md)
 - Read [docs/api/EXTENDING_THE_API.md](docs/api/EXTENDING_THE_API.md)
 - Review relevant [ADRs](docs/adr/)
-- Check [openspec/AGENTS.md](openspec/AGENTS.md) for spec-driven development
+- Check [AGENTS.md](AGENTS.md) for spec-driven development; the OpenSpec workflow is provided by the `/opsx:*` skills
 
 ### For Frontend (App) Changes
 - Review [app/README.md](app/README.md)
@@ -32,7 +32,7 @@ Be respectful and professional. We're building great things together.
 
 ### For Major Changes
 Follow the **spec-driven development** process:
-1. Read [openspec/AGENTS.md](openspec/AGENTS.md)
+1. Read [AGENTS.md](AGENTS.md)
 2. Create a proposal in `openspec/changes/`
 3. Get approval before implementation
 4. Update specs after merging
