@@ -10,7 +10,7 @@ namespace Anvil.Interfaces;
 /// <remarks>
 /// Generic over the context so this contract can live in the shared layer while each
 /// product keeps typed access to its own DbSets.
-/// </summary>
+/// </remarks>
 public interface IUnitOfWork<out TContext> : IDisposable
     where TContext : PlatformDbContext
 {
