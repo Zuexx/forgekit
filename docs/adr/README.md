@@ -28,6 +28,7 @@ An ADR is a brief document that records an important architectural decision made
 | [005](#adr-005-audit-context-service) | Audit Context Service | ACCEPTED | Audit Trail |
 | [006](#adr-006-error-response-standardization) | Error Response Standardization | ACCEPTED | Error Handling |
 | [007](#adr-007-unit-of-work-pattern) | Unit of Work Pattern | ACCEPTED | Transaction Management |
+| [008](#adr-008-shared-layer-boundary) | Shared Layer Boundary | ACCEPTED | Reuse Across Products |
 
 ---
 
@@ -115,6 +116,18 @@ An ADR is a brief document that records an important architectural decision made
 
 ---
 
+## ADR-008: Shared Layer Boundary
+
+**File:** [008-shared-layer-boundary.md](008-shared-layer-boundary.md)
+
+**Quick Summary:** Split the codebase by whether a file would be byte-identical in every product, and rename only the half that would not, so base improvements can reach products that were already generated.
+
+**When to use:** A starter kit used as a development base for more than one product
+
+**Key benefit:** Shared-layer updates apply by path instead of being re-implemented per product, enforced at compile time
+
+---
+
 ## How to Use These ADRs
 
 1. **For New Developers:** Start with this README to understand the architectural patterns used in your project.
@@ -147,7 +160,7 @@ See [template.md](template.md) for the full template.
 
 When adding a new ADR:
 
-1. Use the next available number (ADR-008, ADR-009, etc.)
+1. Use the next available number (ADR-009, ADR-010, etc.)
 2. Follow the [template.md](template.md) format
 3. Ensure the **context is generic**, not ForgeKit-specific
 4. Include at least 3 alternatives considered
