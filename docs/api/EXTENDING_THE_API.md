@@ -182,7 +182,7 @@ public class OrderModule : IModule
 
 The `ModuleExtensions.RegisterModules()` method uses reflection to find all `IModule` implementations.
 
-**Location:** `ForgeKit.Api/Extensions/ModuleExtension.cs`
+**Location:** `Anvil/Extensions/ModuleExtension.cs`
 
 ---
 
@@ -514,6 +514,8 @@ Create a domain service when:
 
 ```csharp
 // ForgeKit.Api/Domain/Services/OrderFulfillmentService.cs
+// Product layer: this service depends on AppDbContext and a product entity,
+// so it does not belong in the shared Anvil project.
 namespace Api.Domain.Services;
 
 public interface IOrderFulfillmentService

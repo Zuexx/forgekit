@@ -428,7 +428,7 @@ var visits = await mediator.Send(new GetVisitsByMrQuery { MrId = mrId });
 ### IUnitOfWork Interface (Data Access Abstraction)
 
 ```csharp
-// ForgeKit.Api/Interfaces/IUnitOfWork.cs
+// Anvil/Interfaces/IUnitOfWork.cs
 using Api.Data;
 using Microsoft.EntityFrameworkCore.Storage;
 
