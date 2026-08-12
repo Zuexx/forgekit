@@ -57,24 +57,33 @@ context: |
   - `docs/adr/` — architecture decisions
   - `docs/api/logging.md` — structured logging patterns and examples
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  tasks:
+    - Break work into tasks completable in 5 to 15 minutes each.
+    - A task that cannot be verified on its own is too coarse. Split it until each
+      one has an observable outcome — a build that passes, a test that goes green,
+      a file that exists.
+    - Prefer many small tasks over few large ones. "Move 40 files" is one task on
+      paper and an hour of unverifiable work in practice; split it by area.
+    - Put decisions that block implementation in a leading section, so they are
+      settled before any code is written rather than discovered mid-task.
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+operations:
+  apply:
+    guidance:
+      - Work test-first where the change is behavioral. The `tdd` skill defines what
+        counts as a good test; follow it rather than writing tests that assert
+        implementation details.
+      - Run the test suite after each task rather than at the end, so a failure points
+        at one task instead of a batch.
+      - When a task reveals that the plan was wrong, update the change rather than
+        silently diverging from it. The change is the record.
+      - State the test counts before and after. A refactor that changes them needs an
+        explanation.
+  archive:
+    guidance:
+      - Before archiving, verify the implementation against the change's own spec
+        deltas, not just against the task checklist. Ticked boxes are a claim; the
+        specs are the acceptance criteria.
+      - Note anything the implementation did differently from the proposal, and why.
+        A design assumption that turned out wrong is worth recording.
