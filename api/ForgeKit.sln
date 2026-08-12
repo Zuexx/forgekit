@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForgeKit.Api.Migrations.Pos
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForgeKit.Api.Migrations.SqlServer", "ForgeKit.Api.Migrations.SqlServer\ForgeKit.Api.Migrations.SqlServer.csproj", "{8EA9A5EF-CECF-4952-84B1-537D67432736}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anvil", "Anvil\Anvil.csproj", "{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{8EA9A5EF-CECF-4952-84B1-537D67432736}.Release|x64.Build.0 = Release|Any CPU
 		{8EA9A5EF-CECF-4952-84B1-537D67432736}.Release|x86.ActiveCfg = Release|Any CPU
 		{8EA9A5EF-CECF-4952-84B1-537D67432736}.Release|x86.Build.0 = Release|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Debug|x64.Build.0 = Debug|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Debug|x86.Build.0 = Debug|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Release|x64.ActiveCfg = Release|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Release|x64.Build.0 = Release|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Release|x86.ActiveCfg = Release|Any CPU
+		{B3CE4DC7-9329-4EBF-BE9C-30C82329665E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

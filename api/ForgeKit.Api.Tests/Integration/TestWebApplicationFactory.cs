@@ -1,5 +1,5 @@
 using ForgeKit.Api.Data;
-using ForgeKit.Api.Data.Auth;
+using Anvil.Data.Auth;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;

@@ -1,12 +1,15 @@
-using ForgeKit.Api.Behaviors;
-using ForgeKit.Api.Constants;
+using Anvil.Behaviors;
+using Anvil.Constants;
 using ForgeKit.Api.Data;
-using ForgeKit.Api.Data.Auth;
+using Anvil.Data.Auth;
+using Anvil.Extensions;
 using ForgeKit.Api.Extensions;
+using Anvil.Foundations;
 using ForgeKit.Api.Foundations;
+using Anvil.Interfaces;
 using ForgeKit.Api.Interfaces;
-using ForgeKit.Api.Middlewares;
-using ForgeKit.Api.Models;
+using Anvil.Middlewares;
+using Anvil.Models;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -91,7 +94,7 @@ builder.Services.AddTransient<CorrelationIdMiddleware>();
 builder.Services.AddHttpContextAccessor();
 
 // Register endpoint related modules
-builder.Services.RegisterModules();
+builder.Services.RegisterModules(typeof(Program).Assembly);
 
 // Register PocDataSeeder used for development/CI seeding (guarded by configuration)
 builder.Services.AddTransient<PocDataSeeder>();

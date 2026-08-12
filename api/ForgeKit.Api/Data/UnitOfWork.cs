@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using ForgeKit.Api.Entities.Base;
+using Anvil.Entities.Base;
+using Anvil.Interfaces;
 using ForgeKit.Api.Interfaces;
 
 namespace ForgeKit.Api.Data;
