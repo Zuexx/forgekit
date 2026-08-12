@@ -1,4 +1,4 @@
-using ForgeKit.Api.Exceptions;
+using Anvil.Exceptions;
 using Shouldly;
 
 namespace ForgeKit.Api.Tests.Exceptions;

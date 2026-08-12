@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ForgeKit.Api.Entities.Analytics;
-using ForgeKit.Api.Entities.Base;
+using Anvil.Entities.Base;
 using ForgeKit.Api.Entities.Configuration;
 using ForgeKit.Api.Entities.Core;
 using ForgeKit.Api.Entities.Todos;
