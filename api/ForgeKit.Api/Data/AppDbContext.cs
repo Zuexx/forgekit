@@ -1,18 +1,16 @@
-using Microsoft.EntityFrameworkCore;
+using Anvil.Data;
 using ForgeKit.Api.Entities.Analytics;
-using Anvil.Entities.Base;
 using ForgeKit.Api.Entities.Configuration;
 using ForgeKit.Api.Entities.Core;
 using ForgeKit.Api.Entities.Todos;
-using System;
-using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace ForgeKit.Api.Data
 {
     /// <summary>
     /// Application Database Context
     /// </summary>
-    public class AppDbContext : DbContext
+    public class AppDbContext : PlatformDbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -35,41 +33,15 @@ namespace ForgeKit.Api.Data
         public DbSet<WorkspaceAnalytics> WorkspaceAnalytics { get; set; } = null!;
         public DbSet<DailyActivitySnapshot> DailyActivitySnapshots { get; set; } = null!;
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            // Apply global query filters for soft delete
-            ConfigureSoftDeleteFilters(modelBuilder);
-
-            // Configure relationships
-            ConfigureRelationships(modelBuilder);
-
-            // Configure indexes
-            ConfigureIndexes(modelBuilder);
-
-            // Configure JSON columns
-            ConfigureJsonColumns(modelBuilder);
-
-            // Apply camelCase naming convention for relational objects.
-            // Call last so explicit entity/column configs are applied first.
-            ConfigureCamelCaseNames(modelBuilder);
-        }
-
         /// <summary>
-        /// Configure soft delete global query filters
+        /// Product-specific model configuration. Soft-delete filters and the camelCase
+        /// naming convention are applied by <see cref="PlatformDbContext"/>.
         /// </summary>
-        private void ConfigureSoftDeleteFilters(ModelBuilder modelBuilder)
+        protected override void ConfigureProductModel(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Workspace>().HasQueryFilter(e => !e.IsDeleted);
-            modelBuilder.Entity<Member>().HasQueryFilter(e => !e.IsDeleted);
-            modelBuilder.Entity<Category>().HasQueryFilter(e => !e.IsDeleted);
-            modelBuilder.Entity<Label>().HasQueryFilter(e => !e.IsDeleted);
-            modelBuilder.Entity<CategoryLabel>().HasQueryFilter(e => !e.IsDeleted);
-            modelBuilder.Entity<TodoItem>().HasQueryFilter(e => !e.IsDeleted);
-            modelBuilder.Entity<TodoStatusHistory>().HasQueryFilter(e => !e.IsDeleted);
-            modelBuilder.Entity<WorkspaceAnalytics>().HasQueryFilter(e => !e.IsDeleted);
-            modelBuilder.Entity<DailyActivitySnapshot>().HasQueryFilter(e => !e.IsDeleted);
+            ConfigureRelationships(modelBuilder);
+            ConfigureIndexes(modelBuilder);
+            ConfigureJsonColumns(modelBuilder);
         }
 
         /// <summary>
@@ -201,126 +173,5 @@ namespace ForgeKit.Api.Data
                 .HasPrecision(18, 2);
         }
 
-        /// <summary>
-        /// Apply camelCase naming convention for relational database objects.
-        ///
-        /// Converts table names, schema, column names, index names, key names and
-        /// foreign-key constraint names to lowerCamelCase (start lower-case; subsequent
-        /// words capitalized). Note: changing naming conventions will affect EF Migrations
-        /// (may produce rename operations) so review generated migrations carefully.
-        /// </summary>
-        /// <param name="modelBuilder">The EF Core model builder.</param>
-        private void ConfigureCamelCaseNames(ModelBuilder modelBuilder)
-        {
-            foreach (var entity in modelBuilder.Model.GetEntityTypes())
-            {
-                // Table and schema
-                // Use CLR type (singular) to match existing DB table names (e.g. 'region')
-                var tableName = entity.ClrType.Name;
-                entity.SetTableName(ToCamelCase(tableName));
-
-                var schema = entity.GetSchema();
-                if (!string.IsNullOrEmpty(schema))
-                    entity.SetSchema(ToCamelCase(schema));
-
-                // Columns
-                foreach (var prop in entity.GetProperties())
-                    prop.SetColumnName(ToCamelCase(prop.GetColumnName() ?? prop.Name));
-
-                // Index names
-                foreach (var idx in entity.GetIndexes())
-                {
-                    var idxName = idx.GetDatabaseName() ?? idx.Name ?? string.Empty;
-                    idx.SetDatabaseName(ToCamelCase(idxName));
-                }
-
-                // Keys
-                foreach (var key in entity.GetKeys())
-                {
-                    var keyName = key.GetName() ?? $"pk_{entity.ClrType.Name}";
-                    key.SetName(ToCamelCase(keyName));
-                }
-
-                // Foreign key constraint names
-                foreach (var fk in entity.GetForeignKeys())
-                {
-                    var fkName = fk.GetConstraintName() ?? $"fk_{entity.ClrType.Name}";
-                    fk.SetConstraintName(ToCamelCase(fkName));
-                }
-            }
-        }
-
-        private static string ToCamelCase(string? name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return string.Empty;
-
-            var parts = name.Split(new[] { '_', '-', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 1)
-            {
-                var s = parts[0];
-                if (s.Length == 1) return s.ToLowerInvariant();
-                return char.ToLowerInvariant(s[0]) + s.Substring(1);
-            }
-
-            var sb = new StringBuilder();
-            sb.Append(parts[0].ToLowerInvariant());
-            for (int i = 1; i < parts.Length; i++)
-            {
-                var p = parts[i];
-                if (string.IsNullOrEmpty(p)) continue;
-                sb.Append(char.ToUpperInvariant(p[0]));
-                if (p.Length > 1) sb.Append(p.Substring(1));
-            }
-            return sb.ToString();
-        }
-
-
-
-        /// <summary>
-        /// Override SaveChanges to automatically update audit fields
-        /// </summary>
-        public override int SaveChanges()
-        {
-            UpdateAuditFields();
-            return base.SaveChanges();
-        }
-
-        /// <summary>
-        /// Override SaveChangesAsync to automatically update audit fields
-        /// </summary>
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            UpdateAuditFields();
-            return base.SaveChangesAsync(cancellationToken);
-        }
-
-        /// <summary>
-        /// Automatically update audit fields on save
-        /// </summary>
-        private void UpdateAuditFields()
-        {
-            var entries = ChangeTracker.Entries()
-                .Where(e => e.Entity is IAuditableEntity && (e.State == EntityState.Added || e.State == EntityState.Modified));
-
-            foreach (var entry in entries)
-            {
-                var entity = (IAuditableEntity)entry.Entity;
-                var now = DateTime.UtcNow;
-
-                if (entry.State == EntityState.Added)
-                {
-                    entity.CreatedAt = now;
-                    entity.UpdatedAt = now;
-                    // CreatedBy and UpdatedBy should be set by the application layer
-                }
-                else if (entry.State == EntityState.Modified)
-                {
-                    entity.UpdatedAt = now;
-                    entity.Version++;
-                    // UpdatedBy should be set by the application layer
-                }
-            }
-        }
     }
 }
