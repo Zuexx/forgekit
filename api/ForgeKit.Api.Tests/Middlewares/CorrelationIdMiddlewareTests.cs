@@ -1,5 +1,5 @@
 using System.Net;
-using ForgeKit.Api.Middlewares;
+using Anvil.Middlewares;
 using ForgeKit.Api.Tests.Integration;
 using Shouldly;
 using Microsoft.AspNetCore.Mvc.Testing;

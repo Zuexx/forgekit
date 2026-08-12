@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ForgeKit.Api.Entities.Base;
+using Anvil.Entities.Base;
 using ForgeKit.Api.Entities.Core;
 using Microsoft.EntityFrameworkCore;
 
