@@ -40,12 +40,17 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         
         builder.ConfigureServices(services =>
         {
-            // Remove all EF Core related services for both contexts
+            // Remove all EF Core related services for both contexts.
+            // Matched by type identity rather than by name: a generic service such as
+            // IUnitOfWork<AppDbContext> carries its type argument in FullName, so a
+            // substring match on "AppDbContext" would silently unregister it too.
             var descriptorsToRemove = services.Where(d =>
-                d.ServiceType.FullName?.Contains("DbContextOptions") == true ||
-                d.ServiceType.FullName?.Contains("AppDbContext") == true ||
-                d.ServiceType.FullName?.Contains("BetterAuthDbContext") == true ||
-                d.ServiceType.FullName?.StartsWith("Microsoft.EntityFrameworkCore") == true).ToList();
+                d.ServiceType == typeof(AppDbContext) ||
+                d.ServiceType == typeof(BetterAuthDbContext) ||
+                d.ServiceType == typeof(DbContextOptions) ||
+                (d.ServiceType.IsGenericType &&
+                 d.ServiceType.GetGenericTypeDefinition() == typeof(DbContextOptions<>)) ||
+                d.ServiceType.Namespace?.StartsWith("Microsoft.EntityFrameworkCore") == true).ToList();
 
             foreach (var descriptor in descriptorsToRemove)
             {

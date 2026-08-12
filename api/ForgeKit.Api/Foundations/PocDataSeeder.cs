@@ -1,8 +1,9 @@
+using Anvil.Interfaces;
 using ForgeKit.Api.Data;
 
 namespace ForgeKit.Api.Foundations;
 
-public class PocDataSeeder
+public class PocDataSeeder : IDataSeeder
 {
     private readonly AppDbContext _dbContext;
 

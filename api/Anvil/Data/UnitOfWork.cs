@@ -2,20 +2,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Anvil.Entities.Base;
 using Anvil.Interfaces;
-using ForgeKit.Api.Interfaces;
 
-namespace ForgeKit.Api.Data;
+namespace Anvil.Data;
 
 /// <summary>
 /// Implementation of Unit of Work pattern for managing atomic transactions.
 /// Provides transaction boundaries and automatic audit field management.
 /// </summary>
-public class UnitOfWork(AppDbContext dbContext) : IUnitOfWork
+public class UnitOfWork<TContext>(TContext dbContext) : IUnitOfWork<TContext>
+    where TContext : PlatformDbContext
 {
-    private readonly AppDbContext _dbContext = dbContext;
+    private readonly TContext _dbContext = dbContext;
     private IDbContextTransaction? _transaction;
 
-    public AppDbContext DbContext => _dbContext;
+    public TContext DbContext => _dbContext;
 
     /// <summary>
     /// Begin a database transaction. All subsequent operations will be atomic.

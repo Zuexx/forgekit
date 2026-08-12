@@ -1,8 +1,8 @@
+using Anvil.Data;
 using ForgeKit.Api.Data;
 using ForgeKit.Api.Entities.Core;
 using ForgeKit.Api.Entities.Todos;
 using Anvil.Interfaces;
-using ForgeKit.Api.Interfaces;
 using Shouldly;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -14,7 +14,7 @@ public class UnitOfWorkIntegrationTests : IAsyncLifetime
     private readonly TestWebApplicationFactory _factory;
     private IServiceScope? _scope;
     private AppDbContext? _dbContext;
-    private IUnitOfWork? _unitOfWork;
+    private IUnitOfWork<AppDbContext>? _unitOfWork;
 
     public UnitOfWorkIntegrationTests()
     {
@@ -25,7 +25,7 @@ public class UnitOfWorkIntegrationTests : IAsyncLifetime
     {
         _scope = _factory.Services.CreateScope();
         _dbContext = _scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        _unitOfWork = _scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        _unitOfWork = _scope.ServiceProvider.GetRequiredService<IUnitOfWork<AppDbContext>>();
 
         await _dbContext!.Database.EnsureCreatedAsync();
     }

@@ -1,3 +1,4 @@
+using Anvil.Data;
 using Anvil.Behaviors;
 using Anvil.Constants;
 using ForgeKit.Api.Data;
@@ -7,7 +8,6 @@ using ForgeKit.Api.Extensions;
 using Anvil.Foundations;
 using ForgeKit.Api.Foundations;
 using Anvil.Interfaces;
-using ForgeKit.Api.Interfaces;
 using Anvil.Middlewares;
 using Anvil.Models;
 using FluentValidation;
@@ -41,18 +41,13 @@ builder.Host.UseSerilog((context, configuration) =>
     }
 });
 
-builder.Services.AddConfiguredDbContexts(builder.Configuration, builder.Environment);
+builder.Services.AddConfiguredDbContext<AppDbContext>(builder.Configuration, builder.Environment);
+builder.Services.AddConfiguredDbContext<BetterAuthDbContext>(builder.Configuration, builder.Environment);
 
 // Dependency Injection - Data Layer
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUnitOfWork<AppDbContext>, UnitOfWork<AppDbContext>>();
 
-// Dependency Injection - Audit Context
-builder.Services.RegisterAuditContext();
-
-// Dependency Injection - Domain Services
-builder.Services.RegisterDomainServices();
-
-// Dependency Injection - Application Services
+// Dependency Injection - product services, which also pull in the shared layer's
 builder.Services.RegisterApplicationServices();
 
 // Bind and register your JWT configuration from appsettings:
@@ -95,9 +90,6 @@ builder.Services.AddHttpContextAccessor();
 
 // Register endpoint related modules
 builder.Services.RegisterModules(typeof(Program).Assembly);
-
-// Register PocDataSeeder used for development/CI seeding (guarded by configuration)
-builder.Services.AddTransient<PocDataSeeder>();
 
 // Configure CORS policy (environment-aware: Dev allows any, Prod uses whitelist)
 builder.Services.AddCorsPolicy(builder.Configuration, builder.Environment);

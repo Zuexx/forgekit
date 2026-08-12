@@ -1,34 +1,22 @@
-using Anvil.Domain.Services;
+using Anvil.Extensions;
 using Anvil.Interfaces;
-using ForgeKit.Api.Interfaces;
-using Anvil.Services;
+using ForgeKit.Api.Foundations;
 using ForgeKit.Api.Services.Todos;
 
 namespace ForgeKit.Api.Extensions;
 
+/// <summary>
+/// Registers this product's services, and pulls in the shared layer's registrations.
+/// </summary>
 public static class ServiceExtension
 {
     public static IServiceCollection RegisterApplicationServices(
         this IServiceCollection services)
     {
+        services.AddPlatformServices();
+
         services.AddScoped<TodoService>();
-
-        return services;
-    }
-
-    public static IServiceCollection RegisterAuditContext(
-        this IServiceCollection services)
-    {
-        services.AddHttpContextAccessor();
-        services.AddScoped<IAuditContext, AuditContextService>();
-
-        return services;
-    }
-
-    public static IServiceCollection RegisterDomainServices(
-        this IServiceCollection services)
-    {
-        services.AddScoped<SoftDeleteDomainService>();
+        services.AddTransient<IDataSeeder, PocDataSeeder>();
 
         return services;
     }

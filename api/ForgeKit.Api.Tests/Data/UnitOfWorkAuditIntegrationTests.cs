@@ -1,7 +1,7 @@
+using Anvil.Data;
 using ForgeKit.Api.Data;
 using ForgeKit.Api.Entities.Todos;
 using Anvil.Interfaces;
-using ForgeKit.Api.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -43,7 +43,7 @@ public class UnitOfWorkAuditIntegrationTests
     {
         // Arrange
         var dbContext = CreateInMemoryContext();
-        var unitOfWork = new UnitOfWork(dbContext);
+        var unitOfWork = new UnitOfWork<AppDbContext>(dbContext);
         var userId = "test-user-123";
         var entity = CreateTestTodoItem();
 
@@ -61,7 +61,7 @@ public class UnitOfWorkAuditIntegrationTests
     {
         // Arrange
         var dbContext = CreateInMemoryContext();
-        var unitOfWork = new UnitOfWork(dbContext);
+        var unitOfWork = new UnitOfWork<AppDbContext>(dbContext);
         var originalUserId = "original-user";
         var modifyingUserId = "modifying-user";
 
@@ -86,7 +86,7 @@ public class UnitOfWorkAuditIntegrationTests
     {
         // Arrange
         var dbContext = CreateInMemoryContext();
-        var unitOfWork = new UnitOfWork(dbContext);
+        var unitOfWork = new UnitOfWork<AppDbContext>(dbContext);
         var entity = CreateTestTodoItem();
 
         // Act
@@ -103,7 +103,7 @@ public class UnitOfWorkAuditIntegrationTests
     {
         // Arrange
         var dbContext = CreateInMemoryContext();
-        var unitOfWork = new UnitOfWork(dbContext);
+        var unitOfWork = new UnitOfWork<AppDbContext>(dbContext);
         var userId = "test-user";
 
         var entity1 = CreateTestTodoItem();
@@ -137,7 +137,7 @@ public class UnitOfWorkAuditIntegrationTests
     {
         // Arrange
         var dbContext = CreateInMemoryContext();
-        var unitOfWork = new UnitOfWork(dbContext);
+        var unitOfWork = new UnitOfWork<AppDbContext>(dbContext);
         var userId = "test-user";
         var entity = CreateTestTodoItem();
 
@@ -165,7 +165,7 @@ public class UnitOfWorkAuditIntegrationTests
     {
         // Arrange
         var dbContext = CreateInMemoryContext();
-        var unitOfWork = new UnitOfWork(dbContext);
+        var unitOfWork = new UnitOfWork<AppDbContext>(dbContext);
         var userId = "single-user";
 
         var entities = new[]

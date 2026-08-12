@@ -1,9 +1,9 @@
+using Anvil.Data;
 using ForgeKit.Api.Data;
 using Anvil.Domain.Services;
 using ForgeKit.Api.Entities.Core;
 using ForgeKit.Api.Entities.Todos;
 using Anvil.Interfaces;
-using ForgeKit.Api.Interfaces;
 using ForgeKit.Api.Services.Todos;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
@@ -13,7 +13,7 @@ namespace ForgeKit.Api.Tests.Services;
 public sealed class TodoServiceSoftDeleteTests : IDisposable
 {
     private readonly AppDbContext _dbContext;
-    private readonly UnitOfWork _unitOfWork;
+    private readonly UnitOfWork<AppDbContext> _unitOfWork;
     private readonly TestAuditContext _auditContext = new("sample-user");
     private readonly TodoService _todoService;
 
@@ -25,7 +25,7 @@ public sealed class TodoServiceSoftDeleteTests : IDisposable
             .Options;
 
         _dbContext = new AppDbContext(options);
-        _unitOfWork = new UnitOfWork(_dbContext);
+        _unitOfWork = new UnitOfWork<AppDbContext>(_dbContext);
         _todoService = new TodoService(_unitOfWork, _auditContext, new SoftDeleteDomainService());
     }
 
