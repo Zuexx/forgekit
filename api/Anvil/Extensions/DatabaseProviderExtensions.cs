@@ -1,26 +1,30 @@
-using ForgeKit.Api.Data;
-using Anvil.Data.Auth;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
-namespace ForgeKit.Api.Extensions;
+namespace Anvil.Extensions;
 
 public static class DatabaseProviderExtensions
 {
     private const string DefaultProvider = "Sqlite";
 
-    public static IServiceCollection AddConfiguredDbContexts(
+    /// <summary>
+    /// Registers a DbContext against the configured database provider.
+    /// </summary>
+    /// <remarks>
+    /// Generic over the context so the shared layer does not need to know which contexts
+    /// a product defines. Call once per context.
+    /// </remarks>
+    public static IServiceCollection AddConfiguredDbContext<TContext>(
         this IServiceCollection services,
         IConfiguration configuration,
         IHostEnvironment environment)
+        where TContext : DbContext
     {
         var settings = GetDatabaseProviderSettings(configuration)
             .ResolveSqlitePath(environment.ContentRootPath);
 
-        services.AddDbContext<AppDbContext>(
-            options => ConfigureProvider(options, settings));
-
-        services.AddDbContext<BetterAuthDbContext>(
+        services.AddDbContext<TContext>(
             options => ConfigureProvider(options, settings));
 
         return services;

@@ -1,19 +1,24 @@
-using ForgeKit.Api.Data;
+using Anvil.Data;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace ForgeKit.Api.Interfaces;
+namespace Anvil.Interfaces;
 
 /// <summary>
 /// Unit of Work pattern for managing atomic transactions across multiple entities.
 /// Provides transaction boundaries and audit field management.
 /// </summary>
-public interface IUnitOfWork : IDisposable
+/// <remarks>
+/// Generic over the context so this contract can live in the shared layer while each
+/// product keeps typed access to its own DbSets.
+/// </summary>
+public interface IUnitOfWork<out TContext> : IDisposable
+    where TContext : PlatformDbContext
 {
     /// <summary>
     /// Direct access to DbContext for queries and entity operations.
     /// Application Service should use this for both queries and adds/updates.
     /// </summary>
-    AppDbContext DbContext { get; }
+    TContext DbContext { get; }
 
     /// <summary>
     /// Begin a database transaction. All subsequent SaveChanges will be atomic.
