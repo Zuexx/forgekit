@@ -1,3 +1,4 @@
+using Anvil.Data;
 using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using ForgeKit.Api.Data;
@@ -9,7 +10,7 @@ namespace ForgeKit.Api.Tests.Data;
 public class UnitOfWorkTests : IDisposable
 {
     private readonly AppDbContext _dbContext;
-    private readonly UnitOfWork _unitOfWork;
+    private readonly UnitOfWork<AppDbContext> _unitOfWork;
 
     public UnitOfWorkTests()
     {
@@ -19,7 +20,7 @@ public class UnitOfWorkTests : IDisposable
             .Options;
 
         _dbContext = new AppDbContext(options);
-        _unitOfWork = new UnitOfWork(_dbContext);
+        _unitOfWork = new UnitOfWork<AppDbContext>(_dbContext);
     }
 
     private static Workspace CreateTestWorkspace(string id, string name = "Test Workspace")

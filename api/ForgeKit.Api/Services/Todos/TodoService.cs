@@ -2,7 +2,6 @@ using ForgeKit.Api.Data;
 using Anvil.Domain.Services;
 using ForgeKit.Api.Entities.Todos;
 using Anvil.Interfaces;
-using ForgeKit.Api.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace ForgeKit.Api.Services.Todos;
@@ -16,11 +15,11 @@ namespace ForgeKit.Api.Services.Todos;
 /// restoration with query filters.
 /// </remarks>
 public class TodoService(
-    IUnitOfWork unitOfWork,
+    IUnitOfWork<AppDbContext> unitOfWork,
     IAuditContext auditContext,
     SoftDeleteDomainService softDeleteService)
 {
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IUnitOfWork<AppDbContext> _unitOfWork = unitOfWork;
     private readonly IAuditContext _auditContext = auditContext;
     private readonly SoftDeleteDomainService _softDeleteService = softDeleteService;
 
