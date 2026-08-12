@@ -95,3 +95,9 @@ next-env.d.ts
 # --- OS & System ---
 .DS_Store
 Thumbs.db
+
+# --- AI tooling (local only, never committed) ---
+# CodeGraph local symbol index
+.codegraph/
+# Shallow clone of mem0ai/mem0 used to run the local OpenMemory stack
+.mem0-src/
