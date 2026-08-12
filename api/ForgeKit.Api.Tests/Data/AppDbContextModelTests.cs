@@ -1,3 +1,4 @@
+using Anvil.Entities.Base;
 using ForgeKit.Api.Data;
 using ForgeKit.Api.Entities.Analytics;
 using ForgeKit.Api.Entities.Configuration;
@@ -155,6 +156,32 @@ public sealed class AppDbContextModelTests
             nameof(DailyActivitySnapshot.WorkspaceId),
             nameof(DailyActivitySnapshot.IsDeleted));
         dailyIndex.ShouldNotBeNull();
+    }
+
+    /// <summary>
+    /// The regression the reflection in PlatformDbContext exists to prevent: a product
+    /// entity added later that quietly never gets a soft-delete filter.
+    /// </summary>
+    /// <remarks>
+    /// Asserts a property of this product's model, so it stays here rather than in
+    /// Anvil.Tests, which must not reference the product project.
+    /// </remarks>
+    [Fact]
+    public void EveryProductSoftDeleteEntity_HasAFilter()
+    {
+        using var context = CreateContext();
+
+        var softDeletable = context.Model.GetEntityTypes()
+            .Where(e => typeof(ISoftDelete).IsAssignableFrom(e.ClrType))
+            .ToList();
+
+        softDeletable.ShouldNotBeEmpty();
+        var unfiltered = softDeletable
+            .Where(e => e.GetQueryFilter() is null)
+            .Select(e => e.ClrType.Name)
+            .ToList();
+        unfiltered.ShouldBeEmpty(
+            $"these entities implement ISoftDelete but have no query filter: {string.Join(", ", unfiltered)}");
     }
 
     private static AppDbContext CreateContext()

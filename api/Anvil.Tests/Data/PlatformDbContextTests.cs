@@ -1,12 +1,11 @@
 using Anvil.Data;
 using Anvil.Entities.Base;
-using ForgeKit.Api.Data;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
 using Xunit;
 
-namespace ForgeKit.Api.Tests.Data;
+namespace Anvil.Tests.Data;
 
 /// <summary>
 /// Tests the shared layer's model conventions directly, using entities defined here
@@ -112,26 +111,5 @@ public sealed class PlatformDbContextTests
 
         entity.GetTableName().ShouldBe("filtered");
         entity.GetProperty(nameof(Filtered.IsDeleted)).GetColumnName().ShouldBe("isDeleted");
-    }
-
-    /// <summary>
-    /// The regression this whole mechanism exists to prevent: a product entity added
-    /// later that quietly never gets a filter.
-    /// </summary>
-    [Fact]
-    public void EveryProductSoftDeleteEntity_HasAFilter()
-    {
-        var connection = new SqliteConnection("Data Source=:memory:");
-        connection.Open();
-        using var context = new AppDbContext(
-            new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options);
-
-        var softDeletable = context.Model.GetEntityTypes()
-            .Where(e => typeof(ISoftDelete).IsAssignableFrom(e.ClrType))
-            .ToList();
-
-        softDeletable.ShouldNotBeEmpty();
-        var unfiltered = softDeletable.Where(e => e.GetQueryFilter() is null).Select(e => e.ClrType.Name).ToList();
-        unfiltered.ShouldBeEmpty($"these entities implement ISoftDelete but have no query filter: {string.Join(", ", unfiltered)}");
     }
 }
