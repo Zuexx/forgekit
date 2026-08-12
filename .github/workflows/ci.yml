@@ -64,6 +64,7 @@ jobs:
         run: echo "BETTER_AUTH_SECRET=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
       - run: pnpm check
       - run: pnpm lint
+      - run: pnpm test
       - run: pnpm build
 
   openspec:
