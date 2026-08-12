@@ -185,7 +185,7 @@ docs/
 
 ```
 openspec/
-├── project.md
+├── config.yaml                        # Schema + project context for planning
 ├── specs/                             # Accepted capability specs
 └── changes/                           # One folder per feature change
     ├── <feature>/
