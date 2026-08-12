@@ -25,7 +25,7 @@ A document that captures an important architectural decision along with its cont
 ---
 
 ### API Error Code
-A standardized error code returned in error responses to identify the type of error. Error codes are defined in `ForgeKit.Api/Constants/ErrorCodes.cs`.
+A standardized error code returned in error responses to identify the type of error. Error codes are defined in `Anvil/Constants/ErrorCodes.cs`.
 
 **Common codes:**
 - `VALIDATION_ERROR` - Input validation failed
@@ -76,7 +76,7 @@ A record of who created, modified, or deleted entities and when. Implemented via
 ## B
 
 ### Base Entity
-An abstract base class (`ForgeKit.Api/Entities/Base/BaseEntity.cs`) that all domain entities inherit from. Provides common fields for audit trail and soft delete.
+An abstract base class (`Anvil/Entities/Base/BaseEntity.cs`) that all domain entities inherit from. Provides common fields for audit trail and soft delete.
 
 **Fields:**
 - `Id` (string) - Primary key
@@ -91,7 +91,7 @@ An abstract base class (`ForgeKit.Api/Entities/Base/BaseEntity.cs`) that all dom
 ### Better Auth
 An authentication database context (`BetterAuthDbContext`) used for managing authentication-related entities separately from business data.
 
-**Location:** `ForgeKit.Api/Data/Auth/BetterAuthDbContext.cs`
+**Location:** `Anvil/Data/Auth/BetterAuthDbContext.cs`
 
 **Related:** [JWT](#jwt-json-web-token), [Authentication](#authentication)
 
@@ -152,7 +152,7 @@ Entity Framework Core's main class for database operations. The project uses:
 ### Domain Service
 A service that encapsulates **domain logic** that doesn't naturally fit within a single entity. Domain services are stateless and registered via `RegisterDomainServices()`.
 
-**Location:** `ForgeKit.Api/Domain/Services/`
+**Location:** `Anvil/Domain/Services/`
 
 **Example:** `SoftDeleteDomainService`
 
@@ -206,7 +206,7 @@ A pattern for returning consistent error responses across all endpoints, followi
 ### Exception Handling Middleware
 Middleware (`ExceptionHandlingMiddleware`) that catches unhandled exceptions, logs them with correlation IDs, and returns standardized error responses.
 
-**Location:** `ForgeKit.Api/Middlewares/ExceptionHandlingMiddleware.cs`
+**Location:** `Anvil/Middlewares/ExceptionHandlingMiddleware.cs`
 
 **Related:** [Middleware](#middleware), [Correlation ID](#correlation-id)
 
@@ -695,7 +695,7 @@ A pattern that maintains a list of objects affected by a business transaction an
 - ✅ Ensure consistency
 - ✅ Populate audit fields automatically
 
-**Location:** `ForgeKit.Api/Data/UnitOfWork.cs`
+**Location:** `Anvil/Data/UnitOfWork.cs`
 
 **Related:** [IUnitOfWork](#iunitofwork), [Transaction](#transaction)
 
@@ -713,7 +713,7 @@ A MediatR pipeline behavior that automatically validates all requests using Flue
 4. If validation fails → `ValidationAppException` thrown
 5. If validation passes → Handler executes
 
-**Location:** `ForgeKit.Api/Behaviors/ValidationBehavior.cs`
+**Location:** `Anvil/Behaviors/ValidationBehavior.cs`
 
 **Related:** [Pipeline Behavior](#pipeline-behavior), [FluentValidation](#fluentvalidation)
 

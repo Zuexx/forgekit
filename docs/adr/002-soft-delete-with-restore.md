@@ -324,7 +324,7 @@ public bool CanRestore<T>(T entity, int? graceDays = null) where T : BaseEntity
 ### Entity Base Class
 
 ```csharp
-// ForgeKit.Api/Entities/Base/ISoftDelete.cs
+// Anvil/Entities/Base/ISoftDelete.cs
 public interface ISoftDelete
 {
     bool IsDeleted { get; set; }
@@ -332,7 +332,7 @@ public interface ISoftDelete
     string? DeletedBy { get; set; }
 }
 
-// ForgeKit.Api/Entities/Base/BaseEntity.cs
+// Anvil/Entities/Base/BaseEntity.cs
 public abstract class BaseEntity : IAuditableEntity, ISoftDelete
 {
     public string Id { get; set; }
@@ -352,7 +352,7 @@ public abstract class BaseEntity : IAuditableEntity, ISoftDelete
 ### Domain Service
 
 ```csharp
-// ForgeKit.Api/Domain/Services/SoftDeleteDomainService.cs
+// Anvil/Domain/Services/SoftDeleteDomainService.cs
 public class SoftDeleteDomainService
 {
     private const int DefaultRestoreDaysLimit = 30;

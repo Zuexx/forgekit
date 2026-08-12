@@ -400,7 +400,7 @@ GET /api/errors/VE-12345
 ### Error Response DTO
 
 ```csharp
-// ForgeKit.Api/Models/ErrorResponse.cs
+// Anvil/Models/ErrorResponse.cs
 namespace Api.Models;
 
 /// <summary>
@@ -458,7 +458,7 @@ public sealed class ErrorResponse
 ### Error Codes Constants
 
 ```csharp
-// ForgeKit.Api/Constants/ErrorCodes.cs
+// Anvil/Constants/ErrorCodes.cs
 namespace Api.Constants;
 
 /// <summary>
@@ -516,7 +516,7 @@ public static class ErrorCodes
 ### Exception Handling Middleware
 
 ```csharp
-// ForgeKit.Api/Middlewares/ExceptionHandlingMiddleware.cs
+// Anvil/Middlewares/ExceptionHandlingMiddleware.cs
 using Api.Constants;
 using Api.Exceptions;
 using Api.Models;
@@ -675,25 +675,25 @@ public class ValidationAppException : Exception
     }
 }
 
-// ForgeKit.Api/Exceptions/NotFoundException.cs
+// Anvil/Exceptions/NotFoundException.cs
 public class NotFoundException : Exception
 {
     public NotFoundException(string message) : base(message) { }
 }
 
-// ForgeKit.Api/Exceptions/BusinessLogicException.cs
+// Anvil/Exceptions/BusinessLogicException.cs
 public class BusinessLogicException : Exception
 {
     public BusinessLogicException(string message) : base(message) { }
 }
 
-// ForgeKit.Api/Exceptions/ConflictException.cs
+// Anvil/Exceptions/ConflictException.cs
 public class ConflictException : Exception
 {
     public ConflictException(string message) : base(message) { }
 }
 
-// ForgeKit.Api/Exceptions/UnauthorizedException.cs
+// Anvil/Exceptions/UnauthorizedException.cs
 public class UnauthorizedException : Exception
 {
     public UnauthorizedException(string message) : base(message) { }

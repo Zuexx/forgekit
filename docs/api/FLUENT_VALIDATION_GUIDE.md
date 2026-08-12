@@ -127,7 +127,7 @@ var result = await mediator.Send(command, cancellationToken);
 ### ValidationBehavior 的工作原理
 
 ```csharp
-// ForgeKit.Api/Behaviors/ValidationBehavior.cs
+// Anvil/Behaviors/ValidationBehavior.cs
 
 public async Task<TResponse> Handle(
     TRequest request, 

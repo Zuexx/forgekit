@@ -443,7 +443,7 @@ entity.CreatedBy = auditContext.UserId;
 ### Interface Definition
 
 ```csharp
-// ForgeKit.Api/Interfaces/IAuditContext.cs
+// Anvil/Interfaces/IAuditContext.cs
 namespace Api.Interfaces;
 
 /// <summary>
@@ -474,7 +474,7 @@ public interface IAuditContext
 ### Service Implementation
 
 ```csharp
-// ForgeKit.Api/Services/AuditContextService.cs
+// Anvil/Services/AuditContextService.cs
 using System.Security.Claims;
 using Api.Interfaces;
 

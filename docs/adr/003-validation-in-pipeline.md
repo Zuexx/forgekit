@@ -463,7 +463,7 @@ public class CreateTodoItemValidator : AbstractValidator<CreateTodoItemCommand>
 ### ValidationBehavior Pipeline
 
 ```csharp
-// ForgeKit.Api/Behaviors/ValidationBehavior.cs
+// Anvil/Behaviors/ValidationBehavior.cs
 using Api.Exceptions;
 using FluentValidation;
 using MediatR;
