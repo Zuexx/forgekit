@@ -22,6 +22,7 @@ api/
 ├── docs/                     # Guides & ADRs
 ├── openspec/                 # Feature specs & changes
 ├── Anvil/                    # Shared layer — never renamed by the template
+├── Anvil.Tests/              # Shared-layer tests — also never renamed
 ├── ForgeKit.Api/             # Product layer — renamed per product
 ├── ForgeKit.Api.Migrations.Sqlite/
 ├── ForgeKit.Api.Migrations.Postgres/
@@ -45,7 +46,7 @@ if a shared file starts needing a product type, the dependency is inverted throu
 interface instead — see `IDataSeeder`.
 
 Because `Anvil/` paths match the base exactly, a product receives shared-layer updates
-with `git checkout upstream/main -- api/Anvil`. See `docs/FORKING_GUIDE.md`.
+with `git checkout upstream/main -- api/Anvil api/Anvil.Tests`. See `docs/FORKING_GUIDE.md`.
 
 ### `ForgeKit.Api/` — Product Project
 

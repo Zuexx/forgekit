@@ -34,16 +34,17 @@ To refresh the template after pulling ForgeKit changes, re-run `dotnet new insta
 
 ### Receiving base updates after generation
 
-The API is split into two layers. `api/Anvil/` is the shared layer: the template does not
-rename it, so its paths and contents are identical in the base and in every generated
-project. `api/<Product>.Api/` is the product layer and carries the product name.
+The API is split into two layers. `api/Anvil/` is the shared layer, with its tests in
+`api/Anvil.Tests/`: the template renames neither, so their paths and contents are identical
+in the base and in every generated project. `api/<Product>.Api/` is the product layer and
+carries the product name.
 
 That split makes shared-layer updates a one-line sync:
 
 ```bash
 git remote add upstream https://github.com/Zuexx/forgekit.git   # once
 git fetch upstream
-git checkout upstream/main -- api/Anvil
+git checkout upstream/main -- api/Anvil api/Anvil.Tests
 ```
 
 Review, build, and commit.

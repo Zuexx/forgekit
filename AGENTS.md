@@ -10,7 +10,7 @@ The API is split into two layers, and the split is load-bearing:
 
 - **`api/Anvil/`** — the shared layer. The template never renames it, so its paths are
   identical in the base and in every generated product, which is what lets products pull in
-  base improvements with `git checkout upstream/main -- api/Anvil`. It **must not**
+  base improvements with `git checkout upstream/main -- api/Anvil api/Anvil.Tests`. It **must not**
   reference the product project; that is enforced by the build.
 - **`api/ForgeKit.Api/`** — the product layer, renamed per product.
 
@@ -36,7 +36,7 @@ security work. Skip it for bug fixes, typos, dependency bumps, and configuration
 ```bash
 cd api
 dotnet build
-dotnet test          # 187 tests; 3 are skipped by design
+dotnet test          # 193 tests across two projects; 3 skipped by design
 
 cd ../app
 pnpm install
