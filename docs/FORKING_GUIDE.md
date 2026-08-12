@@ -46,15 +46,42 @@ git fetch upstream
 git checkout upstream/main -- api/Anvil
 ```
 
-Review, build, and commit. To see what would change first:
+Review, build, and commit.
+
+Do **not** run a whole-repository `git merge upstream/main`. Git matches files by path, and
+it does not know that your `api/<Product>.Api/` is the base's `api/ForgeKit.Api/` under a
+new name. It therefore treats the base's product layer as new files and adds them, leaving
+you with two copies of the same code side by side. Sync the shared layer by path instead.
+
+#### Check first whether wiring is needed
+
+Before syncing, diff the whole `api/` directory rather than just `api/Anvil/`. What the base
+changed tells you whether the sync is self-contained:
 
 ```bash
-git diff HEAD upstream/main -- api/Anvil
+git fetch upstream
+git diff HEAD upstream/main -- api/
 ```
 
-Do **not** run a whole-repository `git merge upstream/main`. The product layer was renamed
-at generation time, so a full merge re-adds the base's `ForgeKit.Api` directories alongside
-your renamed ones. Sync the shared layer by path instead.
+**Only `api/Anvil/` changed — nothing else to do.** Result types, exceptions, handlers,
+extension methods, and middleware classes all work as soon as the files arrive. Service
+registrations are included: the product's `RegisterApplicationServices` calls the shared
+layer's `AddPlatformServices`, so anything the base registers there reaches you without
+editing your composition root.
+
+**The base's product layer also changed — you have manual wiring to do.** The most common
+case is the middleware pipeline, where ordering is the product's decision and cannot be
+injected from the shared layer:
+
+```csharp
+app.UseMiddleware<SomeNewMiddleware>();
+```
+
+Read what the base did in its own `Program.cs` and apply the equivalent to yours. Git cannot
+do this for you, because the two files sit at different paths. It is usually one or two lines.
+
+When adding a shared feature to the base, say in the commit message whether downstream
+products need wiring. That turns this check into confirmation rather than investigation.
 
 The frontend has no equivalent split, but it renames only 7 files with no directory
 renames, so `git diff upstream/main -- app/` is usually readable enough to apply by hand.
