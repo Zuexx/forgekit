@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import createIntlMiddleware from "next-intl/middleware"
 
-import { type AbacContext, evaluatePolicy, performAction, type ProxyConfig,resolveContext } from "@/proxies"
+import { type AbacContext, buildRedirectUrl, evaluatePolicy, performAction, type ProxyConfig, resolveContext } from "@/proxies"
 
 export function createProxy(config: ProxyConfig) {
     const intlMiddleware = createIntlMiddleware(config.routing)
@@ -10,7 +10,13 @@ export function createProxy(config: ProxyConfig) {
         const { nextUrl } = request
 
         // 1️⃣ API bypass
-        if (nextUrl.pathname.startsWith(config.apiPrefix)) {
+        // Matched on the segment boundary: a bare startsWith also lets through pages
+        // like "/apidocs", which would then never be seen by the policy.
+        const { pathname } = nextUrl
+        if (
+            pathname === config.apiPrefix ||
+            pathname.startsWith(`${config.apiPrefix}/`)
+        ) {
             return NextResponse.next()
         }
 
@@ -20,28 +26,18 @@ export function createProxy(config: ProxyConfig) {
             config,
         })
 
-        // console.log("Context:", JSON.stringify(context, null, 2))
-
         // 3️⃣ Policy
         const decision = evaluatePolicy(context)
 
-        // 4️⃣ Handle redirect decisions first (before intl)
+        const isDefaultLocale =
+            context.resource.locale === config.routing.defaultLocale
+
+        // 4️⃣ Handle redirect decisions before next-intl, so it cannot rewrite the
+        // destination out from under us.
         if (decision.effect === "redirect" && decision.to) {
-            // console.log("Redirect URL parts:", {
-            //     locale: context.resource.locale,
-            //     to: decision.to,
-            //     requestUrl: request.url,
-            //     isDefaultLocale: context.resource.locale === config.routing.defaultLocale
-            // })
-
-            // Only add locale prefix if it's not the default locale (as-needed)
-            const localePath = context.resource.locale === config.routing.defaultLocale
-                ? decision.to
-                : `/${context.resource.locale}${decision.to}`
-
-            const url = new URL(localePath, request.url)
-            // console.log("Final redirect URL:", url.toString()
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(
+                buildRedirectUrl(decision.to, context, request, isDefaultLocale)
+            )
         }
 
         // 5️⃣ next-intl locale handling (only if allowed)
@@ -49,7 +45,6 @@ export function createProxy(config: ProxyConfig) {
         if (intlResponse) { return intlResponse }
 
         // 6️⃣ Action
-        const isDefaultLocale = context.resource.locale === config.routing.defaultLocale
         return performAction(decision, context, request, isDefaultLocale)
     }
 }
