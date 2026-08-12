@@ -1,6 +1,7 @@
 import { cookies } from "next/headers"
 import type { NextRequest } from "next/server"
 
+import { AUTH_COOKIE } from "@/constants/cookies"
 import type { AbacContext, ProxyConfig } from "@/proxies"
 
 interface Args {
@@ -30,10 +31,14 @@ export async function resolveContext({
         path = path.replace(`/${locale}`, "") || "/"
     }
 
+    // Derived from AUTH_COOKIE rather than written out, because that constant is what
+    // Better Auth uses as its cookiePrefix. Hardcoding the name here means renaming the
+    // app silently stops session detection: every signed-in user reads as anonymous and
+    // gets bounced to /sign-in.
     const cookieStore = await cookies()
     const session =
-        cookieStore.get("forgekit-app-session.session_token") ??
-        cookieStore.get("__Secure-forgekit-app-session.session_token")
+        cookieStore.get(`${AUTH_COOKIE}.session_token`) ??
+        cookieStore.get(`__Secure-${AUTH_COOKIE}.session_token`)
 
     return {
         subject: {

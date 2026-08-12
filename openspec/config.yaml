@@ -38,7 +38,8 @@ context: |
   - Migrations are provider-specific. When the EF model changes, add migrations for all
     three provider projects; never reuse one provider's migrations for another.
   - Tests: xUnit with Shouldly. Unit tests for handlers, validators, and domain logic;
-    SQLite for relational integration tests. The frontend currently has no tests.
+    SQLite for relational integration tests. Frontend uses vitest, currently covering
+    `app/proxies/` only.
   - Commits follow Conventional Commits; see docs/api/COMMIT_CONVENTION.md.
   - Branch off main as `feature/`, `fix/`, `chore/`, or `refactor/`; open a PR so CI runs
     before merging.

@@ -42,13 +42,15 @@ cd ../app
 pnpm install
 pnpm check           # tsc --noEmit
 pnpm lint
+pnpm test            # vitest
 ```
 
 `scripts/verify.sh` runs the full local gate. CI runs the same categories on every pull
 request, plus migration drift checks and secret scanning.
 
-The frontend has no test suite. `pnpm check` and `pnpm lint` catch type and lint errors
-only, so frontend behavior changes need manual verification.
+Frontend tests cover `proxies/` — the authorization policy and request-context
+resolution. There is no component or end-to-end coverage yet, so UI behavior still needs
+manual verification.
 
 ## Conventions that are easy to get wrong
 
