@@ -21,14 +21,33 @@ api/
 ├── .github/prompts/          # AI prompt templates (openspec)
 ├── docs/                     # Guides & ADRs
 ├── openspec/                 # Feature specs & changes
-├── ForgeKit.Api/             # Main project
+├── Anvil/                    # Shared layer — never renamed by the template
+├── ForgeKit.Api/             # Product layer — renamed per product
 ├── ForgeKit.Api.Migrations.Sqlite/
 ├── ForgeKit.Api.Migrations.Postgres/
 ├── ForgeKit.Api.Migrations.SqlServer/
 └── ForgeKit.Api.Tests/       # Test project
 ```
 
-### `ForgeKit.Api/` — Main Project
+### Two-Layer Boundary
+
+The API is split so that base updates can reach generated products.
+
+| | `Anvil/` | `<Product>.Api/` |
+|---|---|---|
+| Renamed by the template | No | Yes |
+| Contents across products | Identical | Product-specific |
+| Holds | Result/exception types, middlewares, MediatR behaviors, Unit of Work, `PlatformDbContext`, module and DI plumbing, auth entities | `Program.cs`, product entities, modules, services, `AppDbContext` |
+
+A file belongs in `Anvil/` only if it would be byte-identical in every product. The
+compile-time guarantee is that `Anvil` builds without referencing the product project;
+if a shared file starts needing a product type, the dependency is inverted through an
+interface instead — see `IDataSeeder`.
+
+Because `Anvil/` paths match the base exactly, a product receives shared-layer updates
+with `git checkout upstream/main -- api/Anvil`. See `docs/FORKING_GUIDE.md`.
+
+### `ForgeKit.Api/` — Product Project
 
 ```
 ForgeKit.Api/
@@ -46,8 +65,7 @@ ForgeKit.Api/
 │   └── ErrorCodes.cs
 │
 ├── Data/
-│   ├── AppDbContext.cs                # Main EF Core DbContext
-│   ├── UnitOfWork.cs
+│   ├── AppDbContext.cs                # Product DbContext (derives from Anvil's PlatformDbContext)
 │   └── Auth/
 │       └── BetterAuthDbContext.cs     # Auth-specific context
 │

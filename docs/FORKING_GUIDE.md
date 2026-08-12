@@ -32,6 +32,33 @@ dotnet new forgekit -n Acme.Portal --slug acmeportal
 
 To refresh the template after pulling ForgeKit changes, re-run `dotnet new install /path/to/forgekit --force`. To remove it, `dotnet new uninstall /path/to/forgekit`.
 
+### Receiving base updates after generation
+
+The API is split into two layers. `api/Anvil/` is the shared layer: the template does not
+rename it, so its paths and contents are identical in the base and in every generated
+project. `api/<Product>.Api/` is the product layer and carries the product name.
+
+That split makes shared-layer updates a one-line sync:
+
+```bash
+git remote add upstream https://github.com/Zuexx/forgekit.git   # once
+git fetch upstream
+git checkout upstream/main -- api/Anvil
+```
+
+Review, build, and commit. To see what would change first:
+
+```bash
+git diff HEAD upstream/main -- api/Anvil
+```
+
+Do **not** run a whole-repository `git merge upstream/main`. The product layer was renamed
+at generation time, so a full merge re-adds the base's `ForgeKit.Api` directories alongside
+your renamed ones. Sync the shared layer by path instead.
+
+The frontend has no equivalent split, but it renames only 7 files with no directory
+renames, so `git diff upstream/main -- app/` is usually readable enough to apply by hand.
+
 Two notes on template output:
 
 - `.claude/skills/*` are symlinks in this repository; the generated project receives real file copies instead.

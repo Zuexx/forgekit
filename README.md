@@ -112,6 +112,7 @@ App runs on `http://localhost:3000`. Azure AD values in `.env.local` are optiona
 - [005 — Audit Context Service](docs/adr/005-audit-context-service.md)
 - [006 — Error Response Standardization](docs/adr/006-error-response-standardization.md)
 - [007 — Unit of Work Pattern](docs/adr/007-unit-of-work-pattern.md)
+- [008 — Shared Layer Boundary](docs/adr/008-shared-layer-boundary.md)
 
 ---
 
