@@ -1,7 +1,9 @@
 # platform-core Specification
 
 ## Purpose
-TBD - created by archiving change refactor-extract-platform-core. Update Purpose after archive.
+Defines the boundary between the shared layer every product inherits and the product
+layer each one renames, so improvements to the base can reach projects already generated
+from it.
 ## Requirements
 ### Requirement: Product-Neutral Shared Layer
 
