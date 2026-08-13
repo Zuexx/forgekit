@@ -19,7 +19,21 @@ export function parseEnvList(value: string | undefined): string[] {
     .filter(Boolean)
 }
 
-const database = { db: postgresDb, type: "postgresql" as const }
+/**
+ * The two adapters this kit ships need different shapes, and getting it wrong fails at
+ * runtime rather than at compile time — Better Auth does not type-check this option.
+ *
+ * - `postgres.ts` exports a `pg.Pool`. Pass it directly; Better Auth builds the Kysely
+ *   instance and detects the dialect itself.
+ * - `mssql.ts` exports a Kysely instance. That one needs the wrapper:
+ *
+ *       import { db as mssqlDb } from "@/lib/db/mssql"
+ *       export const database = { db: mssqlDb, type: "mssql" as const }
+ *
+ * Wrapping the Pool instead hands the adapter a Pool where it expects a Kysely, and every
+ * query throws "db.selectFrom is not a function".
+ */
+export const database = postgresDb
 
 const microsoftClientId = process.env.AZURE_AD_CLIENT_ID
 const microsoftTenantId = process.env.AZURE_AD_TENANT_ID
