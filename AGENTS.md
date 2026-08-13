@@ -53,11 +53,14 @@ between them:
 | Clarify a vague request | `superpowers:brainstorming` | Fires on its own before creative work |
 | Stress-test a plan you already have | `grilling` | Only when you ask for it |
 | Test-first implementation | `superpowers:test-driven-development` | The inner loop already speaks its vocabulary |
-| Review inside the loop | `superpowers:requesting-code-review` | Dispatched per task by the loop itself |
-| Review outside the loop | `/code-review` | Ad-hoc, on a diff you name |
+| Execute a plan | `superpowers:subagent-driven-development`, **if its decision tree sends you there** | It routes tightly coupled tasks to manual execution; a task and its own verification are not independent |
+| Review a change | `superpowers:requesting-code-review` | Whichever route the work took, including small changes done inline |
+| Review an arbitrary diff | `/code-review` | Ad-hoc, outside a change |
 
 Reach for `codegraph_explore` before reading files to answer "what does this affect" — it
-returns the callers and the test-coverage gaps that reading cannot, in one call.
+returns the callers and the test-coverage gaps that reading cannot, in one call. It indexes
+symbols, so a contract addressed by string — a header, an event name, a DI token, a config
+key — is invisible to it and needs a literal search of its own.
 
 ## Building and testing
 
