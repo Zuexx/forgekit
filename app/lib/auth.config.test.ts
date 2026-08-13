@@ -36,3 +36,21 @@ describe("parseEnvList", () => {
         ])
     })
 })
+
+describe("database option", () => {
+    it("is passed in the shape Better Auth expects for a pg Pool", async () => {
+        // Regression guard. Better Auth does not type-check this option, so the wrong
+        // shape compiles and then fails on the first query:
+        //
+        //   { db: pool, type: "postgres" }  ->  the adapter uses `db` as the Kysely
+        //                                       instance, and every call throws
+        //                                       "db.selectFrom is not a function"
+        //
+        // A pg.Pool must be passed directly so the adapter builds Kysely itself. Only a
+        // real Kysely instance — what lib/db/mssql.ts exports — takes the wrapper.
+        const { database } = await import("./auth.config")
+
+        expect(database).not.toHaveProperty("type")
+        expect(database).toHaveProperty("connect")
+    })
+})
