@@ -57,10 +57,6 @@ Frontend unit tests cover `proxies/` — the authorization policy and request-co
 resolution — and the auth config. End-to-end tests cover sign-in through to the database.
 There is no component-level coverage, so UI details still need manual verification.
 
-Sign-up is not implemented: the form's submit handler logs to the console, and there is no
-`useSignUp` hook or `/signUp` route. The end-to-end test for it is marked `fixme` so the
-gap stays visible.
-
 ## Conventions that are easy to get wrong
 
 - **Migrations are provider-specific.** When the EF model changes, add migrations for all
