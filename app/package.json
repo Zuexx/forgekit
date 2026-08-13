@@ -13,7 +13,8 @@
     "lint": "eslint \"**/*.{ts,tsx,js,jsx,mjs,cjs}\"",
     "lint:fix": "eslint \"**/*.{ts,tsx,js,jsx,mjs,cjs}\" --fix",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.8.0",
@@ -58,6 +59,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.3.2",
     "@types/node": "^26.1.0",
     "@types/pg": "^8.20.0",
