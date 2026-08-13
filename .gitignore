@@ -96,6 +96,12 @@ next-env.d.ts
 .DS_Store
 Thumbs.db
 
+# --- playwright ---
+/app/test-results/
+/app/playwright-report/
+/app/blob-report/
+/app/playwright/.cache/
+
 # --- AI tooling (local only, never committed) ---
 # CodeGraph local symbol index
 .codegraph/

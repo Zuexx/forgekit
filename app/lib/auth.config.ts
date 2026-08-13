@@ -85,7 +85,6 @@ export const auth = betterAuth({
     admin({
       adminUserIds
     }),
-    nextCookies(),
     // The interactive reference page is served outside production only. Dropping the
     // plugin entirely in production would be stronger, but the plugins array has to stay
     // a fixed tuple: Better Auth infers the session user type from it, and a conditional
@@ -109,5 +108,8 @@ export const auth = betterAuth({
         session
       };
     }),
+    // Must stay last. It forwards Set-Cookie into Next's cookie store, so any plugin
+    // whose after-hook sets a cookie has to run before it or that cookie is dropped.
+    nextCookies(),
   ]
 })
