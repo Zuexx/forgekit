@@ -95,13 +95,17 @@ describe("createProxy", () => {
     })
 
     describe("allowed requests", () => {
-        it("lets a signed-in user reach a protected route", async () => {
+        it("lets a signed-in user reach a protected route without tagging the response", async () => {
             signIn()
 
             const res = await run("http://localhost:3000/en/dashboard")
 
             expect(res.status).toBe(200)
             expect(res.headers.get("location")).toBeNull()
+            // The allow branch once attached the resolved path as x-current-path, which
+            // nothing read. Asserted alongside the status so this cannot pass by the
+            // request having been redirected instead.
+            expect(res.headers.get("x-current-path")).toBeNull()
         })
 
         it("returns next-intl's response when it produces one", async () => {
