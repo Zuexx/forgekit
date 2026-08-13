@@ -23,9 +23,7 @@ export function performAction(
     isDefaultLocale: boolean
 ): NextResponse {
     if (decision.effect === "allow") {
-        const res = NextResponse.next();
-        res.headers.set("x-current-path", ctx.resource.path);
-        return res;
+        return NextResponse.next();
     }
 
     if (decision.effect === "redirect" && decision.to) {
