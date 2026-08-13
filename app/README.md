@@ -27,14 +27,20 @@ Create `.env.local` with the values needed by your local auth and database setup
 
 ```bash
 DATABASE_URL=postgresql://localhost:5432/forgekit
+PGUSER=postgres
 BETTER_AUTH_URL=http://localhost:3000
 BETTER_AUTH_SECRET=
+BETTER_AUTH_ADMIN_USER_IDS=
+BETTER_AUTH_TRUSTED_ORIGINS=
 AZURE_AD_CLIENT_ID=
 AZURE_AD_TENANT_ID=
 AZURE_AD_CLIENT_SECRET=
 ```
 
 Generate a local secret with `openssl rand -base64 32`. Do not commit `.env.local`.
+
+`BETTER_AUTH_ADMIN_USER_IDS` is empty by default, so a fresh install has no
+administrators until it names one. `.env.local.example` documents the rest.
 
 Start the development server:
 
@@ -53,6 +59,9 @@ pnpm start        # Start production server
 pnpm check        # TypeScript check
 pnpm lint         # ESLint
 pnpm lint:fix     # ESLint autofix
+pnpm test         # Unit tests (vitest)
+pnpm test:watch   # Unit tests in watch mode
+pnpm test:e2e     # End-to-end tests (playwright); needs postgres and a built app
 pnpm auth.generate
 pnpm auth.migration
 pnpm auth.codegen

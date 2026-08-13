@@ -259,7 +259,7 @@ features/
     ├── index.ts
     ├── route.ts                       # Hono route definitions
     ├── components/                    # sign-in-card, sign-up-card
-    ├── hooks/                         # use-sign-in, use-sign-out, use-social-sign-in, use-me
+    ├── hooks/                         # use-sign-in, use-sign-up, use-sign-out, use-social-sign-in, use-me
     └── schemas/                       # Zod schemas: sign-in, sign-up
 ```
 
