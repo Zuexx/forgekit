@@ -1,12 +1,14 @@
 {
     "success": {
         "signIn": "Signed in successfully",
+        "signUp": "Account created successfully",
         "signOut": "Signed out successfully",
         "default": "Operation successful",
         "fetchCurrent": "Fetched current user"
     },
     "error": {
         "signIn": "Sign in failed. Please check your credentials",
+        "signUp": "Sign up failed. Please check your details",
         "signOut": "Sign out failed",
         "default": "Operation failed. Please try again",
         "network": "Network connection failed",
@@ -14,6 +16,7 @@
     },
     "loading": {
         "signIn": "Signing in...",
+        "signUp": "Creating account...",
         "default": "Processing..."
     }
 }

@@ -26,7 +26,7 @@ import {
     FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { createSignUpSchema } from "@/features/authenticate"
+import { createSignUpSchema, useSignUp } from "@/features/authenticate"
 import { cn } from "@/lib/utils"
 
 export function SingUpCard({
@@ -40,7 +40,7 @@ export function SingUpCard({
     const tValidation = useTranslations("validation")
     const SignUpSchema = createSignUpSchema(tValidation)
 
-    //   const signIn = useSignIn()
+    const signUp = useSignUp()
 
     const form = useForm<z.infer<typeof SignUpSchema>>({
         resolver: zodResolver(SignUpSchema),
@@ -53,8 +53,7 @@ export function SingUpCard({
     })
 
     const onSubmit = (values: z.infer<typeof SignUpSchema>) => {
-        console.log("Sign Up values:", values)
-        // signUp.mutate({ json: values })
+        signUp.mutate({ json: values })
     }
 
     return (
