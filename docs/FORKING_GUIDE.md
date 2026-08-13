@@ -258,6 +258,12 @@ gitleaks git --redact --config .gitleaks.toml --log-opts=--all
 
 `scripts/verify.sh` runs all of the above in one command.
 
+Enable the repository's hooks once per clone — git does not turn them on for you:
+
+```bash
+git config core.hooksPath .githooks
+```
+
 End-to-end tests are not in that list because they need infrastructure. Run them
 separately once a database is available:
 

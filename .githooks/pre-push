@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+#
+# Checks the OpenSpec <-> implementation-plan link before anything leaves the machine.
+#
+# Implementation plans cite OpenSpec task ids under "## OpenSpec Coverage" so that a
+# finished plan can be traced back to the tasks it was supposed to deliver. Nothing
+# generates or validates that section — OpenSpec does not know plans exist, and the plan
+# tooling does not know OpenSpec exists — so a citation that points at a task id which
+# was renumbered, or at a change that was renamed, is wrong in a way that produces no
+# error anywhere. This hook is the only thing that would notice.
+#
+# It refuses to guess. A push with no plan files passes untouched, and a citation is only
+# rejected when the change or the task id demonstrably does not exist.
+#
+# Enable with: git config core.hooksPath .githooks
+set -uo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+PLAN_GLOB="docs/superpowers/plans"
+failures=0
+
+note() { printf '  %s\n' "$1" >&2; }
+
+# Resolve a change slug to its tasks.md, whether it is still active or already archived.
+tasks_file_for() {
+  local slug="$1" f
+  f="$REPO_ROOT/openspec/changes/$slug/tasks.md"
+  [ -f "$f" ] && { printf '%s' "$f"; return 0; }
+  f=$(find "$REPO_ROOT/openspec/changes/archive" -maxdepth 1 -type d -name "*-$slug" 2>/dev/null | head -1)
+  [ -n "$f" ] && [ -f "$f/tasks.md" ] && { printf '%s' "$f/tasks.md"; return 0; }
+  return 1
+}
+
+check_plan() {
+  local plan="$1"
+  local rel="${plan#"$REPO_ROOT"/}"
+
+  # The section is optional only for plans that cite nothing; a plan that mentions a
+  # change without listing ids cannot be traced and is treated as a miss.
+  local section
+  section=$(awk '/^## OpenSpec Coverage/{flag=1;next} /^## /{flag=0} flag' "$plan")
+  [ -z "$section" ] && return 0
+
+  local slug
+  slug=$(printf '%s' "$section" | grep -oE 'openspec/changes/[A-Za-z0-9._-]+' | head -1 | sed 's|openspec/changes/||')
+  if [ -z "$slug" ]; then
+    slug=$(printf '%s' "$section" | grep -oE '^[[:space:]]*[-*][[:space:]]+[A-Za-z0-9._-]+' | head -1 | awk '{print $2}')
+  fi
+
+  if [ -z "$slug" ]; then
+    note "$rel: OpenSpec Coverage names no change"
+    return 1
+  fi
+
+  local tasks
+  if ! tasks=$(tasks_file_for "$slug"); then
+    note "$rel: cites change '$slug', which exists neither in openspec/changes nor in its archive"
+    return 1
+  fi
+
+  local missing=""
+  local id
+  for id in $(printf '%s' "$section" | grep -oE '\b[0-9]+\.[0-9]+\b' | sort -u); do
+    grep -qE "^[[:space:]]*-[[:space:]]*\[[ x]\][[:space:]]*$id([[:space:]]|\.)" "$tasks" || missing="$missing $id"
+  done
+
+  if [ -n "$missing" ]; then
+    note "$rel: cites task ids not present in $slug/tasks.md —$missing"
+    note "  (task ids are load-bearing; renumbering them breaks this link silently)"
+    return 1
+  fi
+
+  return 0
+}
+
+while IFS= read -r plan; do
+  [ -f "$plan" ] || continue
+  check_plan "$plan" || failures=$((failures + 1))
+done < <(find "$REPO_ROOT/$PLAN_GLOB" -type f -name '*.md' 2>/dev/null)
+
+if [ "$failures" -gt 0 ]; then
+  printf '\npush refused: %d implementation plan(s) cite OpenSpec tasks that do not resolve.\n' "$failures" >&2
+  printf 'Fix the citation, or the task ids it points at, then push again.\n' >&2
+  exit 1
+fi
+
+exit 0
