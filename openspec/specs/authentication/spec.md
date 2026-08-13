@@ -68,7 +68,7 @@ The system SHALL persist accounts and sessions to the configured database.
 
 ### Requirement: Route Authorization
 
-The system SHALL decide access to every non-API route from the visitor's session and the route's classification.
+The system SHALL decide access to every non-API route from the visitor's session and the route's classification, and SHALL NOT add authorization or route-resolution headers to an allowed response.
 
 #### Scenario: A protected route turns an anonymous visitor away
 
@@ -90,6 +90,12 @@ The system SHALL decide access to every non-API route from the visitor's session
 - **WHEN** a visitor on a non-default locale is redirected
 - **THEN** the destination SHALL carry that locale prefix
 - **AND** a visitor on the default locale SHALL be redirected without one
+
+#### Scenario: An allowed request carries no authorization headers
+
+- **WHEN** a request is allowed through
+- **THEN** the response SHALL NOT carry headers describing the authorization decision or the resolved route
+- **AND** headers added by locale handling or by the framework SHALL be unaffected
 
 ### Requirement: Authorization Fails Closed
 
