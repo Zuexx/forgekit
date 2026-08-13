@@ -43,14 +43,23 @@ pnpm install
 pnpm check           # tsc --noEmit
 pnpm lint
 pnpm test            # vitest
+pnpm test:e2e        # playwright; needs postgres and a built app
 ```
+
+End-to-end tests run against a real database. Start one with `podman compose up -d` (or
+docker), point `DATABASE_URL` at it and set `PGUSER=postgres`, create the auth schema with `pnpm auth.migration`,
+then `pnpm build` before `pnpm test:e2e`.
 
 `scripts/verify.sh` runs the full local gate. CI runs the same categories on every pull
 request, plus migration drift checks and secret scanning.
 
-Frontend tests cover `proxies/` — the authorization policy and request-context
-resolution. There is no component or end-to-end coverage yet, so UI behavior still needs
-manual verification.
+Frontend unit tests cover `proxies/` — the authorization policy and request-context
+resolution — and the auth config. End-to-end tests cover sign-in through to the database.
+There is no component-level coverage, so UI details still need manual verification.
+
+Sign-up is not implemented: the form's submit handler logs to the console, and there is no
+`useSignUp` hook or `/signUp` route. The end-to-end test for it is marked `fixme` so the
+gap stays visible.
 
 ## Conventions that are easy to get wrong
 
