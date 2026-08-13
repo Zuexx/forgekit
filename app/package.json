@@ -8,7 +8,7 @@
     "start": "next start",
     "auth.generate": "pnpm dlx @better-auth/cli@latest generate --config lib/auth.config.ts",
     "auth.migration": "pnpm dlx @better-auth/cli@latest migrate --config lib/auth.config.ts",
-    "auth.codegen": "kysely-codegen --out-file ./lib/db/types/db.d.ts --env-file .env.local",
+    "auth.codegen": "kysely-codegen --out-file ./types/auth.d.ts --env-file .env.local",
     "check": "tsc --noEmit",
     "lint": "eslint \"**/*.{ts,tsx,js,jsx,mjs,cjs}\"",
     "lint:fix": "eslint \"**/*.{ts,tsx,js,jsx,mjs,cjs}\" --fix",

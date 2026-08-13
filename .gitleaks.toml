@@ -1,0 +1,24 @@
+# Extends gitleaks' default rules, and narrows the directory scan to files that could
+# actually be committed.
+#
+# `gitleaks dir` walks the working tree without consulting .gitignore, so a plain scan
+# reads build output and dependencies. Next.js prerender manifests carry generated preview
+# keys and its webpack cache embeds a private key from a bundled dependency — none of it
+# reaches version control, but all of it trips the generic detectors, which makes the local
+# gate fail for anyone who has built the app.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated output and dependencies, none of which is committed"
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)\.next/''',
+  '''(^|/)\.turbo/''',
+  '''(^|/)dist/''',
+  '''(^|/)bin/''',
+  '''(^|/)obj/''',
+  '''(^|/)\.codegraph/''',
+  '''(^|/)playwright-report/''',
+  '''(^|/)test-results/''',
+]

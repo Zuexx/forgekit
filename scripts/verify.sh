@@ -30,6 +30,7 @@ echo "==> App"
   pnpm install --frozen-lockfile
   pnpm check
   pnpm lint
+  pnpm test
   BETTER_AUTH_SECRET="$(openssl rand -base64 32)" \
     BETTER_AUTH_URL="http://localhost:3000" \
     pnpm build
@@ -44,8 +45,11 @@ echo "==> OpenSpec"
 echo "==> Secrets"
 (
   cd "$ROOT_DIR"
-  gitleaks dir --redact .
-  gitleaks git --redact --log-opts=--all
+  gitleaks dir --redact --config .gitleaks.toml .
+  gitleaks git --redact --config .gitleaks.toml --log-opts=--all
 )
 
 echo "Verification completed."
+echo
+echo "Not covered here: pnpm test:e2e, which needs a running PostgreSQL and a built app."
+echo "See docs/FORKING_GUIDE.md. CI runs it on every pull request."

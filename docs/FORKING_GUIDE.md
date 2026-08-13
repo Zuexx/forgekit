@@ -218,7 +218,7 @@ every project generated from it.
 Before the first push from a fork:
 
 ```bash
-gitleaks dir --redact .
+gitleaks dir --redact --config .gitleaks.toml .
 git status --short --ignored
 ```
 
@@ -248,14 +248,28 @@ cd ../app
 pnpm install
 pnpm check
 pnpm lint
+pnpm test
 BETTER_AUTH_SECRET="$(openssl rand -base64 32)" BETTER_AUTH_URL="http://localhost:3000" pnpm build
 
 cd ..
 openspec validate --all --strict --no-interactive
-gitleaks git --redact --log-opts=--all
+gitleaks git --redact --config .gitleaks.toml --log-opts=--all
 ```
 
-The GitHub Actions workflow runs the same categories of checks on `main`.
+`scripts/verify.sh` runs all of the above in one command.
+
+End-to-end tests are not in that list because they need infrastructure. Run them
+separately once a database is available:
+
+```bash
+podman compose up -d                      # or docker
+cd app
+export DATABASE_URL=postgresql://localhost:5432/<your-db> PGUSER=postgres
+pnpm auth.migration                       # creates the auth schema
+pnpm build && pnpm test:e2e
+```
+
+CI runs everything above, end-to-end tests included, on every pull request.
 
 ## 9. First Commit After Fork
 
