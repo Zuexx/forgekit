@@ -130,6 +130,10 @@ Then fill only local values:
 - `DATABASE_URL`: required by the frontend Better Auth PostgreSQL adapter
 - `Database:Provider`: API provider, defaults to `Sqlite`
 - `ConnectionStrings:<Provider>`: API connection string for the selected provider
+- `BETTER_AUTH_ADMIN_USER_IDS`: comma-separated ids granted the admin role, empty by
+  default — set it after creating the account that should administer the fork
+- `BETTER_AUTH_TRUSTED_ORIGINS`: extra origins allowed to receive auth callbacks, only
+  needed when a separate frontend or preview deployment completes sign-in
 - OAuth client secrets: only if the fork enables social login
 
 The starter kit intentionally commits no real credentials and no fixed shared app secret.
@@ -190,7 +194,26 @@ openspec validate --all --strict --no-interactive
 
 If the fork changes architecture, data model, security posture, or public behavior, create an OpenSpec change before implementing it.
 
-## 6. Verify Security Baseline
+## 6. Review Auth Defaults
+
+The starter kit ships auth settings chosen to be safe for a fork rather than tuned for
+any one deployment. Two are worth revisiting before production:
+
+- **Rate limit storage.** Better Auth enables rate limiting in production but stores
+  counters in memory by default, which resets on restart and is per-instance. That is
+  ineffective on serverless or multi-instance hosting. Switching to
+  `rateLimit: { storage: "database" }` needs a `rateLimit` table, which this kit's auth
+  schema does not include — add the migration before enabling it.
+- **The OpenAPI reference page** for auth endpoints is served outside production only.
+  The schema endpoint behind it stays available in every environment — it describes
+  Better Auth's own documented endpoints, so it discloses little, but block it at the
+  edge if your threat model cares.
+
+The admin plugin has no administrators until `BETTER_AUTH_ADMIN_USER_IDS` names one. This
+is intentional: an id shipped in a starter kit would make its holder an administrator of
+every project generated from it.
+
+## 7. Verify Security Baseline
 
 Before the first push from a fork:
 
@@ -210,7 +233,7 @@ Check that these remain untracked:
 
 If a secret is ever pushed, rotate it first, then rewrite history and force-push only after the replacement secret is no longer valid.
 
-## 7. Run Quality Gates
+## 8. Run Quality Gates
 
 Run these before treating the fork as ready:
 
@@ -234,7 +257,7 @@ gitleaks git --redact --log-opts=--all
 
 The GitHub Actions workflow runs the same categories of checks on `main`.
 
-## 8. First Commit After Fork
+## 9. First Commit After Fork
 
 Make the first product commit about identity only:
 
