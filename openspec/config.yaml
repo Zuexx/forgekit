@@ -70,6 +70,14 @@ rules:
     - Where the change alters behaviour something already depends on, say what would
       break if it were wrong. `codegraph_explore` also reports which of those callers
       have no covering tests; that is the part worth writing down.
+    - The graph indexes symbols, so it cannot see a contract addressed by string — an
+      HTTP header, an event name, a DI token, a feature flag, a config key. For those,
+      search the literal separately and say in the Impact section that you did.
+      Otherwise the section reads as though the graph confirmed something it never
+      examined.
+    - Check any figure before quoting it. A caller count from the graph includes
+      references that are not call sites, so "N callers" can be wrong in a section
+      whose whole purpose is to be trustworthy.
 
   tasks:
     # These tasks sit at feature granularity. An implementation plan expands each
@@ -106,13 +114,20 @@ operations:
         Nothing generates that section — Superpowers has no knowledge of OpenSpec —
         so without it there is no way to tell afterwards which of these tasks the
         work actually delivered.
-      - Execute the plan with `superpowers:subagent-driven-development`. It runs a
-        fresh implementer per task and reviews each one before moving on.
-        Implementing tasks inline in this session instead forfeits both, and the
-        session's accumulated context is exactly what a fresh implementer is meant to
-        be protected from.
+      - Execute through `superpowers:subagent-driven-development` when its own decision
+        tree routes you there — it asks whether the tasks are mostly independent, and
+        sends tightly coupled ones to manual execution instead. Follow that answer
+        rather than dispatching subagents by default; a task and its own verification
+        are not independent work.
+      - Request review with `superpowers:requesting-code-review` whichever route the
+        work took, including when the change is small enough to have been done inline.
+        The reviewer's value is that it did not sit through this session — the things
+        worth catching are the ones you stopped questioning after the third read.
       - Tick a task here only once its work is committed and its review passed. A tick
         is a claim about the repository, not a note about intent.
+      - A test that asserts only an absence passes when the path leading to it broke.
+        Assert the absence beside something that establishes the path was taken — a
+        status, a returned value — or it stops pinning anything the day it matters.
       - When a task turns out to be wrong, update the change rather than quietly
         working around it. The change is the record of what was agreed; code that
         silently disagrees with it leaves neither trustworthy.
