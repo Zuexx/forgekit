@@ -30,17 +30,14 @@ test.describe("authentication", () => {
         await expect(page).toHaveURL(/\/sign-in$/)
     })
 
-    // The sign-up form is a stub: its submit handler logs to the console and the
-    // mutation is commented out, with no useSignUp hook and no /signUp route behind it.
-    // Kept rather than deleted so the gap stays visible and this passes once sign-up is
-    // wired up.
-    test.fixme("a visitor can create an account and lands signed in", async ({ page }) => {
+    test("a visitor can create an account and lands signed in", async ({ page }) => {
         const email = newEmail()
 
         await page.goto("/en/sign-up")
         await page.fill('input[name="name"]', "E2E User")
         await page.fill('input[name="email"]', email)
         await page.fill('input[name="password"]', PASSWORD)
+        await page.fill('input[name="confirmPassword"]', PASSWORD)
         await page.click('button[type="submit"]')
 
         // Signing up establishes a session, so the sign-up route itself becomes

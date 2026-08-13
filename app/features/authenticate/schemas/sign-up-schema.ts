@@ -8,37 +8,43 @@ const NAME_MIN_LENGTH = 1
 const EMAIL_MIN_LENGTH = 1
 const PASSWORD_MIN_LENGTH = 8
 
-// Server-side schema (extends base with English error messages)
-export const signUpSchema = z.object({
-    name: z.string()
-        .min(NAME_MIN_LENGTH, "Name is required"),
-    email: z.email("Invalid email address")
-        .min(EMAIL_MIN_LENGTH, "Email is required"),
+/**
+ * Both schemas are built from this shape and add their own passwords-match check.
+ *
+ * The alternative — extending an already-refined schema — stacks refinements rather than
+ * replacing them, so a second check does not override the first. Two checks that cannot
+ * both hold reject every input.
+ */
+const shape = {
+    name: z.string().min(NAME_MIN_LENGTH, "Name is required"),
+    email: z.email("Invalid email address").min(EMAIL_MIN_LENGTH, "Email is required"),
     password: z.string()
         .min(PASSWORD_MIN_LENGTH, `Password must be at least ${PASSWORD_MIN_LENGTH} characters`),
-    confirmPassword: z.string("Confirm password is required")
-})
-    .refine((data) => data.password === data.confirmPassword, {
-        path: ["confirmPassword"],
-        message: "Passwords must match"
-    })
-
-// Client-side schema factory (extends base with i18n error messages)
-export const createSignUpSchema = (t: TranslationFn) => {
-    return signUpSchema
-        .safeExtend({
-            name: z.string()
-                .min(NAME_MIN_LENGTH, t("authenticate.name.required")),
-            email: z.email(t("authenticate.email.invalid"))
-                .min(EMAIL_MIN_LENGTH, t("authenticate.email.required")),
-            password: z.string()
-                .min(PASSWORD_MIN_LENGTH, t("authenticate.password.min", { min: PASSWORD_MIN_LENGTH })),
-            confirmPassword: z.string(t("authenticate.confirmPassword.required"))
-        })
-        .refine((data) => data.password !== data.confirmPassword, {
-            path: ["confirmPassword"],
-            message: t("authenticate.confirmPassword.confirm")
-        })
+    confirmPassword: z.string("Confirm password is required"),
 }
+
+const passwordsMatch = (data: { password: string; confirmPassword: string }) =>
+    data.password === data.confirmPassword
+
+// Server-side schema (English error messages)
+export const signUpSchema = z.object(shape).refine(passwordsMatch, {
+    path: ["confirmPassword"],
+    message: "Passwords must match",
+})
+
+// Client-side schema factory (same rules, i18n error messages)
+export const createSignUpSchema = (t: TranslationFn) =>
+    z.object({
+        ...shape,
+        name: z.string().min(NAME_MIN_LENGTH, t("authenticate.name.required")),
+        email: z.email(t("authenticate.email.invalid"))
+            .min(EMAIL_MIN_LENGTH, t("authenticate.email.required")),
+        password: z.string()
+            .min(PASSWORD_MIN_LENGTH, t("authenticate.password.min", { min: PASSWORD_MIN_LENGTH })),
+        confirmPassword: z.string(t("authenticate.confirmPassword.required")),
+    }).refine(passwordsMatch, {
+        path: ["confirmPassword"],
+        message: t("authenticate.confirmPassword.confirm"),
+    })
 
 export type SignUpInput = z.infer<typeof signUpSchema>
