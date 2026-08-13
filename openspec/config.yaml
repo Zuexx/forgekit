@@ -59,32 +59,72 @@ context: |
   - `docs/api/logging.md` — structured logging patterns and examples
 
 rules:
+  proposal:
+    - Ground the Impact section in `codegraph_explore` rather than in an estimate.
+      Name the symbols the change touches and let the blast radius say how far it
+      reaches. "This is a small change" is a claim the graph can contradict, and
+      reading files to answer the same question costs more and misses the
+      dynamic-dispatch hops.
+    - Say what the change does not include. An unstated boundary is the one that
+      moves once implementation starts.
+    - Where the change alters behaviour something already depends on, say what would
+      break if it were wrong. `codegraph_explore` also reports which of those callers
+      have no covering tests; that is the part worth writing down.
+
   tasks:
-    - Break work into tasks completable in 5 to 15 minutes each.
-    - A task that cannot be verified on its own is too coarse. Split it until each
-      one has an observable outcome — a build that passes, a test that goes green,
-      a file that exists.
-    - Prefer many small tasks over few large ones. "Move 40 files" is one task on
-      paper and an hour of unverifiable work in practice; split it by area.
-    - Put decisions that block implementation in a leading section, so they are
-      settled before any code is written rather than discovered mid-task.
+    # These tasks sit at feature granularity. An implementation plan expands each
+    # one into minute-level steps and reports back against the ids below, so the
+    # two levels have to stay distinct — decompose to steps here and the mapping
+    # between them stops meaning anything.
+    - Write each task as an outcome a reviewer would recognise as a unit of the
+      change. "Add the sign-up route" is a task; "create the file, then add the
+      import" is a step and belongs in the implementation plan.
+    - Number tasks hierarchically (1.1, 1.2, 2.1) and keep the numbers stable once
+      written. Implementation plans cite these ids to report what they covered, and
+      renumbering silently breaks that link.
+    - State for each task what would show it is done — a test that goes green, a
+      build that passes, an endpoint that answers. A task whose completion is a
+      matter of opinion can only be judged by whoever wrote it.
+    - Put decisions that block implementation in a leading section, settled before
+      any code is written rather than discovered mid-task.
+    - Prefer splitting by capability over splitting by file. A task that touches
+      twenty files to deliver one behaviour is still one task; a task that changes
+      one file for three unrelated reasons is three.
 
 operations:
+  # This project runs the outer loop here and the inner loop in Superpowers: OpenSpec
+  # decides what may be built and whether it counts as done, Superpowers decides how it
+  # gets built and whether it was built correctly. Neither knows the other exists, so
+  # the two guidance blocks below are the whole seam between them.
   apply:
     guidance:
-      - Work test-first where the change is behavioral. The `tdd` skill defines what
-        counts as a good test; follow it rather than writing tests that assert
-        implementation details.
-      - Run the test suite after each task rather than at the end, so a failure points
-        at one task instead of a batch.
-      - When a task reveals that the plan was wrong, update the change rather than
-        silently diverging from it. The change is the record.
-      - State the test counts before and after. A refactor that changes them needs an
-        explanation.
+      - Expand these tasks into an implementation plan with
+        `superpowers:writing-plans` before touching code. This file holds
+        feature-level tasks; the plan holds the minute-level steps. Writing steps
+        here, or features there, collapses the two levels into one.
+      - Record which task ids a plan covers under an `## OpenSpec Coverage` heading.
+        Nothing generates that section — Superpowers has no knowledge of OpenSpec —
+        so without it there is no way to tell afterwards which of these tasks the
+        work actually delivered.
+      - Execute the plan with `superpowers:subagent-driven-development`. It runs a
+        fresh implementer per task and reviews each one before moving on.
+        Implementing tasks inline in this session instead forfeits both, and the
+        session's accumulated context is exactly what a fresh implementer is meant to
+        be protected from.
+      - Tick a task here only once its work is committed and its review passed. A tick
+        is a claim about the repository, not a note about intent.
+      - When a task turns out to be wrong, update the change rather than quietly
+        working around it. The change is the record of what was agreed; code that
+        silently disagrees with it leaves neither trustworthy.
   archive:
     guidance:
-      - Before archiving, verify the implementation against the change's own spec
-        deltas, not just against the task checklist. Ticked boxes are a claim; the
-        specs are the acceptance criteria.
+      - Verify the implementation against this change's spec deltas, not against its
+        task checklist. Ticked boxes are a claim; the deltas are the acceptance
+        criteria, and they are what the next person will read.
+      - Run the verification commands and read their output in this session before
+        reporting the change complete, per
+        `superpowers:verification-before-completion`. A claim carrying no fresh
+        evidence is a guess wearing the grammar of a fact.
       - Note anything the implementation did differently from the proposal, and why.
-        A design assumption that turned out wrong is worth recording.
+        A design assumption that turned out wrong is the most useful thing an archive
+        can carry forward.

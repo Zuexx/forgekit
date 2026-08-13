@@ -23,13 +23,41 @@ specification.
 
 ## Planning changes
 
-Specifications live in `openspec/`. Project context for planning is in
-`openspec/config.yaml`, and the OpenSpec skills provide the workflow — use `/opsx:explore`
-to think a change through, `/opsx:propose` to create one, `/opsx:apply` to implement, and
-`/opsx:archive` when it ships.
+Specifications live in `openspec/`. Project context, artifact rules, and per-operation
+guidance are in `openspec/config.yaml`, and OpenSpec delivers them at the step they apply
+to — read what it hands you rather than working from memory of this file.
+
+`/opsx:explore` to think a change through, `/opsx:propose` to create one, `/opsx:apply` to
+implement, `/opsx:archive` when it ships.
 
 Write a change proposal for new capabilities, breaking changes, architecture shifts, and
 security work. Skip it for bug fixes, typos, dependency bumps, and configuration changes.
+
+### Two loops, and who owns which
+
+OpenSpec decides **what may be built and whether it counts as done**. Superpowers decides
+**how it gets built and whether it was built correctly**. Neither knows the other exists,
+so the seam is the `apply` and `archive` guidance in `openspec/config.yaml`.
+
+Feature-level tasks live in `openspec/changes/<slug>/tasks.md`. Minute-level steps live in
+the Superpowers plan, which cites those task ids under `## OpenSpec Coverage`. Keep the two
+granularities apart; collapsing them makes the citation meaningless.
+
+### Overlapping skills, resolved by trigger
+
+Several skills cover the same ground. They differ in what fires them, which is what decides
+between them:
+
+| Job | Use | Because |
+|---|---|---|
+| Clarify a vague request | `superpowers:brainstorming` | Fires on its own before creative work |
+| Stress-test a plan you already have | `grilling` | Only when you ask for it |
+| Test-first implementation | `superpowers:test-driven-development` | The inner loop already speaks its vocabulary |
+| Review inside the loop | `superpowers:requesting-code-review` | Dispatched per task by the loop itself |
+| Review outside the loop | `/code-review` | Ad-hoc, on a diff you name |
+
+Reach for `codegraph_explore` before reading files to answer "what does this affect" — it
+returns the callers and the test-coverage gaps that reading cannot, in one call.
 
 ## Building and testing
 
@@ -49,6 +77,10 @@ pnpm test:e2e        # playwright; needs postgres and a built app
 End-to-end tests run against a real database. Start one with `podman compose up -d` (or
 docker), point `DATABASE_URL` at it and set `PGUSER=postgres`, create the auth schema with `pnpm auth.migration`,
 then `pnpm build` before `pnpm test:e2e`.
+
+`.githooks/pre-push` checks that implementation plans cite OpenSpec task ids that
+actually resolve — the one link between the two systems that nothing else validates.
+Enable it once per clone with `git config core.hooksPath .githooks`.
 
 `scripts/verify.sh` runs the full local gate. CI runs the same categories on every pull
 request, plus migration drift checks and secret scanning.
