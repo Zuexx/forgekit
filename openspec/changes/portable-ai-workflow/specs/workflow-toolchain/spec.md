@@ -28,15 +28,25 @@ outside the repository.
 
 ### Requirement: Cited capabilities resolve
 
-Every skill, command, plugin, and tool named in the repository's workflow instruction files
-SHALL resolve to something present. An instruction file SHALL NOT name a capability that the
-declared toolchain does not provide.
+Every skill, command, plugin, tool, and referenced document named in the repository's workflow
+instruction files SHALL resolve to something present. An instruction file SHALL NOT name a
+capability the declared toolchain does not provide, nor point at a document that does not exist.
 
 #### Scenario: A named capability is missing
 
 - **WHEN** the workflow instructions name a capability that does not resolve
 - **THEN** the preflight check reports it as a failure, naming the capability and the file
   citing it
+
+#### Scenario: A referenced document has been moved or deleted
+
+- **WHEN** the workflow instructions point at a document path that no longer exists
+- **THEN** the preflight check reports it as a failure
+
+#### Scenario: A citation is of an unrecognised kind
+
+- **WHEN** the workflow instructions cite something that matches none of the known kinds
+- **THEN** the preflight check reports it as unrecognised rather than passing it silently
 
 #### Scenario: All named capabilities resolve
 
