@@ -188,8 +188,10 @@ while IFS= read -r cap; do
       [ "${sub%% *}" = "run" ] && sub="${sub#run }"
       first="${sub%% *}"
       case "$first" in
-        exec|dlx)
+        exec)
           # Resolve what is being executed rather than waving the whole phrase through.
+          # `dlx` is excluded deliberately: it exists to run a package that is NOT installed
+          # locally, so requiring it in node_modules/.bin would invert its meaning.
           target="${sub#* }"
           target="${target%% *}"
           if [ -z "$target" ] || [ "$target" = "$first" ] || [ -x "$BIN_DIR/$target" ]; then
@@ -198,7 +200,7 @@ while IFS= read -r cap; do
             fail "$cap runs a binary that is not installed" "pnpm install"
           fi
           ;;
-        install|add|remove|update|why|store|approve-builds)
+        dlx|install|add|remove|update|why|store|approve-builds)
           pass "$cap (pnpm subcommand)"
           ;;
         *)
@@ -239,15 +241,16 @@ while IFS= read -r cap; do
       ;;
     *)
       # An all-lowercase bare word is the shape of a capability citation — and of a tool name.
-      # Resolve it as an executable first, in either package's bin or on PATH, so citing
-      # `vitest` or `gitleaks` is a check rather than a false failure. What is left is the
-      # shape of the stale `grilling` this was written for, resolving to nothing at all.
-      if [ -x "$BIN_DIR/$cap" ] || [ -x "$ROOT_DIR/app/node_modules/.bin/$cap" ] \
-         || command -v "$cap" >/dev/null 2>&1; then
-        pass "$cap (executable)"
+      # Resolve it against the toolchain this repository declares, never against PATH: consulting
+      # PATH would answer "does something by this name exist on this machine", which passes for a
+      # shell builtin, passes for any coincidental binary, and gives a different verdict on a
+      # fresh clone than on the author's laptop. What is left is the shape of the stale
+      # `grilling` this was written for, resolving to nothing the repository provides.
+      if [ -x "$BIN_DIR/$cap" ] || [ -x "$ROOT_DIR/app/node_modules/.bin/$cap" ]; then
+        pass "$cap (declared tool)"
       else
-        fail "unrecognised capability \`$cap\`" \
-             "it resolves to nothing — correct it in AGENTS.md, or add it to the toolchain"
+        fail "\`$cap\` is not in the declared toolchain" \
+             "correct it in AGENTS.md, or declare it in package.json"
       fi
       ;;
   esac

@@ -114,6 +114,12 @@ operations:
         Nothing generates that section — Superpowers has no knowledge of OpenSpec —
         so without it there is no way to tell afterwards which of these tasks the
         work actually delivered.
+      - Write those ids where they can be read mechanically, because they are. Put them
+        in a table cell holding nothing else, or start a list item with them. The
+        section runs from the heading to the next heading of any level, so ids under a
+        subheading are outside it. A pre-push hook resolves what it reads and names
+        every remaining number it did not, so a citation is never silently skipped —
+        but a number it cannot read is a citation you have to write again.
       - Execute through `superpowers:subagent-driven-development` when its own decision
         tree routes you there — it asks whether the tasks are mostly independent, and
         sends tightly coupled ones to manual execution instead. Follow that answer

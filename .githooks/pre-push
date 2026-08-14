@@ -46,8 +46,16 @@ check_plan() {
   # than passing, so an unsupported layout is refused loudly instead of waved through. Intervals
   # like `#{1,2}` are avoided because mawk 1.3.3 treats them literally.
   local section
+  # A fence closes only on a run at least as long as the one that opened it, so a three-backtick
+  # example nested inside a four-backtick block does not invert the parity and let its comments
+  # terminate the section.
   section=$(awk '
-    /^```/ { fence = !fence }
+    /^```/ {
+      len = 0
+      while (substr($0, len + 1, 1) == "`") len++
+      if (!fence) { fence = 1; flen = len }
+      else if (len >= flen) { fence = 0 }
+    }
     /^## OpenSpec Coverage/ { flag = 1; next }
     flag && !fence && (/^#/ || /^---[[:space:]]*$/) { flag = 0 }
     flag
@@ -71,71 +79,64 @@ check_plan() {
     return 1
   fi
 
-  # Ids are recognised by SHAPE AND BOUNDARY, not by which position they sit in. Earlier
-  # versions guessed the position — whole section, then list-and-table lines, then the last
-  # table cell — and each guess only moved the failure: a Status column broke one, a Notes
-  # column broke the next, a spaced comparator broke the one after.
+  # Every `N.M` in the section is either ACCEPTED as a citation — and must then resolve — or
+  # REPORTED as not read. Four earlier generations tried to classify perfectly and each left one
+  # case silently dropped, because `- Covers 1.1` and `- Requires pnpm 11.1` are structurally
+  # identical and no rule separates them. Reporting what was not accepted ends that regress: an
+  # id this hook cannot read is now visible instead of vanishing.
   #
-  # An id run must BEGIN at a structural boundary: the start of a table cell, the text after a
-  # list marker, or the text after an arrow. A version never does — it trails a name
-  # ("pnpm 11.1") or a comparator (">= 22.16"), so it never starts a run. A table cell must
-  # additionally consist of nothing but ids, commas, and spaces, which is what a coverage cell
-  # looks like and what a descriptive cell never does.
-  local ids
-  ids=$(printf '%s\n' "$section" | awk '
-    function take_run(s) {
+  # Accepted forms, which openspec/config.yaml's apply guidance states:
+  #   - a table cell containing only ids, commas and spaces
+  #   - a list item beginning with an id run
+  local scan accepted seen unread
+  scan=$(printf '%s\n' "$section" | awk '
+    function take_run(s,   id) {
       while (match(s, /^[0-9]+\.[0-9]+/)) {
-        print substr(s, RSTART, RLENGTH)
+        id = substr(s, RSTART, RLENGTH)
         s = substr(s, RSTART + RLENGTH)
+        if (s ~ /^\.[0-9]/) return
+        print "ID " id
         if (s ~ /^[,[:space:]]+/) sub(/^[,[:space:]]+/, "", s); else break
       }
     }
     {
-      # A run may also start after an arrow, on any kind of line ("Step 3 -> 99.99").
-      rest = $0
-      while (match(rest, /(->|=>)[[:space:]]*/)) {
-        rest = substr(rest, RSTART + RLENGTH)
-        take_run(rest)
-      }
-    }
-    /^[[:space:]]*\|/ {
-      n = split($0, cells, "|")
-      for (i = 1; i <= n; i++) {
-        c = cells[i]
-        gsub(/^[[:space:]]+|[[:space:]]+$/, "", c)
-        if (c ~ /^[0-9]+\.[0-9]+([,[:space:]]+[0-9]+\.[0-9]+)*$/) take_run(c)
-      }
-      next
-    }
-    {
-      # Outside a table: a run that reaches the end of the line, as in "- Covers 1.1, 1.2, 2.1".
-      # The text before it must not end in a comparator, which is what separates that from
-      # "... and pnpm > 11.1". Both forms end in digits; only one is a citation.
+      gsub(/\*\*/, "")
+      gsub(/`/, "")
       line = $0
-      sub(/[[:space:]]+$/, "", line)
-      if (match(line, /[0-9]+\.[0-9]+([,[:space:]]+[0-9]+\.[0-9]+)*$/)) {
-        before = substr(line, 1, RSTART - 1)
-        if (before !~ /[<>=^~][[:space:]]*$/) take_run(substr(line, RSTART))
-      }
-    }
-    /^[[:space:]]*[-*+][[:space:]]+/ {
-      line = $0
-      sub(/^[[:space:]]*[-*+][[:space:]]+/, "", line)
-      take_run(line)
-    }
-  ' | sort -u)
 
-  # A section that names a change but yields no ids cannot be traced, and passing it would be
-  # the same "found nothing to look at, so reported ok" failure this hook exists to prevent.
-  if [ -z "$ids" ]; then
+      tmp = line
+      while (match(tmp, /[0-9]+\.[0-9]+/)) {
+        tok = substr(tmp, RSTART, RLENGTH)
+        rest = substr(tmp, RSTART + RLENGTH)
+        if (rest !~ /^\.[0-9]/) print "SEEN " tok
+        tmp = rest
+      }
+
+      if (line ~ /^[[:space:]]*\|/) {
+        n = split(line, cells, "|")
+        for (i = 1; i <= n; i++) {
+          c = cells[i]
+          gsub(/^[[:space:]]+|[[:space:]]+$/, "", c)
+          if (c ~ /^[0-9]+\.[0-9]+([,[:space:]]+[0-9]+\.[0-9]+)*$/) take_run(c)
+        }
+      } else if (line ~ /^[[:space:]]*[-*+][[:space:]]+/) {
+        sub(/^[[:space:]]*[-*+][[:space:]]+/, "", line)
+        take_run(line)
+      }
+    }
+  ')
+  accepted=$(printf '%s\n' "$scan" | sed -n 's/^ID //p' | sort -u)
+  seen=$(printf '%s\n' "$scan" | sed -n 's/^SEEN //p' | sort -u)
+
+  if [ -z "$accepted" ]; then
     note "$rel: OpenSpec Coverage cites no task ids"
-    note "  (list them directly under the heading — a '### ' subheading ends the section)"
+    note "  (put them in a table cell of their own, or start a list item with them)"
     return 1
   fi
 
   local missing=""
   local id
-  for id in $ids; do
+  for id in $accepted; do
     grep -qE "^[[:space:]]*-[[:space:]]*\[[ x]\][[:space:]]*$id([[:space:]]|\.)" "$tasks" || missing="$missing $id"
   done
 
@@ -143,6 +144,16 @@ check_plan() {
     note "$rel: cites task ids not present in $slug/tasks.md —$missing"
     note "  (task ids are load-bearing; renumbering them breaks this link silently)"
     return 1
+  fi
+
+  # Anything numeric the section contains but this hook did not read as a citation. Not fatal —
+  # it is usually a version number — but never silent, because the alternative is the failure
+  # this hook exists to prevent: an id that quietly went unchecked.
+  unread=$(comm -23 <(printf '%s\n' "$seen") <(printf '%s\n' "$accepted") | tr '\n' ' ')
+  unread=$(printf '%s' "$unread" | sed 's/[[:space:]]*$//')
+  if [ -n "$unread" ]; then
+    note "$rel: not read as task ids — $unread"
+    note "  (if any is a citation, put it in a cell of its own or start a list item with it)"
   fi
 
   return 0

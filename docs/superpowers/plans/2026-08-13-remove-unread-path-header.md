@@ -19,7 +19,7 @@ fails if the header returns.
 ## OpenSpec Coverage
 
 - openspec/changes/remove-unread-path-header
-- Covers 1.1, 1.2, 2.1
+- 1.1, 1.2, 2.1
 
 ## Task 1: Remove the header and pin its absence
 
