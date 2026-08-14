@@ -30,6 +30,12 @@ to — read what it hands you rather than working from memory of this file.
 `/opsx:explore` to think a change through, `/opsx:propose` to create one, `/opsx:apply` to
 implement, `/opsx:archive` when it ships.
 
+When a request is too vague for a proposal to state what it includes and excludes, run
+`grillme` first — `pnpm exec grillme` from the repository root. It opens a browser, asks one
+decision question at a time, and writes a Markdown handoff; it implements nothing. That handoff
+is the input to `/opsx:propose`. It is the one gate a human closes: scope gets settled before
+any agent receives the task, which is the boundary the rest of this file exists to hold.
+
 Write a change proposal for new capabilities, breaking changes, architecture shifts, and
 security work. Skip it for bug fixes, typos, dependency bumps, and configuration changes.
 
@@ -51,7 +57,6 @@ between them:
 | Job | Use | Because |
 |---|---|---|
 | Clarify a vague request | `superpowers:brainstorming` | Fires on its own before creative work |
-| Stress-test a plan you already have | `grilling` | Only when you ask for it |
 | Test-first implementation | `superpowers:test-driven-development` | The inner loop already speaks its vocabulary |
 | Execute a plan | `superpowers:subagent-driven-development`, **if its decision tree sends you there** | It routes tightly coupled tasks to manual execution; a task and its own verification are not independent |
 | Review a change | `superpowers:requesting-code-review` | Whichever route the work took, including small changes done inline |

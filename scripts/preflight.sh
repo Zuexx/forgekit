@@ -54,13 +54,20 @@ INDEX="$ROOT_DIR/.codegraph/codegraph.db"
 if [ ! -f "$INDEX" ]; then
   fail "no CodeGraph index" "$BIN_DIR/codegraph index"
 else
+  # Compare against the source the index describes, not against HEAD. Committing modifies no
+  # source file, so anchoring on commit time would report a correct index as stale after every
+  # commit — and a check that cries wolf is one people learn to skip.
   index_epoch=$(stat -f %m "$INDEX" 2>/dev/null || stat -c %Y "$INDEX")
-  head_epoch=$(git -C "$ROOT_DIR" log -1 --format=%ct)
-  if [ "$index_epoch" -lt "$head_epoch" ]; then
-    fail "index is older than HEAD — impact analysis from it would be out of date" \
+  newest_src=$(git -C "$ROOT_DIR" ls-files -z -- \
+      '*.cs' '*.ts' '*.tsx' '*.js' '*.jsx' \
+    | xargs -0 stat -f %m 2>/dev/null || git -C "$ROOT_DIR" ls-files -z -- \
+      '*.cs' '*.ts' '*.tsx' '*.js' '*.jsx' | xargs -0 stat -c %Y 2>/dev/null)
+  newest_src=$(printf '%s\n' "$newest_src" | sort -rn | head -1)
+  if [ -n "$newest_src" ] && [ "$index_epoch" -lt "$newest_src" ]; then
+    fail "index is older than the newest source file — impact analysis from it would be out of date" \
          "$BIN_DIR/codegraph index"
   else
-    pass "index present and not older than HEAD"
+    pass "index present and reflects current source"
   fi
 fi
 
@@ -86,7 +93,7 @@ fi
 cited=$(
   {
     awk -F'|' '/^\| [A-Z]/ && NF>3 { print $3 }' "$ROOT_DIR/AGENTS.md"
-    grep -ohE '`(superpowers:[a-z-]+|/opsx:[a-z]+)`' \
+    grep -ohE '`(superpowers:[a-z-]+|/opsx:[a-z]+|grillme)`' \
       "$ROOT_DIR/AGENTS.md" "$ROOT_DIR/openspec/config.yaml"
   } | grep -oE '`[^`]+`' | tr -d '`' | sort -u
 )

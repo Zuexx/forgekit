@@ -58,8 +58,12 @@ capability the declared toolchain does not provide, nor point at a document that
 The repository SHALL provide a single command that reports whether the workflow is operational
 on the current machine. It SHALL check that the declared tools are present, that the repository's
 workflow configuration is readable by the installed tool version, that the code index the
-instructions require exists and is not older than the current commit, and that the repository's
-git hooks are enabled. Each failure SHALL be reported with the command that resolves it.
+instructions require exists and reflects the current source, and that the repository's git hooks
+are enabled. Each failure SHALL be reported with the command that resolves it.
+
+Index staleness SHALL be judged against the source the index describes, not against the commit
+history. Committing changes no source file, so a check anchored on commit time would report a
+correct index as stale and train its readers to ignore it.
 
 #### Scenario: The workflow is operational
 
@@ -75,9 +79,14 @@ git hooks are enabled. Each failure SHALL be reported with the command that reso
 
 #### Scenario: The code index is stale
 
-- **WHEN** the code index exists but is older than the current commit
+- **WHEN** the code index exists but is older than the most recently modified source file
 - **THEN** the preflight command reports it as failing rather than passing
 - **AND** its output states that impact analysis based on it would be out of date
+
+#### Scenario: A commit is made without editing source
+
+- **WHEN** the code index reflects every source file and a commit is then made
+- **THEN** the preflight command still reports the index as current
 
 ### Requirement: Configuration verified by reading it back
 
