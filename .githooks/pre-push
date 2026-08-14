@@ -35,31 +35,95 @@ check_plan() {
   local plan="$1"
   local rel="${plan#"$REPO_ROOT"/}"
 
-  # The section is optional only for plans that cite nothing; a plan that mentions a
-  # change without listing ids cannot be traced and is treated as a miss.
-  # The section is the content directly under the heading, ending at the next heading of ANY
-  # level or a horizontal rule. Ending only at `## ` let a plan without a rule spill its whole
-  # body into the id scan, where its version numbers read as task ids and refused the push.
+  # Two windows, deliberately different sizes.
   #
-  # A `### ` subheading therefore ends the section too, which means ids listed beneath one are
-  # not seen. That is deliberate and safe now: a section yielding no ids FAILS below rather
-  # than passing, so an unsupported layout is refused loudly instead of waved through. Intervals
-  # like `#{1,2}` are avoided because mawk 1.3.3 treats them literally.
-  local section
-  # A fence closes only on a run at least as long as the one that opened it, so a three-backtick
-  # example nested inside a four-backtick block does not invert the parity and let its comments
-  # terminate the section.
-  section=$(awk '
-    /^```/ {
-      len = 0
-      while (substr($0, len + 1, 1) == "`") len++
-      if (!fence) { fence = 1; flen = len }
-      else if (len >= flen) { fence = 0 }
+  # ACCEPT — the heading to the next heading of any level, or a horizontal rule — is where a
+  # citation may be written. It is narrow so a plan's body cannot be mistaken for citations.
+  #
+  # REPORT — the heading to the next top-level heading or horizontal rule — is where a number is
+  # looked FOR. It is wider than ACCEPT, reaching past subheadings, so an id written just outside
+  # the accepted area is named rather than vanishing. Using one window for both meant a
+  # subheading turned a citation into nothing at all whenever some other id in the section
+  # happened to be well-formed. It stops at the rule that ends the coverage block rather than
+  # running to the next `## `, because a plan's body is full of version numbers and reporting
+  # them on every push is the noise that teaches people to stop reading the output.
+  #
+  # A `## ` or `# ` heading ends both regardless of fence state: a fence cannot legitimately
+  # contain a top-level heading, and honouring one let a single unterminated fence swallow the
+  # rest of the file. Intervals like `#{1,2}` are avoided because mawk 1.3.3 treats them
+  # literally.
+  #
+  # Every `N.M` in the REPORT window is either ACCEPTED as a citation — and must then resolve —
+  # or named in the output as not read. The one exception: a match followed by `.<digit>` is
+  # part of a longer version string and is suppressed from both, which is what keeps `1.9.0`
+  # from being read as `1.9`.
+  #
+  # Accepted forms, which openspec/config.yaml's apply guidance states:
+  #   - a table cell containing only ids, commas and spaces
+  #   - a list item beginning with an id run
+  local scan
+  scan=$(awk '
+    function take_run(s,   id) {
+      while (match(s, /^[0-9]+\.[0-9]+/)) {
+        id = substr(s, RSTART, RLENGTH)
+        s = substr(s, RSTART + RLENGTH)
+        if (s ~ /^\.[0-9]/) return
+        print "ID " id
+        if (s ~ /^[,[:space:]]+/) sub(/^[,[:space:]]+/, "", s); else break
+      }
     }
-    /^## OpenSpec Coverage/ { flag = 1; next }
-    flag && !fence && (/^#/ || /^---[[:space:]]*$/) { flag = 0 }
-    flag
+    {
+      if ($0 ~ /^```/) {
+        len = 0
+        while (substr($0, len + 1, 1) == "`") len++
+        if (!fence) { fence = 1; flen = len }
+        else if (len >= flen) { fence = 0 }
+      }
+    }
+    /^## OpenSpec Coverage/ { report = 1; accept = 1; next }
+    {
+      # Only `## ` ignores fence state. A `# ` line is far more often a shell comment inside a
+      # fenced block than a top-level heading mid-plan, and treating it as a heading cut the
+      # section at the first commented example.
+      if (report && ($0 ~ /^## / || $0 ~ /^---[[:space:]]*$/)) {
+        report = 0; accept = 0; next
+      }
+      if (accept && !fence && ($0 ~ /^#/ || $0 ~ /^---[[:space:]]*$/)) accept = 0
+      if (!report) next
+
+      # Emphasis becomes a space rather than nothing: deleting it fused `**9**.**9**` into an
+      # id the author never wrote, while a space keeps `**1.1**` readable.
+      line = $0
+      gsub(/\*\*/, " ", line)
+      gsub(/`/, " ", line)
+
+      tmp = line
+      while (match(tmp, /[0-9]+\.[0-9]+/)) {
+        tok = substr(tmp, RSTART, RLENGTH)
+        rest = substr(tmp, RSTART + RLENGTH)
+        if (rest !~ /^\.[0-9]/) print "SEEN " tok
+        tmp = rest
+      }
+
+      if (!accept) next
+      print "ACC " line
+
+      if (line ~ /^[[:space:]]*\|/) {
+        n = split(line, cells, "|")
+        for (i = 1; i <= n; i++) {
+          c = cells[i]
+          gsub(/^[[:space:]]+|[[:space:]]+$/, "", c)
+          if (c ~ /^[0-9]+\.[0-9]+([,[:space:]]+[0-9]+\.[0-9]+)*$/) take_run(c)
+        }
+      } else if (line ~ /^[[:space:]]*[-*+][[:space:]]+/) {
+        sub(/^[[:space:]]*[-*+][[:space:]]+/, "", line)
+        take_run(line)
+      }
+    }
   ' "$plan")
+
+  local section
+  section=$(printf '%s\n' "$scan" | sed -n 's/^ACC //p')
   [ -z "$section" ] && return 0
 
   local slug
@@ -79,54 +143,18 @@ check_plan() {
     return 1
   fi
 
-  # Every `N.M` in the section is either ACCEPTED as a citation — and must then resolve — or
-  # REPORTED as not read. Four earlier generations tried to classify perfectly and each left one
-  # case silently dropped, because `- Covers 1.1` and `- Requires pnpm 11.1` are structurally
-  # identical and no rule separates them. Reporting what was not accepted ends that regress: an
-  # id this hook cannot read is now visible instead of vanishing.
-  #
-  # Accepted forms, which openspec/config.yaml's apply guidance states:
-  #   - a table cell containing only ids, commas and spaces
-  #   - a list item beginning with an id run
-  local scan accepted seen unread
-  scan=$(printf '%s\n' "$section" | awk '
-    function take_run(s,   id) {
-      while (match(s, /^[0-9]+\.[0-9]+/)) {
-        id = substr(s, RSTART, RLENGTH)
-        s = substr(s, RSTART + RLENGTH)
-        if (s ~ /^\.[0-9]/) return
-        print "ID " id
-        if (s ~ /^[,[:space:]]+/) sub(/^[,[:space:]]+/, "", s); else break
-      }
-    }
-    {
-      gsub(/\*\*/, "")
-      gsub(/`/, "")
-      line = $0
-
-      tmp = line
-      while (match(tmp, /[0-9]+\.[0-9]+/)) {
-        tok = substr(tmp, RSTART, RLENGTH)
-        rest = substr(tmp, RSTART + RLENGTH)
-        if (rest !~ /^\.[0-9]/) print "SEEN " tok
-        tmp = rest
-      }
-
-      if (line ~ /^[[:space:]]*\|/) {
-        n = split(line, cells, "|")
-        for (i = 1; i <= n; i++) {
-          c = cells[i]
-          gsub(/^[[:space:]]+|[[:space:]]+$/, "", c)
-          if (c ~ /^[0-9]+\.[0-9]+([,[:space:]]+[0-9]+\.[0-9]+)*$/) take_run(c)
-        }
-      } else if (line ~ /^[[:space:]]*[-*+][[:space:]]+/) {
-        sub(/^[[:space:]]*[-*+][[:space:]]+/, "", line)
-        take_run(line)
-      }
-    }
-  ')
+  local accepted seen unread
   accepted=$(printf '%s\n' "$scan" | sed -n 's/^ID //p' | sort -u)
   seen=$(printf '%s\n' "$scan" | sed -n 's/^SEEN //p' | sort -u)
+
+  # Printed before any refusal, so a rejected push still shows everything the hook read and
+  # everything it did not.
+  unread=$(comm -23 <(printf '%s\n' "$seen") <(printf '%s\n' "$accepted") | tr '\n' ' ')
+  unread=$(printf '%s' "$unread" | sed 's/[[:space:]]*$//')
+  if [ -n "$unread" ]; then
+    note "$rel: not read as task ids — $unread"
+    note "  (if any is a citation, put it in a cell of its own or start a list item with it)"
+  fi
 
   if [ -z "$accepted" ]; then
     note "$rel: OpenSpec Coverage cites no task ids"
@@ -134,8 +162,7 @@ check_plan() {
     return 1
   fi
 
-  local missing=""
-  local id
+  local missing="" id
   for id in $accepted; do
     grep -qE "^[[:space:]]*-[[:space:]]*\[[ x]\][[:space:]]*$id([[:space:]]|\.)" "$tasks" || missing="$missing $id"
   done
@@ -144,16 +171,6 @@ check_plan() {
     note "$rel: cites task ids not present in $slug/tasks.md —$missing"
     note "  (task ids are load-bearing; renumbering them breaks this link silently)"
     return 1
-  fi
-
-  # Anything numeric the section contains but this hook did not read as a citation. Not fatal —
-  # it is usually a version number — but never silent, because the alternative is the failure
-  # this hook exists to prevent: an id that quietly went unchecked.
-  unread=$(comm -23 <(printf '%s\n' "$seen") <(printf '%s\n' "$accepted") | tr '\n' ' ')
-  unread=$(printf '%s' "$unread" | sed 's/[[:space:]]*$//')
-  if [ -n "$unread" ]; then
-    note "$rel: not read as task ids — $unread"
-    note "  (if any is a citation, put it in a cell of its own or start a list item with it)"
   fi
 
   return 0
