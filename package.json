@@ -1,0 +1,13 @@
+{
+  "name": "forgekit-workflow",
+  "private": true,
+  "description": "Development-workflow tooling for this repository. Not part of the API or the app.",
+  "engines": {
+    "node": ">=22.16"
+  },
+  "devDependencies": {
+    "@colbymchenry/codegraph": "^1.5.0",
+    "@fission-ai/openspec": "^1.9.0",
+    "grillme": "latest"
+  }
+}
