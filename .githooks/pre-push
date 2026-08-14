@@ -80,14 +80,13 @@ check_plan() {
         else if (len >= flen) { fence = 0 }
       }
     }
-    /^## OpenSpec Coverage/ { report = 1; accept = 1; next }
+    /^## OpenSpec Coverage/ { print "HDR"; report = 1; accept = 1; next }
     {
-      # Only `## ` ignores fence state. A `# ` line is far more often a shell comment inside a
-      # fenced block than a top-level heading mid-plan, and treating it as a heading cut the
-      # section at the first commented example.
-      if (report && ($0 ~ /^## / || $0 ~ /^---[[:space:]]*$/)) {
-        report = 0; accept = 0; next
-      }
+      # Only `## ` ignores fence state, because a fence cannot legitimately contain a top-level
+      # heading. A `# ` line is far more often a shell comment inside a fenced block, and a
+      # `---` is ordinary YAML — both must respect the fence or a fenced example ends the block.
+      if (report && $0 ~ /^## /) { report = 0; accept = 0; next }
+      if (report && !fence && $0 ~ /^---[[:space:]]*$/) { report = 0; accept = 0; next }
       if (accept && !fence && ($0 ~ /^#/ || $0 ~ /^---[[:space:]]*$/)) accept = 0
       if (!report) next
 
@@ -122,9 +121,31 @@ check_plan() {
     }
   ' "$plan")
 
-  local section
+  # Gate on whether the plan HAS a coverage section, not on whether that section produced
+  # readable lines. Returning early on an empty ACCEPT window skipped the reporting machinery
+  # entirely, so a plan listing every id under a `### ` subheading — the most natural way to get
+  # this wrong — passed with no output at all.
+  printf '%s\n' "$scan" | grep -q '^HDR$' || return 0
+
+  local section accepted seen unread
   section=$(printf '%s\n' "$scan" | sed -n 's/^ACC //p')
-  [ -z "$section" ] && return 0
+  accepted=$(printf '%s\n' "$scan" | sed -n 's/^ID //p' | sort -u)
+  seen=$(printf '%s\n' "$scan" | sed -n 's/^SEEN //p' | sort -u)
+
+  # Report before any check can return. Every guard below is a reason to refuse the push, and
+  # none of them is a reason to withhold what the hook did and did not read.
+  unread=$(comm -23 <(printf '%s\n' "$seen") <(printf '%s\n' "$accepted") | tr '\n' ' ')
+  unread=$(printf '%s' "$unread" | sed 's/[[:space:]]*$//')
+  if [ -n "$unread" ]; then
+    note "$rel: not read as task ids — $unread"
+    note "  (if any is a citation, put it in a cell of its own or start a list item with it)"
+  fi
+
+  if [ -z "$accepted" ]; then
+    note "$rel: OpenSpec Coverage cites no task ids"
+    note "  (put them in a table cell of their own, or start a list item with them)"
+    return 1
+  fi
 
   local slug
   slug=$(printf '%s' "$section" | grep -oE 'openspec/changes/[A-Za-z0-9._-]+' | head -1 | sed 's|openspec/changes/||')
@@ -140,25 +161,6 @@ check_plan() {
   local tasks
   if ! tasks=$(tasks_file_for "$slug"); then
     note "$rel: cites change '$slug', which exists neither in openspec/changes nor in its archive"
-    return 1
-  fi
-
-  local accepted seen unread
-  accepted=$(printf '%s\n' "$scan" | sed -n 's/^ID //p' | sort -u)
-  seen=$(printf '%s\n' "$scan" | sed -n 's/^SEEN //p' | sort -u)
-
-  # Printed before any refusal, so a rejected push still shows everything the hook read and
-  # everything it did not.
-  unread=$(comm -23 <(printf '%s\n' "$seen") <(printf '%s\n' "$accepted") | tr '\n' ' ')
-  unread=$(printf '%s' "$unread" | sed 's/[[:space:]]*$//')
-  if [ -n "$unread" ]; then
-    note "$rel: not read as task ids — $unread"
-    note "  (if any is a citation, put it in a cell of its own or start a list item with it)"
-  fi
-
-  if [ -z "$accepted" ]; then
-    note "$rel: OpenSpec Coverage cites no task ids"
-    note "  (put them in a table cell of their own, or start a list item with them)"
     return 1
   fi
 
