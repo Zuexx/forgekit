@@ -52,7 +52,10 @@ fi
 echo "==> CodeGraph index"
 INDEX="$ROOT_DIR/.codegraph/codegraph.db"
 if [ ! -f "$INDEX" ]; then
-  fail "no CodeGraph index" "$BIN_DIR/codegraph index"
+  # A project that has never been indexed needs `init`; `index` refuses with
+  # "CodeGraph not initialized". This is the branch a freshly generated product lands on,
+  # so naming the wrong command here would misdirect exactly the reader who needs it.
+  fail "no CodeGraph index" "pnpm exec codegraph init"
 else
   # Compare against the source the index describes, not against HEAD. Committing modifies no
   # source file, so anchoring on commit time would report a correct index as stale after every
@@ -65,7 +68,7 @@ else
   newest_src=$(printf '%s\n' "$newest_src" | sort -rn | head -1)
   if [ -n "$newest_src" ] && [ "$index_epoch" -lt "$newest_src" ]; then
     fail "index is older than the newest source file — impact analysis from it would be out of date" \
-         "$BIN_DIR/codegraph index"
+         "pnpm exec codegraph index"
   else
     pass "index present and reflects current source"
   fi

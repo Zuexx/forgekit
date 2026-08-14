@@ -267,8 +267,11 @@ for you, and it ignores a hook that is not executable without reporting anything
 pnpm install
 git config core.hooksPath .githooks
 chmod +x .githooks/*
-pnpm exec codegraph index
+pnpm exec codegraph init
 ```
+
+`codegraph init` is the first-time command; `codegraph index` refreshes an existing index and
+refuses to run before `init`.
 
 Then confirm the workflow is actually operational on this machine:
 
