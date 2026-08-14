@@ -37,8 +37,16 @@ check_plan() {
 
   # The section is optional only for plans that cite nothing; a plan that mentions a
   # change without listing ids cannot be traced and is treated as a miss.
+  # End the section at the next heading of ANY level, or at a horizontal rule. Ending it only
+  # at `## ` let a plan with `### ` subheadings spill its whole body into the scan below, where
+  # every version number in the prose ("^1.9.0", ">=22.16") reads as a task id and the push is
+  # refused over ids nobody wrote. A gate that cries wolf is one people learn to bypass.
   local section
-  section=$(awk '/^## OpenSpec Coverage/{flag=1;next} /^## /{flag=0} flag' "$plan")
+  section=$(awk '
+    /^## OpenSpec Coverage/ { flag=1; next }
+    flag && (/^#{1,6} / || /^---[[:space:]]*$/) { flag=0 }
+    flag
+  ' "$plan")
   [ -z "$section" ] && return 0
 
   local slug

@@ -64,6 +64,14 @@ These were decided in design.md and are not open for rediscovery mid-task:
   change, and preflight fails with a naming message when a hook under `core.hooksPath` is not
   executable.
 
+- [ ] 3.5 Stop `.githooks/pre-push` reading past the `## OpenSpec Coverage` section. It ends the
+  section only at the next `## ` heading, so a plan using `### ` subheadings after it has its
+  whole body scanned, and every `N.M` in the prose — version numbers like `^1.9.0` and `>=22.16`
+  — is read as a task id. The result is a refused push with invented ids, which is the false
+  positive that teaches people to bypass the gate. Done when the hook passes on a plan whose
+  coverage section is followed by `### ` headings and version numbers, and still fails on a plan
+  citing a task id that genuinely does not exist.
+
 ## 4. Instruction corrections
 
 - [ ] 4.1 Correct grillme in `AGENTS.md`: remove the `grilling` row from the overlapping-skills
