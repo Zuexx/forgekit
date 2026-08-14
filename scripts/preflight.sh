@@ -183,9 +183,22 @@ while IFS= read -r cap; do
       # `pnpm install` and `pnpm exec …` are built-in subcommands with nothing to resolve, and
       # the frontend's scripts live in app/package.json, not the workflow package.
       sub="${cap#* }"
+      # `pnpm run x` is the canonical long form of `pnpm x`; without unwrapping it the explicit
+      # spelling of a broken citation is the one spelling that goes unchecked.
+      [ "${sub%% *}" = "run" ] && sub="${sub#run }"
       first="${sub%% *}"
       case "$first" in
-        install|exec|dlx|add|remove|run|update|why|store|approve-builds)
+        exec|dlx)
+          # Resolve what is being executed rather than waving the whole phrase through.
+          target="${sub#* }"
+          target="${target%% *}"
+          if [ -z "$target" ] || [ "$target" = "$first" ] || [ -x "$BIN_DIR/$target" ]; then
+            pass "$cap"
+          else
+            fail "$cap runs a binary that is not installed" "pnpm install"
+          fi
+          ;;
+        install|add|remove|update|why|store|approve-builds)
           pass "$cap (pnpm subcommand)"
           ;;
         *)
@@ -200,6 +213,12 @@ while IFS= read -r cap; do
           fi
           ;;
       esac
+      ;;
+    *" "*)
+      # A phrase, not a citation — `git checkout upstream/main -- api/Anvil`, `chmod +x
+      # .githooks/*`. Documentation backticks these, and the path arm below would otherwise
+      # resolve them as filenames and fail. Commands with a package manager are handled above.
+      :
       ;;
     */*|*.md)
       # A document pointer rots the same way a stale skill name does.
@@ -219,10 +238,17 @@ while IFS= read -r cap; do
       :
       ;;
     *)
-      # An all-lowercase bare word IS the shape of a capability citation, and is exactly the
-      # shape of the stale `grilling` this check was written for. Nothing resolves it.
-      fail "unrecognised capability \`$cap\`" \
-           "it resolves to nothing — correct it in AGENTS.md, or add it to the toolchain"
+      # An all-lowercase bare word is the shape of a capability citation — and of a tool name.
+      # Resolve it as an executable first, in either package's bin or on PATH, so citing
+      # `vitest` or `gitleaks` is a check rather than a false failure. What is left is the
+      # shape of the stale `grilling` this was written for, resolving to nothing at all.
+      if [ -x "$BIN_DIR/$cap" ] || [ -x "$ROOT_DIR/app/node_modules/.bin/$cap" ] \
+         || command -v "$cap" >/dev/null 2>&1; then
+        pass "$cap (executable)"
+      else
+        fail "unrecognised capability \`$cap\`" \
+             "it resolves to nothing — correct it in AGENTS.md, or add it to the toolchain"
+      fi
       ;;
   esac
 done < <(printf '%s\n' "$cited")

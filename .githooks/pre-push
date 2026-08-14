@@ -47,8 +47,9 @@ check_plan() {
   # like `#{1,2}` are avoided because mawk 1.3.3 treats them literally.
   local section
   section=$(awk '
-    /^## OpenSpec Coverage/ { flag=1; next }
-    flag && (/^#/ || /^---[[:space:]]*$/) { flag=0 }
+    /^```/ { fence = !fence }
+    /^## OpenSpec Coverage/ { flag = 1; next }
+    flag && !fence && (/^#/ || /^---[[:space:]]*$/) { flag = 0 }
     flag
   ' "$plan")
   [ -z "$section" ] && return 0
@@ -70,26 +71,59 @@ check_plan() {
     return 1
   fi
 
-  # From a table row take only the last non-empty cell — that is where the ids live, and it
-  # keeps a descriptive cell ("needs pnpm 11.1") from contributing digits. Other lines are read
-  # whole so a prose citation still works.
+  # Ids are recognised by SHAPE AND BOUNDARY, not by which position they sit in. Earlier
+  # versions guessed the position — whole section, then list-and-table lines, then the last
+  # table cell — and each guess only moved the failure: a Status column broke one, a Notes
+  # column broke the next, a spaced comparator broke the one after.
   #
-  # Then strip version-shaped tokens. The comparator must be adjacent to the number: a bag of
-  # characters with optional space let "-> 99.99" and "=> 88.88" swallow real ids, because `>`
-  # alone matched and the space was optional.
+  # An id run must BEGIN at a structural boundary: the start of a table cell, the text after a
+  # list marker, or the text after an arrow. A version never does — it trails a name
+  # ("pnpm 11.1") or a comparator (">= 22.16"), so it never starts a run. A table cell must
+  # additionally consist of nothing but ids, commas, and spaces, which is what a coverage cell
+  # looks like and what a descriptive cell never does.
   local ids
-  ids=$(printf '%s\n' "$section" \
-    | awk -F'|' '
-        /^[[:space:]]*\|/ {
-          last = ""
-          for (i = 2; i <= NF; i++) if ($i ~ /[^[:space:]]/) last = $i
-          print last
-          next
-        }
-        { print }
-      ' \
-    | sed -E 's/(\^|~|>=|<=|==|[[:space:]]v)[0-9]+(\.[0-9]+)+//g; s/[0-9]+\.[0-9]+\.[0-9]+//g' \
-    | grep -oE '[0-9]+\.[0-9]+' | sort -u)
+  ids=$(printf '%s\n' "$section" | awk '
+    function take_run(s) {
+      while (match(s, /^[0-9]+\.[0-9]+/)) {
+        print substr(s, RSTART, RLENGTH)
+        s = substr(s, RSTART + RLENGTH)
+        if (s ~ /^[,[:space:]]+/) sub(/^[,[:space:]]+/, "", s); else break
+      }
+    }
+    {
+      # A run may also start after an arrow, on any kind of line ("Step 3 -> 99.99").
+      rest = $0
+      while (match(rest, /(->|=>)[[:space:]]*/)) {
+        rest = substr(rest, RSTART + RLENGTH)
+        take_run(rest)
+      }
+    }
+    /^[[:space:]]*\|/ {
+      n = split($0, cells, "|")
+      for (i = 1; i <= n; i++) {
+        c = cells[i]
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", c)
+        if (c ~ /^[0-9]+\.[0-9]+([,[:space:]]+[0-9]+\.[0-9]+)*$/) take_run(c)
+      }
+      next
+    }
+    {
+      # Outside a table: a run that reaches the end of the line, as in "- Covers 1.1, 1.2, 2.1".
+      # The text before it must not end in a comparator, which is what separates that from
+      # "... and pnpm > 11.1". Both forms end in digits; only one is a citation.
+      line = $0
+      sub(/[[:space:]]+$/, "", line)
+      if (match(line, /[0-9]+\.[0-9]+([,[:space:]]+[0-9]+\.[0-9]+)*$/)) {
+        before = substr(line, 1, RSTART - 1)
+        if (before !~ /[<>=^~][[:space:]]*$/) take_run(substr(line, RSTART))
+      }
+    }
+    /^[[:space:]]*[-*+][[:space:]]+/ {
+      line = $0
+      sub(/^[[:space:]]*[-*+][[:space:]]+/, "", line)
+      take_run(line)
+    }
+  ' | sort -u)
 
   # A section that names a change but yields no ids cannot be traced, and passing it would be
   # the same "found nothing to look at, so reported ok" failure this hook exists to prevent.
