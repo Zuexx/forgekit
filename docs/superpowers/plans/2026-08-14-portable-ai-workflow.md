@@ -31,6 +31,7 @@ This plan implements `openspec/changes/portable-ai-workflow/tasks.md`:
 | Task 6 | 3.2 |
 | Task 7 | 3.3 |
 | Task 8 | 4.1 |
+| Task 10 (defect found during propagation check) | 3.4 |
 | Task 9 | 5.1, 5.2 |
 | Task 10 | 6.1 |
 
