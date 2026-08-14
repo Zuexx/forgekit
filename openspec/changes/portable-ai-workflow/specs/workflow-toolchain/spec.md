@@ -112,6 +112,23 @@ correct index as stale and train its readers to ignore it.
 - **WHEN** the code index reflects every source file and a commit is then made
 - **THEN** the preflight command still reports the index as current
 
+### Requirement: A check that cannot measure its subject fails
+
+Every check SHALL report success only after examining the thing it guards. Where a check cannot
+reach its subject — a tool absent, an enumeration empty, a file unreadable — it SHALL fail. A
+reported `ok` means "I looked and it was fine", never "I found nothing to look at".
+
+#### Scenario: A check has nothing to examine
+
+- **WHEN** a check's subject cannot be enumerated or read
+- **THEN** the check reports failure, naming what it could not determine
+
+#### Scenario: A citation that resolves to nothing
+
+- **WHEN** an instruction file cites something no check knows how to resolve
+- **THEN** it is reported as unresolved rather than passed over, provided it is shaped like a
+  capability rather than like ordinary prose or an identifier
+
 ### Requirement: Configuration verified by reading it back
 
 The preflight check SHALL confirm the repository's workflow configuration is usable by reading

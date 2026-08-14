@@ -179,14 +179,27 @@ while IFS= read -r cap; do
       fi
       ;;
     "pnpm "*|"npm "*)
-      # A cited package script rots the same way a skill name does.
-      script="${cap#* }"
-      if node -e 'const s=require(process.argv[1]).scripts||{};process.exit(s[process.argv[2]]?0:1)' \
-           "$ROOT_DIR/package.json" "$script" 2>/dev/null; then
-        pass "$cap"
-      else
-        fail "$cap names no script in package.json" "add the script, or correct the citation"
-      fi
+      # A cited package script rots the same way a skill name does — but only a script can.
+      # `pnpm install` and `pnpm exec …` are built-in subcommands with nothing to resolve, and
+      # the frontend's scripts live in app/package.json, not the workflow package.
+      sub="${cap#* }"
+      first="${sub%% *}"
+      case "$first" in
+        install|exec|dlx|add|remove|run|update|why|store|approve-builds)
+          pass "$cap (pnpm subcommand)"
+          ;;
+        *)
+          if node -e 'const f=process.argv[1],n=process.argv[2];
+                      const has=p=>{try{return !!(require(p).scripts||{})[n]}catch(e){return false}};
+                      process.exit(has(f)||has(process.argv[3])?0:1)' \
+               "$ROOT_DIR/package.json" "$first" "$ROOT_DIR/app/package.json" 2>/dev/null; then
+            pass "$cap"
+          else
+            fail "$cap names no script in package.json or app/package.json" \
+                 "add the script, or correct the citation"
+          fi
+          ;;
+      esac
       ;;
     */*|*.md)
       # A document pointer rots the same way a stale skill name does.
@@ -196,7 +209,18 @@ while IFS= read -r cap; do
         fail "$cap does not exist" "correct the path in AGENTS.md, or restore the document"
       fi
       ;;
+    *[![:lower:][:digit:]-]*)
+      # Not shaped like a capability name — a type, an identifier, a phrase. Documentation
+      # legitimately backticks these, and failing on them would make preflight red on ordinary
+      # doc edits, which is the other way a check gets ignored. Say nothing.
+      #
+      # POSIX classes, not `[!a-z0-9-]`: under en_US.UTF-8 collation the a-z range spans
+      # aAbBcC..., so uppercase falls INSIDE it and `ISoftDelete` reached the fail arm.
+      :
+      ;;
     *)
+      # An all-lowercase bare word IS the shape of a capability citation, and is exactly the
+      # shape of the stale `grilling` this check was written for. Nothing resolves it.
       fail "unrecognised capability \`$cap\`" \
            "it resolves to nothing — correct it in AGENTS.md, or add it to the toolchain"
       ;;

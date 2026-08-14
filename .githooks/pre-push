@@ -37,15 +37,18 @@ check_plan() {
 
   # The section is optional only for plans that cite nothing; a plan that mentions a
   # change without listing ids cannot be traced and is treated as a miss.
-  # End the section at the next heading of the SAME OR HIGHER level, or at a horizontal rule.
-  # Ending at `## ` alone let a plan with `### ` subheadings spill its whole body into the scan;
-  # ending at any level went too far the other way and truncated the section at its own
-  # subheading, so ids listed under `### Covered tasks` were never checked at all. Intervals
+  # The section is the content directly under the heading, ending at the next heading of ANY
+  # level or a horizontal rule. Ending only at `## ` let a plan without a rule spill its whole
+  # body into the id scan, where its version numbers read as task ids and refused the push.
+  #
+  # A `### ` subheading therefore ends the section too, which means ids listed beneath one are
+  # not seen. That is deliberate and safe now: a section yielding no ids FAILS below rather
+  # than passing, so an unsupported layout is refused loudly instead of waved through. Intervals
   # like `#{1,2}` are avoided because mawk 1.3.3 treats them literally.
   local section
   section=$(awk '
     /^## OpenSpec Coverage/ { flag=1; next }
-    flag && (/^## / || /^# / || /^---[[:space:]]*$/) { flag=0 }
+    flag && (/^#/ || /^---[[:space:]]*$/) { flag=0 }
     flag
   ' "$plan")
   [ -z "$section" ] && return 0
@@ -67,14 +70,34 @@ check_plan() {
     return 1
   fi
 
-  # Take ids only from list items and table rows, and strip version-shaped tokens first.
-  # Scanning the whole section for `N.M` read "^1.9.0" and ">=22.16" as task ids and refused
-  # pushes over ids nobody wrote — the false positive that teaches people to bypass a gate.
+  # From a table row take only the last non-empty cell — that is where the ids live, and it
+  # keeps a descriptive cell ("needs pnpm 11.1") from contributing digits. Other lines are read
+  # whole so a prose citation still works.
+  #
+  # Then strip version-shaped tokens. The comparator must be adjacent to the number: a bag of
+  # characters with optional space let "-> 99.99" and "=> 88.88" swallow real ids, because `>`
+  # alone matched and the space was optional.
   local ids
-  ids=$(printf '%s' "$section" \
-    | grep -E '^[[:space:]]*([-*+]|\|)' \
-    | sed -E 's/[<>=^~v]+[[:space:]]*[0-9]+(\.[0-9]+)+//g; s/[0-9]+\.[0-9]+\.[0-9]+//g' \
+  ids=$(printf '%s\n' "$section" \
+    | awk -F'|' '
+        /^[[:space:]]*\|/ {
+          last = ""
+          for (i = 2; i <= NF; i++) if ($i ~ /[^[:space:]]/) last = $i
+          print last
+          next
+        }
+        { print }
+      ' \
+    | sed -E 's/(\^|~|>=|<=|==|[[:space:]]v)[0-9]+(\.[0-9]+)+//g; s/[0-9]+\.[0-9]+\.[0-9]+//g' \
     | grep -oE '[0-9]+\.[0-9]+' | sort -u)
+
+  # A section that names a change but yields no ids cannot be traced, and passing it would be
+  # the same "found nothing to look at, so reported ok" failure this hook exists to prevent.
+  if [ -z "$ids" ]; then
+    note "$rel: OpenSpec Coverage cites no task ids"
+    note "  (list them directly under the heading — a '### ' subheading ends the section)"
+    return 1
+  fi
 
   local missing=""
   local id
