@@ -281,8 +281,12 @@ pnpm preflight
 
 It checks the declared tools, that `openspec/config.yaml` still yields its rules through the
 installed version, that the CodeGraph index reflects current source, that hooks are enabled
-**and executable**, and that every skill, command, and document cited by `AGENTS.md` resolves.
-Each failure names the command that fixes it.
+**and executable**, and that every skill, command, script, and document path cited in a markdown
+table or as a structured literal in `AGENTS.md` or `openspec/config.yaml` resolves. Each failure
+names the command that fixes it.
+
+On Windows the `.mcp.json` entry points at the extensionless `node_modules/.bin/codegraph` shim,
+which does not spawn there; use `codegraph.CMD` if you develop a generated product on Windows.
 
 End-to-end tests are not in that list because they need infrastructure. Run them
 separately once a database is available:

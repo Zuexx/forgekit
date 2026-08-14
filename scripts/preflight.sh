@@ -1,14 +1,27 @@
 #!/usr/bin/env bash
 # Reports whether this repository's documented AI workflow is operational on this machine.
 # Every check runs before exiting, so one failure does not hide the rest — hence no `set -e`.
+#
+# The governing rule for every check below: a check that cannot measure its subject must FAIL,
+# never pass. An `ok` has to mean "I looked and it was fine", not "I found nothing to look at".
 set -uo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+[ -n "$ROOT_DIR" ] && [ -d "$ROOT_DIR" ] || { echo "cannot resolve repository root" >&2; exit 1; }
 BIN_DIR="$ROOT_DIR/node_modules/.bin"
 FAILED=0
 
 pass() { printf '  ok    %s\n' "$1"; }
 fail() { printf '  FAIL  %s\n        fix: %s\n' "$1" "$2"; FAILED=1; }
+
+# BSD stat and GNU stat spell mtime differently. Decide once rather than relying on one
+# form failing quietly into the other — GNU's `-f` means --file-system and prints output
+# of its own, which a fallback chain would silently mix into the result.
+if stat -f %m "$ROOT_DIR" >/dev/null 2>&1; then
+  STAT_MTIME=(-f %m)
+else
+  STAT_MTIME=(-c %Y)
+fi
 
 echo "==> Declared tools"
 for tool in openspec codegraph grillme; do
@@ -60,13 +73,19 @@ else
   # Compare against the source the index describes, not against HEAD. Committing modifies no
   # source file, so anchoring on commit time would report a correct index as stale after every
   # commit — and a check that cries wolf is one people learn to skip.
-  index_epoch=$(stat -f %m "$INDEX" 2>/dev/null || stat -c %Y "$INDEX")
+  #
+  # Known limit: deleting a source file changes no mtime, so a deletion alone does not mark
+  # the index stale.
+  index_epoch=$(stat "${STAT_MTIME[@]}" "$INDEX" 2>/dev/null)
   newest_src=$(git -C "$ROOT_DIR" ls-files -z -- \
-      '*.cs' '*.ts' '*.tsx' '*.js' '*.jsx' \
-    | xargs -0 stat -f %m 2>/dev/null || git -C "$ROOT_DIR" ls-files -z -- \
-      '*.cs' '*.ts' '*.tsx' '*.js' '*.jsx' | xargs -0 stat -c %Y 2>/dev/null)
-  newest_src=$(printf '%s\n' "$newest_src" | sort -rn | head -1)
-  if [ -n "$newest_src" ] && [ "$index_epoch" -lt "$newest_src" ]; then
+      '*.cs' '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.mts' '*.cts' 2>/dev/null \
+    | xargs -0 stat "${STAT_MTIME[@]}" 2>/dev/null | sort -rn | head -1)
+  if [ -z "$index_epoch" ] || [ -z "$newest_src" ]; then
+    # Enumeration produced nothing — no git, no stat, or no source files. Whatever the cause,
+    # the freshness of the index is unknown, and unknown is not ok.
+    fail "cannot determine whether the index is current" \
+         "check that git and stat work here, then: pnpm exec codegraph index"
+  elif [ "$index_epoch" -lt "$newest_src" ]; then
     fail "index is older than the newest source file — impact analysis from it would be out of date" \
          "pnpm exec codegraph index"
   else
@@ -76,7 +95,10 @@ fi
 
 echo "==> Git hooks"
 hooks_path=$(git -C "$ROOT_DIR" config --get core.hooksPath || true)
-if [ "$hooks_path" != ".githooks" ]; then
+hooks_abs=""
+[ -n "$hooks_path" ] && hooks_abs=$(cd "$ROOT_DIR" && cd "$hooks_path" 2>/dev/null && pwd)
+expected_abs=$(cd "$ROOT_DIR/.githooks" 2>/dev/null && pwd)
+if [ -z "$hooks_abs" ] || [ "$hooks_abs" != "$expected_abs" ]; then
   fail "repository hooks are not enabled" "git config core.hooksPath .githooks"
 else
   pass "core.hooksPath -> .githooks"
@@ -94,21 +116,29 @@ else
 fi
 
 echo "==> Capabilities cited by workflow instructions"
-PLUGIN_SKILLS=$(ls -d "$HOME"/.claude/plugins/cache/*/superpowers/*/skills 2>/dev/null | head -1)
+# Sort by version and take the newest, so a stale cached plugin version is not what gets
+# validated against.
+PLUGIN_SKILLS=$(ls -d "$HOME"/.claude/plugins/cache/*/superpowers/*/skills 2>/dev/null | sort -V | tail -1)
 
 if [ -z "$PLUGIN_SKILLS" ]; then
   fail "Superpowers plugin is not installed" \
        "open Claude Code in this repository and approve the plugin declared in .claude/settings.json"
 fi
 
-# Tokens cited in the "Use" column of AGENTS.md's skill table, plus every structured capability
-# literal in either instruction file. The table is included so an unprefixed name — the shape of
-# the stale `grilling` citation this check was written for — cannot slip through unrecognised.
+INSTRUCTION_FILES=("$ROOT_DIR/AGENTS.md" "$ROOT_DIR/openspec/config.yaml")
+
+# Every backticked token in EVERY cell of every markdown table row, plus structured literals
+# and document paths cited anywhere in either instruction file.
+#
+# Reading every cell rather than a fixed column is deliberate: fixing on one column skips a
+# capability cited in another, which is the same "passes because it never looked" hole this
+# check exists to close. An unrecognised token fails rather than being ignored, because the
+# defect this was written for -- a stale `grilling` -- carries no prefix a pattern could match.
 cited=$(
   {
-    awk -F'|' '/^\| [A-Z]/ && NF>3 { print $3 }' "$ROOT_DIR/AGENTS.md"
-    grep -ohE '`(superpowers:[a-z-]+|/opsx:[a-z]+|grillme)`' \
-      "$ROOT_DIR/AGENTS.md" "$ROOT_DIR/openspec/config.yaml"
+    awk -F'|' '/^[[:space:]]*\|/ { for (i = 2; i <= NF; i++) print $i }' "$ROOT_DIR/AGENTS.md"
+    grep -ohE '`(superpowers:[a-z-]+|/opsx:[a-z]+|grillme|codegraph_explore)`' "${INSTRUCTION_FILES[@]}"
+    grep -ohE '`(docs/[A-Za-z0-9._/-]*|[A-Za-z0-9._/-]+\.md)`' "${INSTRUCTION_FILES[@]}"
   } | grep -oE '`[^`]+`' | tr -d '`' | sort -u
 )
 
@@ -135,7 +165,7 @@ while IFS= read -r cap; do
       pass "$cap (built-in)"
       ;;
     codegraph_explore)
-      if grep -q '"codegraph"' "$ROOT_DIR/.mcp.json" 2>/dev/null; then
+      if [ -f "$ROOT_DIR/.mcp.json" ] && grep -q '"codegraph"' "$ROOT_DIR/.mcp.json"; then
         pass "$cap"
       else
         fail "$cap has no declared MCP server" "declare codegraph in .mcp.json"
@@ -146,6 +176,16 @@ while IFS= read -r cap; do
         pass "$cap"
       else
         fail "$cap does not resolve" "pnpm install"
+      fi
+      ;;
+    "pnpm "*|"npm "*)
+      # A cited package script rots the same way a skill name does.
+      script="${cap#* }"
+      if node -e 'const s=require(process.argv[1]).scripts||{};process.exit(s[process.argv[2]]?0:1)' \
+           "$ROOT_DIR/package.json" "$script" 2>/dev/null; then
+        pass "$cap"
+      else
+        fail "$cap names no script in package.json" "add the script, or correct the citation"
       fi
       ;;
     */*|*.md)
@@ -161,9 +201,7 @@ while IFS= read -r cap; do
            "it resolves to nothing — correct it in AGENTS.md, or add it to the toolchain"
       ;;
   esac
-done <<CITED
-$cited
-CITED
+done < <(printf '%s\n' "$cited")
 
 echo
 if [ "$FAILED" -eq 0 ]; then

@@ -37,14 +37,15 @@ check_plan() {
 
   # The section is optional only for plans that cite nothing; a plan that mentions a
   # change without listing ids cannot be traced and is treated as a miss.
-  # End the section at the next heading of ANY level, or at a horizontal rule. Ending it only
-  # at `## ` let a plan with `### ` subheadings spill its whole body into the scan below, where
-  # every version number in the prose ("^1.9.0", ">=22.16") reads as a task id and the push is
-  # refused over ids nobody wrote. A gate that cries wolf is one people learn to bypass.
+  # End the section at the next heading of the SAME OR HIGHER level, or at a horizontal rule.
+  # Ending at `## ` alone let a plan with `### ` subheadings spill its whole body into the scan;
+  # ending at any level went too far the other way and truncated the section at its own
+  # subheading, so ids listed under `### Covered tasks` were never checked at all. Intervals
+  # like `#{1,2}` are avoided because mawk 1.3.3 treats them literally.
   local section
   section=$(awk '
     /^## OpenSpec Coverage/ { flag=1; next }
-    flag && (/^#{1,6} / || /^---[[:space:]]*$/) { flag=0 }
+    flag && (/^## / || /^# / || /^---[[:space:]]*$/) { flag=0 }
     flag
   ' "$plan")
   [ -z "$section" ] && return 0
@@ -66,9 +67,18 @@ check_plan() {
     return 1
   fi
 
+  # Take ids only from list items and table rows, and strip version-shaped tokens first.
+  # Scanning the whole section for `N.M` read "^1.9.0" and ">=22.16" as task ids and refused
+  # pushes over ids nobody wrote — the false positive that teaches people to bypass a gate.
+  local ids
+  ids=$(printf '%s' "$section" \
+    | grep -E '^[[:space:]]*([-*+]|\|)' \
+    | sed -E 's/[<>=^~v]+[[:space:]]*[0-9]+(\.[0-9]+)+//g; s/[0-9]+\.[0-9]+\.[0-9]+//g' \
+    | grep -oE '[0-9]+\.[0-9]+' | sort -u)
+
   local missing=""
   local id
-  for id in $(printf '%s' "$section" | grep -oE '\b[0-9]+\.[0-9]+\b' | sort -u); do
+  for id in $ids; do
     grep -qE "^[[:space:]]*-[[:space:]]*\[[ x]\][[:space:]]*$id([[:space:]]|\.)" "$tasks" || missing="$missing $id"
   done
 

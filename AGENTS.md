@@ -88,10 +88,25 @@ then `pnpm build` before `pnpm test:e2e`.
 
 `.githooks/pre-push` checks that implementation plans cite OpenSpec task ids that
 actually resolve — the one link between the two systems that nothing else validates.
-Enable it once per clone with `git config core.hooksPath .githooks`.
+Enabling it takes two steps, not one: `dotnet new` does not carry the executable bit, and git
+ignores a hook it cannot execute without reporting anything.
 
-`scripts/verify.sh` runs the full local gate. CI runs the same categories on every pull
-request, plus migration drift checks and secret scanning.
+```bash
+git config core.hooksPath .githooks
+chmod +x .githooks/*
+```
+
+`pnpm verify` runs the full local gate. CI runs the same categories on every pull request, plus
+migration drift checks and secret scanning.
+
+`pnpm preflight` reports whether this workflow is operational here at all — the declared tools,
+whether `openspec/config.yaml` still yields its rules through the installed version, whether the
+CodeGraph index reflects current source, whether the hooks can fire, and whether every capability
+this file and `openspec/config.yaml` name still resolves. Run it after cloning, and when
+something in the workflow behaves as though a piece is missing. Each failure names its fix.
+
+Invoke both through pnpm rather than as `./scripts/*.sh` — in a generated product those files
+arrive without the executable bit.
 
 Frontend unit tests cover `proxies/` — the authorization policy and request-context
 resolution — and the auth config. End-to-end tests cover sign-in through to the database.

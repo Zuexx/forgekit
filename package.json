@@ -2,8 +2,10 @@
   "name": "forgekit-workflow",
   "private": true,
   "description": "Development-workflow tooling for this repository. Not part of the API or the app.",
+  "packageManager": "pnpm@11.1.1",
   "engines": {
-    "node": ">=22.16"
+    "node": ">=22.16",
+    "pnpm": ">=11"
   },
   "scripts": {
     "preflight": "bash scripts/preflight.sh",

@@ -131,10 +131,49 @@ its invocation stated.
   published contract** → Mitigated by globbing the version segment and by reporting a missing
   plugin root as a single named failure. If the layout changes, preflight fails loudly with a
   message pointing at itself, rather than passing silently — the correct direction to fail.
-- **Index staleness is judged by comparing the index against the current commit, which will
-  report stale during ordinary work** → Accepted deliberately. An index older than the code is
-  exactly the condition that makes `rules.proposal`'s first rule produce a confident wrong
-  answer, which this repository has already produced once.
+- **Index staleness is measured by mtime, which is a proxy** → A file touched without being
+  changed reads as newer, and deleting a source file changes no mtime at all, so a deletion
+  alone does not mark the index stale. Accepted: the check exists to catch the common case,
+  an index left behind by ordinary editing.
+
+## Decisions taken during implementation
+
+These were settled while building, not while designing, and are recorded here because this is
+where the next reader looks for the reasoning.
+
+### Index staleness is measured against source, not against the commit
+
+The original design compared the index against `HEAD`'s commit time and accepted that it would
+"report stale during ordinary work". Implementation showed that was wrong in kind, not degree:
+committing modifies no source file, so the check went red after **every commit** while the index
+was perfectly current. A check that is red for a reason unrelated to what it guards trains its
+readers to skip it, which costs more than the check was worth. It now compares the index against
+the newest tracked source file.
+
+### Build scripts are declined through `allowBuilds`
+
+pnpm 11 exits non-zero — not merely warns — when a dependency's build script is skipped without
+a decision, which would break the install this change promises. The recognised setting is
+`allowBuilds` in `pnpm-workspace.yaml`; `onlyBuiltDependencies`, `ignoredBuiltDependencies`, and
+`strictDepBuilds` are not read in this version, from `package.json` or `.npmrc`. Both skipped
+scripts were inspected and neither is needed: OpenSpec's `postinstall` prints an opt-in
+completion hint, and `msgpackr-extract` is a native accelerator with a pure-JS fallback.
+
+### The capability check reads every table cell, and document paths too
+
+Fixing on one table column skips a capability cited in another — the same "passed because it
+never looked" hole the check exists to close, moved one axis over. It reads every cell, and an
+unrecognised token fails rather than being ignored, because the defect that motivated the check
+(`grilling`) carries no prefix a pattern could match. Document paths are resolved on the same
+grounds: a pointer at a deleted file rots identically to a stale skill name.
+
+### Scripts are invoked through pnpm, hooks are reported
+
+`dotnet new` does not carry the executable bit, so in a generated product every script and hook
+arrives non-executable. Scripts sidestep this through `pnpm preflight` / `pnpm verify`, which do
+not depend on file modes. A git hook cannot: git requires the bit and ignores a hook without it
+in silence. Preflight therefore reports an unexecutable hook rather than letting the gate fail
+quietly — which it had been doing in every generated product.
 
 ## Migration Plan
 
