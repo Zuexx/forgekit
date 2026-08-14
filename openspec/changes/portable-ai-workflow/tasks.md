@@ -55,6 +55,15 @@ These were decided in design.md and are not open for rediscovery mid-task:
   temporarily breaking a `rules:` entry in `openspec/config.yaml` the way a plain scalar
   containing `: ` breaks it makes preflight fail, and restoring it makes preflight pass.
 
+- [ ] 3.4 Make the repository's scripts runnable where file modes are not preserved, and report
+  a hook that cannot fire. `dotnet new` does not carry the executable bit, so in every generated
+  product `scripts/preflight.sh`, `scripts/verify.sh`, and `.githooks/pre-push` arrive as
+  `rw-r--r--` — the first two fail with `permission denied`, and git ignores the third in
+  silence, meaning the OpenSpec task-id gate has never fired in any generated product. Done when
+  both scripts run in a generated product through a declared command without any permission
+  change, and preflight fails with a naming message when a hook under `core.hooksPath` is not
+  executable.
+
 ## 4. Instruction corrections
 
 - [ ] 4.1 Correct grillme in `AGENTS.md`: remove the `grilling` row from the overlapping-skills

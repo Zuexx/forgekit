@@ -73,10 +73,21 @@ fi
 
 echo "==> Git hooks"
 hooks_path=$(git -C "$ROOT_DIR" config --get core.hooksPath || true)
-if [ "$hooks_path" = ".githooks" ]; then
-  pass "core.hooksPath -> .githooks"
-else
+if [ "$hooks_path" != ".githooks" ]; then
   fail "repository hooks are not enabled" "git config core.hooksPath .githooks"
+else
+  pass "core.hooksPath -> .githooks"
+  # Git ignores a non-executable hook without saying so. `dotnet new` does not carry the
+  # executable bit, so in a generated product every hook arrives unable to fire, silently.
+  for hook in "$ROOT_DIR/.githooks"/*; do
+    [ -f "$hook" ] || continue
+    if [ -x "$hook" ]; then
+      pass "$(basename "$hook") is executable"
+    else
+      fail "$(basename "$hook") is not executable — git will ignore it without reporting anything" \
+           "chmod +x .githooks/$(basename "$hook")"
+    fi
+  done
 fi
 
 echo "==> Capabilities cited by workflow instructions"

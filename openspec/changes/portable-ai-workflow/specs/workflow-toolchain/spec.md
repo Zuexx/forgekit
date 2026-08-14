@@ -26,6 +26,30 @@ outside the repository.
 - **THEN** the generated project contains the same toolchain declarations as the base
 - **AND** running the standard install command in it obtains the same tools
 
+#### Scenario: The repository's scripts are invoked where file modes are not preserved
+
+- **WHEN** a product is generated from the template, which does not carry the executable bit
+- **THEN** the repository's scripts are still invocable through a declared command
+- **AND** no manual permission change is required to run them
+
+### Requirement: Hooks are reported when they cannot fire
+
+Git ignores a hook that is not executable, without reporting anything. Where the repository
+relies on a hook as a gate, the preflight check SHALL verify the hook can actually run, not
+only that hooks are configured.
+
+#### Scenario: The hooks path is set but the hook cannot execute
+
+- **WHEN** `core.hooksPath` points at the repository's hooks directory but a hook file is not
+  executable
+- **THEN** the preflight check reports it as a failure naming the hook
+- **AND** its output gives the command that makes it executable
+
+#### Scenario: Hooks are configured and executable
+
+- **WHEN** `core.hooksPath` is set and every hook in it is executable
+- **THEN** the preflight check reports the hooks as passing
+
 ### Requirement: Cited capabilities resolve
 
 Every skill, command, plugin, tool, and referenced document named in the repository's workflow
