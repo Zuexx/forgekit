@@ -3,6 +3,11 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# Prefer the workflow CLIs declared in this repository's package.json over any global install,
+# so this script passes in a clone where they exist only under node_modules/.bin.
+PATH="$ROOT_DIR/node_modules/.bin:$PATH"
+export PATH
+
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
     echo "Missing required command: $1" >&2

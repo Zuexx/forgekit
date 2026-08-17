@@ -114,6 +114,16 @@ operations:
         Nothing generates that section — Superpowers has no knowledge of OpenSpec —
         so without it there is no way to tell afterwards which of these tasks the
         work actually delivered.
+      - Write those ids where they can be read mechanically, because they are. Put them
+        in a table cell holding nothing else, or start a list item with them. A pre-push
+        hook resolves what it reads and names every number it did not, so a citation is
+        never silently skipped — but a number it cannot read is one you have to write
+        again.
+      - Keep the whole coverage list above the first `---` under that heading. The hook
+        stops looking there, because a plan body below it is full of version numbers and
+        reporting those on every push is the noise that stops people reading the output.
+        An id added later, beneath the rule, is outside what the hook can see — which is
+        exactly the drift it exists to catch, so add it to the list above instead.
       - Execute through `superpowers:subagent-driven-development` when its own decision
         tree routes you there — it asks whether the tasks are mostly independent, and
         sends tightly coupled ones to manual execution instead. Follow that answer

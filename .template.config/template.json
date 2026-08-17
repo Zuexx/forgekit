@@ -73,8 +73,7 @@
             "**/*.db-shm",
             "**/*.db-wal",
             "**/logs/**",
-            "**/.codegraph/**",
-            "**/.mem0-src/**"
+            "**/.codegraph/**"
           ]
         },
         {

@@ -256,13 +256,37 @@ openspec validate --all --strict --no-interactive
 gitleaks git --redact --config .gitleaks.toml --log-opts=--all
 ```
 
-`scripts/verify.sh` runs all of the above in one command.
+`pnpm verify` runs all of the above in one command. Invoke it through pnpm rather than as
+`./scripts/verify.sh`: `dotnet new` does not carry the executable bit, so in a generated project
+the scripts arrive without it.
 
-Enable the repository's hooks once per clone — git does not turn them on for you:
+Set up the workflow once per clone. Neither step happens on its own — git does not enable hooks
+for you, and it ignores a hook that is not executable without reporting anything:
 
 ```bash
+pnpm install
 git config core.hooksPath .githooks
+chmod +x .githooks/*
+pnpm exec codegraph init
 ```
+
+`codegraph init` is the first-time command; `codegraph index` refreshes an existing index and
+refuses to run before `init`.
+
+Then confirm the workflow is actually operational on this machine:
+
+```bash
+pnpm preflight
+```
+
+It checks the declared tools, that `openspec/config.yaml` still yields its rules through the
+installed version, that the CodeGraph index reflects current source, that hooks are enabled
+**and executable**, and that every skill, command, script, and document path cited in a markdown
+table or as a structured literal in `AGENTS.md` or `openspec/config.yaml` resolves. Each failure
+names the command that fixes it.
+
+On Windows the `.mcp.json` entry points at the extensionless `node_modules/.bin/codegraph` shim,
+which does not spawn there; use `codegraph.CMD` if you develop a generated product on Windows.
 
 End-to-end tests are not in that list because they need infrastructure. Run them
 separately once a database is available:
