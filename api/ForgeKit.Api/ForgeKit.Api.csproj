@@ -41,10 +41,5 @@
     <ProjectReference Include="..\Anvil\Anvil.csproj" />
   </ItemGroup>
 
-  <Target Name="RemoveIncompatibleOpenApiSourceGenerator" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'Microsoft.AspNetCore.OpenApi.SourceGenerators'" />
-    </ItemGroup>
-  </Target>
 
 </Project>
