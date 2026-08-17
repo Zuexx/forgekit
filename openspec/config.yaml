@@ -110,6 +110,13 @@ operations:
         `superpowers:writing-plans` before touching code. This file holds
         feature-level tasks; the plan holds the minute-level steps. Writing steps
         here, or features there, collapses the two levels into one.
+      - Build the plan, and any long file, in segments rather than emitting it whole.
+        A single large write is all-or-nothing — a mistake anywhere in it surfaces only
+        afterwards, and by then the file is too big for one edit to target safely. Write
+        the skeleton, fill sections with successive edits, and check each as it lands —
+        for a script, run `bash -n` after each segment rather than once at the end.
+        Reaching for string-splicing to restructure a file you just wrote is the signal
+        you skipped this.
       - Record which task ids a plan covers under an `## OpenSpec Coverage` heading.
         Nothing generates that section — Superpowers has no knowledge of OpenSpec —
         so without it there is no way to tell afterwards which of these tasks the
