@@ -68,7 +68,6 @@ node_modules/
 # misc
 .DS_Store
 *.pem
-.codegraph/
 .claude/settings.local.json
 .python-version
 
@@ -103,7 +102,5 @@ Thumbs.db
 /app/playwright/.cache/
 
 # --- AI tooling (local only, never committed) ---
-# CodeGraph local symbol index
+# CodeGraph local symbol index — regenerate with `pnpm exec codegraph index`
 .codegraph/
-# Shallow clone of mem0ai/mem0 used to run the local OpenMemory stack
-.mem0-src/
