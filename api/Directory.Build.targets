@@ -1,0 +1,25 @@
+<Project>
+
+  <!--
+    Microsoft.AspNetCore.OpenApi ships an XML-comment source generator that emits code assigning
+    to IOpenApiMediaType.Example. That property is read-only in Microsoft.OpenApi 3.x, so the
+    generated file fails to compile with CS0200. Removing the analyzer keeps the OpenAPI
+    document generation without the generator's XML-comment support.
+
+    It lives here rather than in each csproj for two reasons. It was previously repeated in five
+    project files, and a change to it reached only four of them. And every project that
+    references the package transitively needs it — including the test projects, which is where
+    the omission surfaced.
+
+    The Remove uses an item transform rather than a Condition attribute on purpose: `dotnet new`
+    evaluates MSBuild Condition attributes while generating a project and drops the items whose
+    condition is false, which deleted this line from every generated product without a word.
+  -->
+
+  <Target Name="RemoveIncompatibleOpenApiSourceGenerator" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer->WithMetadataValue('Filename','Microsoft.AspNetCore.OpenApi.SourceGenerators'))" />
+    </ItemGroup>
+  </Target>
+
+</Project>
