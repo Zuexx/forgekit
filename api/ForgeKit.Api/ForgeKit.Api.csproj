@@ -43,7 +43,7 @@
 
   <Target Name="RemoveIncompatibleOpenApiSourceGenerator" BeforeTargets="CoreCompile">
     <ItemGroup>
-      <Analyzer Remove="$(NuGetPackageRoot)microsoft.aspnetcore.openapi/10.0.9/analyzers/dotnet/cs/Microsoft.AspNetCore.OpenApi.SourceGenerators.dll" />
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'Microsoft.AspNetCore.OpenApi.SourceGenerators'" />
     </ItemGroup>
   </Target>
 
