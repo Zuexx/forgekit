@@ -68,6 +68,14 @@ expressed as a semver range rather than as a release channel.
   accelerator reached through `grillme → effect` that falls back to pure JS. Neither is needed.
 - Revisit when: either package's install script starts doing work the CLI depends on.
 
+## Keeping these current
+
+`.github/dependabot.yml` opens weekly pull requests for the root workflow package, `app/`, and
+`api/`, and monthly ones for the GitHub Actions themselves. The majors held back above are
+excluded there by name, so minors and patches still arrive while the constraint stands. Removing
+a constraint here means removing its `ignore` entry too — otherwise the constraint is lifted in
+prose and still enforced by the bot.
+
 ## Verification
 
 After revisiting any constraint, run:
@@ -79,3 +87,7 @@ pnpm check
 pnpm lint
 BETTER_AUTH_SECRET="$(openssl rand -base64 32)" pnpm build
 ```
+
+**On a workflow-tooling bump, run `pnpm preflight` before merging it.** CI does not. A release
+can satisfy its semver range and still stop `openspec/config.yaml` yielding its rules, which is
+the failure preflight's config check exists to catch and the one nothing else would notice.
