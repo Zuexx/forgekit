@@ -1,0 +1,54 @@
+version: 2
+
+# The workflow tooling tracks the newest release its version policy permits, and nobody
+# remembers to check. docs/DEPENDENCY_CONSTRAINTS.md states each policy, which majors are held
+# back and why, and what to run before merging a tooling bump.
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      workflow-tooling:
+        patterns:
+          - "*"
+
+  - package-ecosystem: npm
+    directory: /app
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+    ignore:
+      # Held on their current major deliberately; docs/DEPENDENCY_CONSTRAINTS.md states the
+      # reason and the condition for revisiting each. Minors and patches still come through.
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      - dependency-name: tedious
+        update-types: [version-update:semver-major]
+    groups:
+      dev-dependencies:
+        dependency-type: development
+      production-dependencies:
+        dependency-type: production
+
+  - package-ecosystem: nuget
+    directory: /api
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore(deps)
