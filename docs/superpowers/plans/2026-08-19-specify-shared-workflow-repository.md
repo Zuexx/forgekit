@@ -148,17 +148,27 @@ If a path appears under either heading, that is a real finding: the documented b
 
 - [ ] **Step 3: Prove a repository-owned file survives a sync (task 2.2)**
 
+The sync must actually run for this to mean anything. When GitHub is unreachable it fails at
+the fetch, and then "owned files unchanged" passes because nothing happened — the vacuous pass
+this whole change specifies against. Point it at the local upstream clone so the real code path
+executes offline:
+
 ```bash
 cd /Users/zuexx/Documents/labs/prototype
+git remote add workflow-local /Users/zuexx/Documents/labs/forgekit-workflow 2>/dev/null || true
 md5 -q scripts/verify.sh package.json > "$SCRATCH/owned-before.txt"
 sed -n '1,60p' openspec/config.yaml | md5 -q >> "$SCRATCH/owned-before.txt"
-pnpm sync-workflow
+WORKFLOW_REMOTE=workflow-local bash scripts/sync-workflow.sh
 md5 -q scripts/verify.sh package.json > "$SCRATCH/owned-after.txt"
 sed -n '1,60p' openspec/config.yaml | md5 -q >> "$SCRATCH/owned-after.txt"
 diff "$SCRATCH/owned-before.txt" "$SCRATCH/owned-after.txt" && echo "owned files unchanged"
 ```
 
 Expected: `owned files unchanged`, and `git status --porcelain` reports nothing.
+
+Before trusting that, confirm the sync did work: its output must list all six shared files as
+`ok` and report the splice. A sync that exited early updates nothing and leaves the owned files
+trivially unchanged.
 
 This asserts the checksums match rather than merely that the sync exited zero — a sync that did nothing at all would also exit zero.
 

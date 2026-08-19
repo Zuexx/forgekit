@@ -11,12 +11,12 @@
 
 ## 2. The ownership boundary holds
 
-- [ ] 2.1 Verify every file the spec calls shared is actually delivered by the sync and listed
+- [x] 2.1 Verify every file the spec calls shared is actually delivered by the sync and listed
   in the documented boundary, and that nothing outside that list is touched. Done when the
   shared-path list in the sync, the boundary section in `AGENTS.md`, and the constraint entry in
   `docs/DEPENDENCY_CONSTRAINTS.md` name the same set, with no file in one and missing from
   another.
-- [ ] 2.2 Verify a repository-owned file survives a sync. Done when running the sync leaves
+- [x] 2.2 Verify a repository-owned file survives a sync. Done when running the sync leaves
   `scripts/verify.sh`, `package.json`, and the `context:` block of `openspec/config.yaml`
   byte-identical, shown by a diff that reports no change to them.
 
