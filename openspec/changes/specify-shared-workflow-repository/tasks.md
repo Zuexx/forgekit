@@ -56,6 +56,12 @@
 - [ ] 6.1 Run the full local gate and record its output. Done when `pnpm preflight` and
   `pnpm verify` both exit zero in this repository with their output read in the session, not
   assumed.
+  **BLOCKED (2026-08-19).** `pnpm preflight` exits 0. `pnpm verify` exits 1 on
+  `error MSB4018: The "CreateAppHost" task failed unexpectedly` —
+  `System.OverflowException at Interop.Sys.IsMemberOfGroup(UInt32 gid)`. Reproduced on `main`
+  in a separate worktree, and in Debug as well as Release, so it is the environment rather than
+  this branch. Both the .NET build and GitHub connectivity failed partway through the session
+  having worked earlier in it. Not ticked: a gate that could not run is not a gate that passed.
 - [ ] 6.2 Request review, then archive the change against the spec deltas rather than against
   this checklist. Done when the delta requirements are each checked off against observed
   behaviour and any divergence is written into the archive.
