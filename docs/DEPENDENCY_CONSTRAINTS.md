@@ -68,6 +68,17 @@ expressed as a semver range rather than as a release channel.
   accelerator reached through `grillme → effect` that falls back to pure JS. Neither is needed.
 - Revisit when: either package's install script starts doing work the CLI depends on.
 
+### The shared workflow repository
+
+- Current constraint: `scripts/preflight.sh`, `scripts/sync-workflow.sh`, `.githooks/pre-push`,
+  `.mcp.json`, `.claude/settings.json`, and `openspec/rules.yaml` are pulled from
+  [forgekit-workflow](https://github.com/Zuexx/forgekit-workflow) and must not be edited here.
+- Reason: the same files run in forgekit-ios and forgekit-android. An edit made here is
+  overwritten by the next `pnpm sync-workflow` without a word, and until then the three
+  repositories disagree about a workflow that is supposed to be one thing.
+- Revisit when: a change genuinely applies to this stack only — in which case it belongs in
+  `scripts/verify.sh` or in this repository's own `context:` block, not in a shared file.
+
 ## Keeping these current
 
 `.github/dependabot.yml` opens weekly pull requests for the root workflow package, `app/`, and

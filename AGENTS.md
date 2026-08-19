@@ -112,6 +112,35 @@ Frontend unit tests cover `proxies/` — the authorization policy and request-co
 resolution — and the auth config. End-to-end tests cover sign-in through to the database.
 There is no component-level coverage, so UI details still need manual verification.
 
+## The shared workflow
+
+`scripts/preflight.sh`, `scripts/sync-workflow.sh`, `.githooks/pre-push`, `.mcp.json`,
+`.claude/settings.json`, and `openspec/rules.yaml` are owned by the
+[forgekit-workflow](https://github.com/Zuexx/forgekit-workflow) repository and shared with
+every ForgeKit-family repo, including the iOS and Android starters. Edit them there, not here:
+
+```bash
+pnpm sync-workflow && pnpm preflight
+```
+
+overwrites them and re-splices the shared rules into `openspec/config.yaml` below the marker
+line, so a local edit disappears without a word. What this repository owns is everything above
+that marker — its `context:` block — plus `scripts/verify.sh`, `package.json`, and this file.
+
+Because `preflight.sh` is now shared verbatim, the stack half of it is declared in
+`package.json` rather than written into the script:
+
+```jsonc
+"forgekit": {
+  "sourceGlobs":     ["*.cs", "*.ts", "*.tsx", "..."],  // what counts as source
+  "requiredTools":   ["dotnet"],                        // machine-level tools
+  "nodeSubprojects": ["app"]                            // nested npm projects
+}
+```
+
+A generated product inherits all of this. It has no `workflow` remote until one is added, and
+`pnpm sync-workflow` says so rather than failing obscurely.
+
 ## Conventions that are easy to get wrong
 
 - **Migrations are provider-specific.** When the EF model changes, add migrations for all

@@ -11,6 +11,40 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BIN_DIR="$ROOT_DIR/node_modules/.bin"
 FAILED=0
 
+# This script is shared verbatim across every ForgeKit-family repository, so everything
+# stack-specific it needs is declared by the repository rather than written in here.
+# package.json:
+#
+#   "forgekit": {
+#     "sourceGlobs":      ["*.swift"],        # what counts as source, for index freshness
+#     "requiredTools":    ["xcodebuild"],     # machine-level tools this stack cannot work without
+#     "nodeSubprojects":  ["app"]             # nested npm projects with their own scripts and bins
+#   }
+#
+# Read with a while-loop rather than `mapfile`: stock macOS ships bash 3.2, which has no
+# mapfile, and the shebang resolves there on a machine without a newer bash installed.
+read_declared() {
+  node -e '
+    const fs = require("fs");
+    let cfg = {};
+    try { cfg = (JSON.parse(fs.readFileSync(process.argv[1], "utf8")).forgekit) || {}; } catch (e) {}
+    const value = cfg[process.argv[2]];
+    // Terminate every line, including the last. `read` returns false on an unterminated
+    // final line and the loop below would discard it -- which for a one-element array means
+    // the declaration reads back as empty.
+    if (Array.isArray(value)) {
+      for (const entry of value.filter(Boolean)) process.stdout.write(entry + "\n");
+    }
+  ' "$ROOT_DIR/package.json" "$1" 2>/dev/null
+}
+
+SOURCE_GLOBS=(); REQUIRED_TOOLS=(); NODE_SUBPROJECTS=()
+# `|| [ -n "$line" ]` keeps a final unterminated line rather than dropping it, so the loop
+# stays correct even if the producer above ever stops emitting the trailing newline.
+while IFS= read -r line || [ -n "$line" ]; do [ -n "$line" ] && SOURCE_GLOBS+=("$line"); done < <(read_declared sourceGlobs)
+while IFS= read -r line || [ -n "$line" ]; do [ -n "$line" ] && REQUIRED_TOOLS+=("$line"); done < <(read_declared requiredTools)
+while IFS= read -r line || [ -n "$line" ]; do [ -n "$line" ] && NODE_SUBPROJECTS+=("$line"); done < <(read_declared nodeSubprojects)
+
 pass() { printf '  ok    %s\n' "$1"; }
 fail() { printf '  FAIL  %s\n        fix: %s\n' "$1" "$2"; FAILED=1; }
 
@@ -31,6 +65,24 @@ for tool in openspec codegraph grillme; do
     fail "$tool is not installed" "pnpm install"
   fi
 done
+
+# The stack's own tools, resolved against PATH — unlike the workflow tools above, and unlike
+# the citation check further down, which resolves against the declared toolchain precisely to
+# avoid asking PATH anything. The difference is not an inconsistency: a compiler or a project
+# generator cannot live in node_modules, so PATH is the only place it can be. What that costs
+# is a weaker guarantee, and the report says which kind of answer it is giving.
+if [ "${#REQUIRED_TOOLS[@]}" -eq 0 ]; then
+  echo "  --    no stack tools declared (package.json: forgekit.requiredTools)"
+else
+  for tool in "${REQUIRED_TOOLS[@]}"; do
+    if command -v "$tool" >/dev/null 2>&1; then
+      pass "$tool (on PATH)"
+    else
+      fail "$tool is declared by this repository but is not on PATH" \
+           "install $tool, or drop it from forgekit.requiredTools in package.json"
+    fi
+  done
+fi
 
 echo "==> Workflow configuration"
 if [ ! -x "$BIN_DIR/openspec" ]; then
@@ -77,19 +129,26 @@ else
   # Known limit: deleting a source file changes no mtime, so a deletion alone does not mark
   # the index stale.
   index_epoch=$(stat "${STAT_MTIME[@]}" "$INDEX" 2>/dev/null)
-  newest_src=$(git -C "$ROOT_DIR" ls-files -z -- \
-      '*.cs' '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.mts' '*.cts' 2>/dev/null \
-    | xargs -0 stat "${STAT_MTIME[@]}" 2>/dev/null | sort -rn | head -1)
-  if [ -z "$index_epoch" ] || [ -z "$newest_src" ]; then
-    # Enumeration produced nothing — no git, no stat, or no source files. Whatever the cause,
-    # the freshness of the index is unknown, and unknown is not ok.
-    fail "cannot determine whether the index is current" \
-         "check that git and stat work here, then: pnpm exec codegraph index"
-  elif [ "$index_epoch" -lt "$newest_src" ]; then
-    fail "index is older than the newest source file — impact analysis from it would be out of date" \
-         "pnpm exec codegraph index"
+  if [ "${#SOURCE_GLOBS[@]}" -eq 0 ]; then
+    # `git ls-files --` with no pathspec lists every tracked file, so the comparison would
+    # still produce a number — a wrong one, moved by a README edit. Quietly measuring
+    # something other than source is worse than measuring nothing, so this is a failure.
+    fail "no source globs declared, so index freshness cannot be measured" \
+         "add forgekit.sourceGlobs to package.json"
   else
-    pass "index present and reflects current source"
+    newest_src=$(git -C "$ROOT_DIR" ls-files -z -- "${SOURCE_GLOBS[@]}" 2>/dev/null \
+      | xargs -0 stat "${STAT_MTIME[@]}" 2>/dev/null | sort -rn | head -1)
+    if [ -z "$index_epoch" ] || [ -z "$newest_src" ]; then
+      # Enumeration produced nothing — no git, no stat, or the declared globs match no tracked
+      # file. Whatever the cause, the freshness of the index is unknown, and unknown is not ok.
+      fail "cannot determine whether the index is current" \
+           "check git and stat, and that forgekit.sourceGlobs matches tracked files, then: pnpm exec codegraph index"
+    elif [ "$index_epoch" -lt "$newest_src" ]; then
+      fail "index is older than the newest source file — impact analysis from it would be out of date" \
+           "pnpm exec codegraph index"
+    else
+      pass "index present and reflects current source"
+    fi
   fi
 fi
 
@@ -181,7 +240,7 @@ while IFS= read -r cap; do
     "pnpm "*|"npm "*)
       # A cited package script rots the same way a skill name does — but only a script can.
       # `pnpm install` and `pnpm exec …` are built-in subcommands with nothing to resolve, and
-      # the frontend's scripts live in app/package.json, not the workflow package.
+      # a nested project's scripts live in its own package.json, not the workflow package.
       sub="${cap#* }"
       # `pnpm run x` is the canonical long form of `pnpm x`; without unwrapping it the explicit
       # spelling of a broken citation is the one spelling that goes unchecked.
@@ -204,13 +263,17 @@ while IFS= read -r cap; do
           pass "$cap (pnpm subcommand)"
           ;;
         *)
-          if node -e 'const f=process.argv[1],n=process.argv[2];
+          pkg_paths=("$ROOT_DIR/package.json")
+          if [ "${#NODE_SUBPROJECTS[@]}" -gt 0 ]; then
+            for sub in "${NODE_SUBPROJECTS[@]}"; do pkg_paths+=("$ROOT_DIR/$sub/package.json"); done
+          fi
+          if node -e 'const n=process.argv[1];
                       const has=p=>{try{return !!(require(p).scripts||{})[n]}catch(e){return false}};
-                      process.exit(has(f)||has(process.argv[3])?0:1)' \
-               "$ROOT_DIR/package.json" "$first" "$ROOT_DIR/app/package.json" 2>/dev/null; then
+                      process.exit(process.argv.slice(2).some(has)?0:1)' \
+               "$first" "${pkg_paths[@]}" 2>/dev/null; then
             pass "$cap"
           else
-            fail "$cap names no script in package.json or app/package.json" \
+            fail "$cap names no script in package.json or any declared subproject" \
                  "add the script, or correct the citation"
           fi
           ;;
@@ -246,11 +309,26 @@ while IFS= read -r cap; do
       # shell builtin, passes for any coincidental binary, and gives a different verdict on a
       # fresh clone than on the author's laptop. What is left is the shape of the stale
       # `grilling` this was written for, resolving to nothing the repository provides.
-      if [ -x "$BIN_DIR/$cap" ] || [ -x "$ROOT_DIR/app/node_modules/.bin/$cap" ]; then
+      resolved=""
+      [ -x "$BIN_DIR/$cap" ] && resolved=1
+      # A tool this repository declared as a stack requirement is part of its toolchain too.
+      # It was already checked for presence above; here the question is only whether the name
+      # is one the repository claims, so a stale citation still has nothing to resolve against.
+      if [ -z "$resolved" ] && [ "${#REQUIRED_TOOLS[@]}" -gt 0 ]; then
+        for tool in "${REQUIRED_TOOLS[@]}"; do
+          [ "$tool" = "$cap" ] && { resolved=1; break; }
+        done
+      fi
+      if [ -z "$resolved" ] && [ "${#NODE_SUBPROJECTS[@]}" -gt 0 ]; then
+        for sub in "${NODE_SUBPROJECTS[@]}"; do
+          [ -x "$ROOT_DIR/$sub/node_modules/.bin/$cap" ] && { resolved=1; break; }
+        done
+      fi
+      if [ -n "$resolved" ]; then
         pass "$cap (declared tool)"
       else
         fail "\`$cap\` is not in the declared toolchain" \
-             "correct it in AGENTS.md, or declare it in package.json"
+             "correct it in AGENTS.md, or declare it in package.json (devDependencies or forgekit.requiredTools)"
       fi
       ;;
   esac

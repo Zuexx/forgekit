@@ -58,6 +58,22 @@ context: |
   - `docs/adr/` — architecture decisions
   - `docs/api/logging.md` — structured logging patterns and examples
 
+# >>> forgekit-workflow: managed region — edit in forgekit-workflow, not here
+
+# Shared workflow rules for every ForgeKit-family repository.
+#
+# This file is the single source of truth for the process half of openspec/config.yaml:
+# the `rules:` that shape planning artifacts and the `operations:` guidance that seams
+# OpenSpec (the outer loop: what may be built, and whether it counts as done) to
+# Superpowers (the inner loop: how it gets built, and whether it was built correctly).
+#
+# It carries nothing stack-specific on purpose. Each repository keeps its own `context:`
+# block — its stack, its layout, its conventions — and `pnpm sync-workflow` splices the
+# two together into that repository's openspec/config.yaml.
+#
+# Edit this file here, never in a consuming repository: sync-workflow overwrites the
+# spliced region and a local edit is lost without a word.
+
 rules:
   proposal:
     - Ground the Impact section in `codegraph_explore` rather than in an estimate.
