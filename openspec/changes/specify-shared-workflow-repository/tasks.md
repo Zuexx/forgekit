@@ -31,10 +31,10 @@
 
 ## 4. A broken merge cannot be written
 
-- [ ] 4.1 Verify the merge guard leaves the existing configuration untouched when the result
+- [x] 4.1 Verify the merge guard leaves the existing configuration untouched when the result
   would lose its sections. Done when the guard is made to fail against a scratch copy and
   `openspec/config.yaml` is shown unchanged afterwards.
-- [ ] 4.2 Verify the deeper readback still catches a configuration that parses but yields
+- [x] 4.2 Verify the deeper readback still catches a configuration that parses but yields
   nothing, since the merge guard only checks the sections are present. Done when `pnpm preflight`
   reports the configuration as failing for a file whose blocks are emptied by a plain scalar
   containing `': '`, and passing once repaired.
