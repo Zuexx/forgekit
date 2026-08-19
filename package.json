@@ -7,8 +7,28 @@
     "node": ">=22.16",
     "pnpm": ">=11"
   },
+  "forgekit": {
+    "sourceGlobs": [
+      "*.cs",
+      "*.ts",
+      "*.tsx",
+      "*.js",
+      "*.jsx",
+      "*.mjs",
+      "*.cjs",
+      "*.mts",
+      "*.cts"
+    ],
+    "requiredTools": [
+      "dotnet"
+    ],
+    "nodeSubprojects": [
+      "app"
+    ]
+  },
   "scripts": {
     "preflight": "bash scripts/preflight.sh",
+    "sync-workflow": "bash scripts/sync-workflow.sh",
     "verify": "bash scripts/verify.sh"
   },
   "devDependencies": {
