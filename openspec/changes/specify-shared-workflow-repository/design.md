@@ -96,6 +96,16 @@ than deleting, because deleting files in a consumer on upstream's behalf is a la
 this mechanism should hold. The consequence is that a retired file lingers until someone acts on
 the report.
 
+**Found while verifying (task 3.2): the report does not change the exit code.** With
+`openspec/rules.yaml` absent upstream, the sync reports `MISSING`, then completes the splice
+from the stale local copy and exits `0`. The requirement as written is satisfied — it asks for a
+report, and a report is given — but `pnpm sync-workflow && pnpm preflight` in an automated
+caller stays green while the merged configuration silently comes from a file upstream has
+retired. That is the "report nobody reads" failure this repository keeps designing against, and
+it is under-specified rather than mis-implemented. Resolving it means deciding whether the
+requirement should demand a non-zero exit, and is deliberately left to the change's reviewer
+rather than settled here.
+
 ## Migration Plan
 
 None. The implementation is merged and running; this change adds specification only. If the

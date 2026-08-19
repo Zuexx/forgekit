@@ -22,10 +22,10 @@
 
 ## 3. Synchronising is repeatable
 
-- [ ] 3.1 Verify the sync is idempotent by running it twice from a clean tree. Done when the
+- [x] 3.1 Verify the sync is idempotent by running it twice from a clean tree. Done when the
   second run produces no diff against the first, and `openspec/config.yaml` contains exactly one
   marker line.
-- [ ] 3.2 Verify the sync reports a shared file that upstream no longer publishes, rather than
+- [x] 3.2 Verify the sync reports a shared file that upstream no longer publishes, rather than
   leaving a stale copy unremarked. Done when a shared path is temporarily absent upstream and the
   sync names it, demonstrated against a scratch clone rather than by reading the code.
 
