@@ -109,3 +109,12 @@ response is to fix the implementation or amend the requirement — not to migrat
   requirements do not change if their home does, and the decision is better made once
   forgekit-ios and forgekit-android have specs of their own and it is clear whether they would
   read a shared one.
+
+**Settled during implementation.** The scope reading in tasks.md 1.1 is agreed: where a
+requirement describes something the implementation does not do, the response is to fix the
+implementation upstream or amend the requirement — not to narrow the requirement to match what
+happens to be there.
+
+**Deferred for this change.** Whether this specification moves upstream is not decided here.
+Nothing in the requirements changes if their home does, and the decision reads better once
+forgekit-ios and forgekit-android have specs of their own.

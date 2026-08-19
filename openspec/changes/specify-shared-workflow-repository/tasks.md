@@ -1,11 +1,11 @@
 ## 1. Decisions settled before any work starts
 
-- [ ] 1.1 Confirm the scope boundary: this change adds specification and reconciles the
+- [x] 1.1 Confirm the scope boundary: this change adds specification and reconciles the
   implementation with it. It does not redesign the arrangement. If a requirement turns out to
   describe something the implementation does not do, the response is to fix the implementation
   or amend the requirement — never to quietly narrow the requirement to match. Done when this
   reading is agreed and recorded in the change.
-- [ ] 1.2 Confirm the open question in design.md (whether the specification should move
+- [x] 1.2 Confirm the open question in design.md (whether the specification should move
   upstream) stays deferred for this change. Done when the change either records the deferral or
   carries the answer.
 
