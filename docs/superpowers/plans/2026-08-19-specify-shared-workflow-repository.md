@@ -408,8 +408,8 @@ python3 - <<'PY'
 import io
 p='AGENTS.md'
 s=io.open(p,encoding='utf-8').read()
-s=s.replace("## Conventions that are easy to get wrong",
-            "Temporary negative check: `notarealtool`\n\n## Conventions that are easy to get wrong",1)
+a = "| Topic | File |\n|---|---|\n"
+s = s.replace(a, a + "| Temporary negative check | `notarealtool` |\n", 1)
 io.open(p,'w',encoding='utf-8').write(s)
 PY
 pnpm preflight 2>&1 | grep -E "notarealtool"; echo "exit=${PIPESTATUS[0]}"
@@ -417,7 +417,14 @@ git checkout -- AGENTS.md
 git status --porcelain AGENTS.md
 ```
 
-Expected: a `FAIL` line naming `notarealtool` as not in the declared toolchain, then nothing from `git status`.
+Expected: a `FAIL` line naming `notarealtool` as not in the declared toolchain, then nothing
+from `git status`.
+
+The citation must go in a **table cell**, not in prose. Bare backticked words are extracted
+only from markdown table rows — deliberately, because failing on every backticked identifier
+in ordinary prose would make preflight red on documentation edits, which is the other way a
+check gets ignored. A negative case placed in a sentence produces no output at all and looks
+exactly like a passing check.
 
 Both halves are needed. Step 4 alone would pass even if the check resolved everything unconditionally; Step 5 is what shows it still discriminates.
 

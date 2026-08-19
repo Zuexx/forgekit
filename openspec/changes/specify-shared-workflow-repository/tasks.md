@@ -41,13 +41,13 @@
 
 ## 5. The stack declaration governs what the shared check measures
 
-- [ ] 5.1 Verify an absent or empty `sourceGlobs` fails rather than measuring every tracked file.
+- [x] 5.1 Verify an absent or empty `sourceGlobs` fails rather than measuring every tracked file.
   Done when removing the declaration makes `pnpm preflight` exit non-zero naming the missing
   declaration, and no check reports an index verdict while it is missing.
-- [ ] 5.2 Verify a declared stack tool resolves when an instruction file cites it, and that a
+- [x] 5.2 Verify a declared stack tool resolves when an instruction file cites it, and that a
   tool that is neither declared nor installed still fails. Done when both cases are exercised in
   this repository and `pnpm preflight` gives opposite verdicts for them.
-- [ ] 5.3 Verify the same shared check runs unmodified against a different stack. Done when
+- [x] 5.3 Verify the same shared check runs unmodified against a different stack. Done when
   `scripts/preflight.sh` is byte-identical in forgekit, forgekit-ios, and forgekit-android, shown
   by comparing checksums, and all three report the workflow as operational.
 
