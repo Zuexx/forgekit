@@ -62,6 +62,12 @@
   Interop.Sys.IsMemberOfGroup(UInt32 gid)`, alongside DNS resolution failing in the same shell —
   reproduced on `main` in a separate worktree and in Debug as well as Release, and disappeared
   with the environment rather than with any change to this branch.
-- [ ] 6.2 Request review, then archive the change against the spec deltas rather than against
+- [x] 6.2 Request review, then archive the change against the spec deltas rather than against
   this checklist. Done when the delta requirements are each checked off against observed
   behaviour and any divergence is written into the archive.
+  Review raised five findings. The two that described behaviour the repository did not have —
+  a missing-declaration clause quantified over all three declarations when only `sourceGlobs`
+  behaved that way, and a claim that machine-resolved stack tools join the declared toolchain,
+  which contradicted `Declared workflow toolchain` — were fixed in #36 rather than narrowed to
+  match, per 1.1. The two empty-enumeration holes it found in preflight were fixed upstream in
+  the same PR, and the `MISSING`/exit 0 behaviour it argued should be tightened was tightened.
