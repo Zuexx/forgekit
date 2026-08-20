@@ -71,7 +71,8 @@ expressed as a semver range rather than as a release channel.
 ### The shared workflow repository
 
 - Current constraint: `scripts/preflight.sh`, `scripts/sync-workflow.sh`, `.githooks/pre-push`,
-  `.mcp.json`, `.claude/settings.json`, and `openspec/rules.yaml` are pulled from
+  `.mcp.json`, `.claude/settings.json`, `openspec/rules.yaml`, and
+  `openspec/specs/workflow-toolchain/spec.md` are pulled from
   [forgekit-workflow](https://github.com/Zuexx/forgekit-workflow) and must not be edited here.
 - Reason: the same files run in forgekit-ios and forgekit-android. An edit made here is
   overwritten by the next `pnpm sync-workflow` without a word, and until then the three
