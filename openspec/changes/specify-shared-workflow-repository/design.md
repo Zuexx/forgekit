@@ -96,15 +96,43 @@ than deleting, because deleting files in a consumer on upstream's behalf is a la
 this mechanism should hold. The consequence is that a retired file lingers until someone acts on
 the report.
 
-**Found while verifying (task 3.2): the report does not change the exit code.** With
-`openspec/rules.yaml` absent upstream, the sync reports `MISSING`, then completes the splice
-from the stale local copy and exits `0`. The requirement as written is satisfied — it asks for a
-report, and a report is given — but `pnpm sync-workflow && pnpm preflight` in an automated
-caller stays green while the merged configuration silently comes from a file upstream has
-retired. That is the "report nobody reads" failure this repository keeps designing against, and
-it is under-specified rather than mis-implemented. Resolving it means deciding whether the
-requirement should demand a non-zero exit, and is deliberately left to the change's reviewer
-rather than settled here.
+**Found while verifying (task 3.2), and since resolved: the report did not change the exit
+code.** With `openspec/rules.yaml` absent upstream, the sync reported `MISSING` on stderr, then
+completed the splice from the stale local copy, printed `Workflow synced.` on stdout, and exited
+`0`. The requirement as written was satisfied — it asked for a report, and a report was given —
+but the consumer was left silently pinned to a stale copy of a shared file, which is the drift a
+single source of truth exists to prevent, and invisible because every later check still finds a
+file where it expects one.
+
+The decisive argument was not the governing rule, which is about checks rather than delivery
+operations: it was that merging from a file this run did not deliver asserts a freshness it does
+not have. The requirement now demands that the sync not merge from an undelivered file, and not
+report success when a shared file failed to arrive.
+
+**Found while fixing that: the sync corrupted itself while running.** `scripts/sync-workflow.sh`
+is in its own shared-path list, so it overwrites itself mid-execution; bash reads a script
+incrementally by byte offset, so a replacement of a different length resumes at the wrong point
+in the new content. It surfaced as an unbound-variable error reported against a line that holds
+a `mkdir`, with the assignment present on disk and simply never executed. Every sync in which
+that file changed length was exposed to it; earlier changes happened to land after the read
+point, which is why nothing had failed before. Its body now lives in a function, which bash
+parses in full before executing any of it.
+
+**Found by review: two enumerations passed empty, and one narrowing was silent.** Preflight
+reported `core.hooksPath -> .githooks` and passed with the hooks directory emptied, printed the
+capabilities heading and nothing else when the instruction files carried no citations, and said
+nothing at all when `nodeSubprojects` was empty. The first two violated the governing rule this
+change restates; they now fail. The third is a real answer rather than an absent one, so it
+reports instead of failing — which is the distinction the missing-declaration requirement was
+rewritten around, after review showed the original wording claimed all three declarations behaved
+like `sourceGlobs` when only `sourceGlobs` did.
+
+**Found by review: the delta contradicted an existing requirement.** `Declared workflow toolchain`
+says a declared tool's availability SHALL NOT depend on machine-global state, while this change
+makes `requiredTools` — `dotnet`, resolved from `PATH` — part of the declared toolchain. Archiving
+both would have left the main spec holding two requirements in direct conflict, with the fresh-clone
+scenario false. That requirement is now MODIFIED to distinguish workflow tools, which the
+repository obtains for itself, from stack tools, which it cannot.
 
 ## Migration Plan
 
