@@ -90,16 +90,63 @@ a reader can learn which kind of answer they were given.
 
 ## MODIFIED Requirements
 
+### Requirement: Declared workflow toolchain
+
+Every tool the repository's own workflow instructions depend on SHALL be declared in a
+version-controlled file.
+
+Tools SHALL be distinguished by where they can live. A **workflow tool** — one the repository
+could obtain for itself — SHALL become available through a standard install command run at the
+repository root, and its availability SHALL NOT depend on machine-global state outside the
+repository. A **stack tool** — a compiler, SDK, or project generator that cannot be installed
+into the repository — SHALL be declared alongside them, and MAY be resolved against the machine.
+
+Where a tool is resolved against the machine, the report SHALL say so, because that is a weaker
+guarantee than resolving against the repository and a reader cannot otherwise tell which kind of
+answer they were given. Declaring a tool as a stack tool SHALL NOT be a way of avoiding the
+first rule: a tool that could be obtained by the install command belongs there.
+
+#### Scenario: A fresh clone obtains the toolchain
+
+- **WHEN** the repository is cloned on a machine with no workflow tools installed globally, and
+  the standard install command is run at the repository root
+- **THEN** every declared workflow tool is executable from within the repository
+- **AND** no manual per-tool installation step is required for them
+
+#### Scenario: A declared stack tool is absent from the machine
+
+- **WHEN** a tool the repository declares as a stack requirement is not present on the machine
+- **THEN** the preflight check reports it as failing, naming the tool
+- **AND** the report distinguishes it from a workflow tool the repository could have obtained
+
+#### Scenario: A generated product carries the declarations
+
+- **WHEN** a product is generated from the template
+- **THEN** the generated project contains the same toolchain declarations as the base
+- **AND** running the standard install command in it obtains the same tools
+
+#### Scenario: The repository's scripts are invoked where file modes are not preserved
+
+- **WHEN** a product is generated from the template, which does not carry the executable bit
+- **THEN** the repository's scripts are still invocable through a declared command
+- **AND** no manual permission change is required to run them
+
 ### Requirement: A check that cannot measure its subject fails
 
 Every check SHALL report success only after examining the thing it guards. Where a check cannot
 reach its subject — a tool absent, an enumeration empty, a file unreadable — it SHALL fail. A
 reported `ok` means "I looked and it was fine", never "I found nothing to look at".
 
-Where a check depends on a declaration the repository supplies, an absent or empty declaration
-SHALL be treated as an inability to measure and reported as a failure. It SHALL NOT fall back to
-a default that measures something broader, because a check that quietly changes its own subject
-reports a result no reader can interpret.
+Where a declaration the repository supplies is the **subject** of a measurement — it says what
+the check is to look at — an absent or empty declaration SHALL be treated as an inability to
+measure and reported as a failure. It SHALL NOT fall back to a default that measures something
+broader, because a check that quietly changes its own subject reports a result no reader can
+interpret.
+
+A declaration that instead **scopes** a search is different: empty is a real answer there, not an
+absent one, and failing on it would refuse to accept a repository that legitimately has none of
+that thing. Such a declaration SHALL be reported as empty rather than passed over in silence,
+because silence about a narrowed search reads exactly like having searched everywhere.
 
 #### Scenario: A check has nothing to examine
 
@@ -112,8 +159,19 @@ reports a result no reader can interpret.
 - **THEN** it is reported as unresolved rather than passed over, provided it is shaped like a
   capability rather than like ordinary prose or an identifier
 
-#### Scenario: A required declaration is missing
+#### Scenario: A declaration naming a check's subject is missing
 
-- **WHEN** a check depends on a repository declaration that is absent or empty
+- **WHEN** a check's subject is named by a repository declaration that is absent or empty
 - **THEN** the check reports failure naming the missing declaration
-- **AND** it does not substitute a broader subject in its place
+- **AND** it emits no verdict about that subject in the same run
+
+#### Scenario: A declaration that only scopes a search is empty
+
+- **WHEN** a repository declares none of something a check would otherwise search more widely for
+- **THEN** the run states that the declaration is empty and what the search was narrowed to
+- **AND** it does not report failure, because having none of that thing is a valid state
+
+#### Scenario: An enumeration a check depends on yields nothing
+
+- **WHEN** a check enumerates the things it is to examine and the enumeration is empty
+- **THEN** the check reports failure rather than printing nothing and continuing

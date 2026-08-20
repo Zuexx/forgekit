@@ -68,10 +68,15 @@ literal searches instead.
 | `.githooks/pre-push` | 3 |
 | `openspec/rules.yaml` | 3 |
 
-The marker literal `# >>> forgekit-workflow: managed region` appears in exactly two places —
-`openspec/config.yaml:61`, where it delimits the managed region, and `scripts/sync-workflow.sh:31`,
-where it is defined. A change to either without the other silently stops the splice being
-idempotent, which is the reason it is worth specifying.
+The marker literal `# >>> forgekit-workflow: managed region` is load-bearing in exactly two
+places — `scripts/sync-workflow.sh`, where it is defined, and `openspec/config.yaml`, where it
+delimits the managed region. A change to either without the other silently stops the splice
+being idempotent, which is the reason it is worth specifying.
+
+It occurs in two further places that are prose about it rather than uses of it: this document,
+and the implementation plan. The line numbers are deliberately omitted — an earlier draft of
+this paragraph quoted them, and they were wrong before the change was even merged, which is the
+failure the proposal rule about checking figures before quoting them exists to prevent.
 
 **Beyond this repository.** The same requirements govern forgekit-ios and forgekit-android, which
 run the identical `scripts/preflight.sh` and `scripts/sync-workflow.sh`. Those repositories are

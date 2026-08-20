@@ -106,6 +106,22 @@ it is under-specified rather than mis-implemented. Resolving it means deciding w
 requirement should demand a non-zero exit, and is deliberately left to the change's reviewer
 rather than settled here.
 
+**Found by review: two enumerations passed empty, and one narrowing was silent.** Preflight
+reported `core.hooksPath -> .githooks` and passed with the hooks directory emptied, printed the
+capabilities heading and nothing else when the instruction files carried no citations, and said
+nothing at all when `nodeSubprojects` was empty. The first two violated the governing rule this
+change restates; they now fail. The third is a real answer rather than an absent one, so it
+reports instead of failing — which is the distinction the missing-declaration requirement was
+rewritten around, after review showed the original wording claimed all three declarations behaved
+like `sourceGlobs` when only `sourceGlobs` did.
+
+**Found by review: the delta contradicted an existing requirement.** `Declared workflow toolchain`
+says a declared tool's availability SHALL NOT depend on machine-global state, while this change
+makes `requiredTools` — `dotnet`, resolved from `PATH` — part of the declared toolchain. Archiving
+both would have left the main spec holding two requirements in direct conflict, with the fresh-clone
+scenario false. That requirement is now MODIFIED to distinguish workflow tools, which the
+repository obtains for itself, from stack tools, which it cannot.
+
 ## Migration Plan
 
 None. The implementation is merged and running; this change adds specification only. If the
