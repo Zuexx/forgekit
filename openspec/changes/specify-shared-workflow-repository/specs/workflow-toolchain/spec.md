@@ -35,6 +35,16 @@ file untouched.
 The sync SHALL report each file it updated, and SHALL report rather than silently skip a shared
 file that upstream no longer publishes.
 
+A sync that could not deliver a shared file SHALL NOT report success. It SHALL say so on the
+same stream it reports success on, and SHALL exit with a failing status, so that a caller
+chaining it to a later command stops rather than continuing against a repository that is now
+holding a local copy of a file upstream no longer has.
+
+Where merged content is derived from a shared file, the sync SHALL NOT perform that merge from a
+copy it did not deliver in the same run. Merging from the copy left by an earlier sync would
+assert a freshness the file does not have, and the result is indistinguishable from a current
+one.
+
 #### Scenario: The sync runs twice
 
 - **WHEN** the sync is run and then run again with no upstream change
@@ -45,6 +55,14 @@ file that upstream no longer publishes.
 
 - **WHEN** the sync runs and a file it expects is absent upstream
 - **THEN** it reports that file as missing rather than leaving a stale copy unremarked
+- **AND** it exits with a failing status, naming the undelivered file on the stream it would
+  otherwise have reported success on
+
+#### Scenario: Merged content would come from an undelivered file
+
+- **WHEN** the sync cannot deliver the shared file a merge draws from
+- **THEN** it does not perform the merge
+- **AND** the previously merged content is left as it was
 
 ### Requirement: A failed merge leaves the previous configuration intact
 
