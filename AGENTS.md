@@ -115,9 +115,10 @@ There is no component-level coverage, so UI details still need manual verificati
 ## The shared workflow
 
 `scripts/preflight.sh`, `scripts/sync-workflow.sh`, `.githooks/pre-push`, `.mcp.json`,
-`.claude/settings.json`, and `openspec/rules.yaml` are owned by the
-[forgekit-workflow](https://github.com/Zuexx/forgekit-workflow) repository and shared with
-every ForgeKit-family repo, including the iOS and Android starters. Edit them there, not here:
+`.claude/settings.json`, `openspec/rules.yaml`, and `openspec/specs/workflow-toolchain/spec.md`
+are owned by the [forgekit-workflow](https://github.com/Zuexx/forgekit-workflow) repository and
+shared with every ForgeKit-family repo, including the iOS and Android starters. Edit them there,
+not here:
 
 ```bash
 pnpm sync-workflow && pnpm preflight
@@ -126,6 +127,13 @@ pnpm sync-workflow && pnpm preflight
 overwrites them and re-splices the shared rules into `openspec/config.yaml` below the marker
 line, so a local edit disappears without a word. What this repository owns is everything above
 that marker — its `context:` block — plus `scripts/verify.sh`, `package.json`, and this file.
+
+**The workflow's own specification is now among the shared files.** Its twelve requirements
+mention no stack, and they govern the iOS and Android starters as much as this repository, so
+they are delivered to each rather than kept here — the repository bound by a requirement should
+be the one that can read it. A change to what the workflow must *do* is therefore proposed and
+archived in forgekit-workflow; an archive written here would be discarded by the next sync.
+Specs describing this stack are unaffected and stay here.
 
 Because `preflight.sh` is now shared verbatim, the stack half of it is declared in
 `package.json` rather than written into the script:

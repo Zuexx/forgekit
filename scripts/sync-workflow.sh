@@ -36,6 +36,7 @@ SHARED_PATHS=(
   .mcp.json
   .claude/settings.json
   openspec/rules.yaml
+  openspec/specs/workflow-toolchain/spec.md
 )
 
 MARKER='# >>> forgekit-workflow: managed region — edit in forgekit-workflow, not here'
@@ -142,4 +143,9 @@ echo "Workflow synced. Verify it reads back:  pnpm preflight"
 
 }
 
-main "$@"
+# `exit` shares the line with the call on purpose. Wrapping the body in a function is not
+# enough on its own: bash parses the definition in full, but after the call returns it goes
+# back to reading the file at a saved byte offset — and by then this script has replaced
+# itself with a longer one, so the offset lands mid-token. Parsed as one command list, the
+# process ends before bash reads any further.
+main "$@"; exit $?
