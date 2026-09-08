@@ -8,7 +8,7 @@ appsettings.Local.json
 !appsettings.*.example
 appsettings.Staging.json
 appsettings.Production.json
-api/ForgeKit.Api/data/
+/data/
 *.db
 *.db-shm
 *.db-wal

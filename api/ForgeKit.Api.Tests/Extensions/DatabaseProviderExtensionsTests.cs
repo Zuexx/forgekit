@@ -67,6 +67,22 @@ public sealed class DatabaseProviderExtensionsTests
         Directory.Exists(Path.Combine(root, "data")).ShouldBeTrue();
     }
 
+    [Fact]
+    public void ResolveSqlitePath_DefaultConnectionString_ResolvesToRepoRootDataDirectory()
+    {
+        // Mirrors the real layout: content root is api/ForgeKit.Api, two levels up is the repo
+        // root. This is the exact connection string appsettings.json ships — a regression here
+        // means the API and the frontend stop agreeing on where the shared file lives.
+        var repoRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        var contentRoot = Path.Combine(repoRoot, "api", "ForgeKit.Api");
+        Directory.CreateDirectory(contentRoot);
+        var settings = new DatabaseProviderSettings("Sqlite", "Data Source=../../data/forgekit.db");
+
+        var resolved = settings.ResolveSqlitePath(contentRoot);
+
+        resolved.ConnectionString.ShouldContain(Path.Combine(repoRoot, "data", "forgekit.db"));
+    }
+
     private static IConfiguration CreateConfiguration(string? provider)
     {
         var settings = new Dictionary<string, string?>
