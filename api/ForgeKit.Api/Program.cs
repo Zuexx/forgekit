@@ -10,6 +10,7 @@ using ForgeKit.Api.Foundations;
 using Anvil.Interfaces;
 using Anvil.Middlewares;
 using Anvil.Models;
+using DotNetEnv;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -18,6 +19,15 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
+
+// Must run before CreateBuilder(args): ASP.NET Core's environment-variable configuration
+// provider reads the process environment when the host builder is constructed, not lazily, so
+// anything set after that point is invisible to it without an explicit reload. TraversePath()
+// walks up from the current directory looking for a `.env` file rather than assuming a fixed
+// depth, so this works whether the process starts from api/ForgeKit.Api (dotnet run) or
+// elsewhere. A deployment with no `.env` file anywhere above it (real environment variables set
+// by a container or platform instead) is unaffected — a missing file is not an error here.
+Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -153,6 +163,9 @@ builder.Services.AddOpenApi(options =>
 });
 
 var app = builder.Build();
+
+app.Logger.LogInformation("Database provider: {Provider}",
+    DatabaseProviderExtensions.GetDatabaseProviderSettings(app.Configuration).Provider);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

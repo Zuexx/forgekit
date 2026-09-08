@@ -27,7 +27,7 @@ questions.
 
 ## 2. Shared SQLite file at the repo root
 
-- [ ] 2.1 Change `ConnectionStrings:Sqlite` in `appsettings.json` and
+- [x] 2.1 Change `ConnectionStrings:Sqlite` in `appsettings.json` and
   `appsettings.Development.json` from `Data Source=./data/forgekit.db` to
   `Data Source=../../data/forgekit.db`, so `ResolveSqlitePath` lands the default file at
   `<repo root>/data/forgekit.db`. Update `.gitignore`: drop the now-stale
@@ -39,7 +39,7 @@ questions.
 
 ## 3. One setting for both sides
 
-- [ ] 3.1 Add a root `.env.example` containing `Database__Provider=Sqlite` with a comment
+- [x] 3.1 Add a root `.env.example` containing `Database__Provider=Sqlite` with a comment
   explaining it is the one setting shared by the API and Better Auth; verify with
   `git check-ignore -v .env.example` that it is tracked (the existing `!.env.*.example`
   exception does not match a plain `.env.example`, so this may need either the exception
@@ -47,7 +47,7 @@ questions.
   filename and confirm the check passes).
   _Done when:_ `git check-ignore -v .env.example` exits 1 (not ignored) and `git status` shows
   the file staged when added.
-- [ ] 3.2 Add the `DotNetEnv` package to `ForgeKit.Api.csproj` and load the repo-root `.env` in
+- [x] 3.2 Add the `DotNetEnv` package to `ForgeKit.Api.csproj` and load the repo-root `.env` in
   `Program.cs` before configuration is used, tolerating a missing file.
   _Done when:_ a repo-root `.env` containing `Database__Provider=Postgres` causes
   `IConfiguration["Database:Provider"]` to read `Postgres` with no other change; deleting the
