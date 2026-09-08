@@ -7,13 +7,23 @@ questions.
 
 ## 1. Schema separation
 
-- [ ] 1.1 Add `modelBuilder.HasDefaultSchema("auth")` to `BetterAuthDbContext.OnModelCreating`;
+- [x] 1.1 Add `modelBuilder.HasDefaultSchema("auth")` to `BetterAuthDbContext.OnModelCreating`;
   regenerate the Postgres and SQL Server migrations so `account`/`jwks`/`session`/`user`/
-  `verification` move into the `auth` schema. SQLite is unaffected — the provider ignores the
-  call, so no new SQLite migration is expected.
+  `verification` move into the `auth` schema. Corrected during implementation, verified rather
+  than assumed: the SQLite provider *does* need its own `AddAuthSchema` migration too — the
+  model annotation is a diff `has-pending-model-changes` detects regardless of provider, so
+  skipping it would leave that check permanently red — but applying it is a harmless no-op:
+  `RenameTable(..., newSchema: "auth")` executes against a live SQLite file with the table
+  names left bare (confirmed by applying it to a throwaway file and inspecting `.tables`).
   _Done when:_ `dotnet ef database update` against a fresh Postgres and a fresh SQL Server
   instance creates every Better Auth table under `auth.*`; `AppDbContext`'s tables are unchanged;
-  the SQLite migration set is unchanged; the full test suite passes for all three providers.
+  applying the SQLite `AddAuthSchema` migration to a fresh file leaves table names bare (no
+  `auth.` prefix, no error); the full test suite passes for all three providers.
+  **Verified live, not just via model tests:** `forgekit-postgres` (already running) → 5 tables
+  under `auth.*` via `information_schema.tables`. A throwaway `mssql/server:2022-latest`
+  container → 5 tables under `auth.*` via `sys.tables`/`sys.schemas`, then removed. SQLite → a
+  throwaway file with both migrations applied lists bare table names via `.tables`, including
+  both `AppDbContext`'s tables and Better Auth's in the one file.
 
 ## 2. Shared SQLite file at the repo root
 
