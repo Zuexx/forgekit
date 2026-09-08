@@ -3,79 +3,86 @@ using System;
 using Anvil.Data.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
+namespace ForgeKit.Api.Migrations.Postgres.Migrations.Auth
 {
     [DbContext(typeof(BetterAuthDbContext))]
-    partial class BetterAuthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260908070406_AddAuthSchema")]
+    partial class AddAuthSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("auth")
-                .HasAnnotation("ProductVersion", "10.0.11");
+                .HasAnnotation("ProductVersion", "10.0.11")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Anvil.Entities.Auth.Account", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(36)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("character varying(36)")
                         .HasColumnName("id");
 
                     b.Property<string>("AccessToken")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("accessToken");
 
                     b.Property<DateTime?>("AccessTokenExpiresAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("accessTokenExpiresAt");
 
                     b.Property<string>("AccountId")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("accountId");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdAt");
 
                     b.Property<string>("IdToken")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("idToken");
 
                     b.Property<string>("Password")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("password");
 
                     b.Property<string>("ProviderId")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("providerId");
 
                     b.Property<string>("RefreshToken")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("refreshToken");
 
                     b.Property<DateTime?>("RefreshTokenExpiresAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("refreshTokenExpiresAt");
 
                     b.Property<string>("Scope")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("scope");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("updatedAt");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasMaxLength(36)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("character varying(36)")
                         .HasColumnName("userId");
 
                     b.HasKey("Id");
@@ -89,25 +96,25 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(36)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("character varying(36)")
                         .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdAt");
 
                     b.Property<DateTime?>("ExpiresAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("expiresAt");
 
                     b.Property<string>("PrivateKey")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("privateKey");
 
                     b.Property<string>("PublicKey")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("publicKey");
 
                     b.HasKey("Id");
@@ -119,43 +126,43 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(36)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("character varying(36)")
                         .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdAt");
 
                     b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("expiresAt");
 
                     b.Property<string>("ImpersonatedBy")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("impersonatedBy");
 
                     b.Property<string>("IpAddress")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("ipAddress");
 
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("token");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("updatedAt");
 
                     b.Property<string>("UserAgent")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("userAgent");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasMaxLength(36)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("character varying(36)")
                         .HasColumnName("userId");
 
                     b.HasKey("Id");
@@ -172,51 +179,51 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(36)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("character varying(36)")
                         .HasColumnName("id");
 
                     b.Property<DateTime?>("BanExpires")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("banExpires");
 
                     b.Property<string>("BanReason")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("banReason");
 
                     b.Property<bool?>("Banned")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("boolean")
                         .HasColumnName("banned");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdAt");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
                     b.Property<bool>("EmailVerified")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("boolean")
                         .HasColumnName("emailVerified");
 
                     b.Property<string>("Image")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("image");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
                     b.Property<string>("Role")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("role");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("updatedAt");
 
                     b.HasKey("Id");
@@ -231,29 +238,29 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(36)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("character varying(36)")
                         .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdAt");
 
                     b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("expiresAt");
 
                     b.Property<string>("Identifier")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("identifier");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("updatedAt");
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("value");
 
                     b.HasKey("Id");

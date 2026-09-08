@@ -15,6 +15,10 @@ api/ForgeKit.Api/data/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+# On a case-insensitive filesystem (macOS/Windows default, core.ignorecase=true) the *.sqlite
+# glob above also matches the ForgeKit.Api.Migrations.Sqlite project directory, silently
+# excluding any new file added under it that was not already force-added. Re-include it.
+!api/ForgeKit.Api.Migrations.Sqlite/
 
 # Visual Studio Code
 .vscode/
