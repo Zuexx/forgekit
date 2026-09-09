@@ -1,3 +1,13 @@
+import { config } from "dotenv"
+import { resolve } from "path"
+
+// `sqlite.ts` below also loads this file, and ES module evaluation order means its call runs
+// before this one either way. This call exists so the guarantee does not quietly depend on that:
+// `normalizeProvider` below reads `Database__Provider` on the assumption it is already loaded,
+// and that has to hold even if an adapter stops loading it — dotenv's `config` does not
+// override an already-set variable, so calling it again here is a safe no-op today.
+config({ path: resolve(process.cwd(), "..", ".env") })
+
 import { betterAuth } from "better-auth"
 import { nextCookies } from "better-auth/next-js"
 import { admin } from "better-auth/plugins"
