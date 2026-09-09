@@ -143,8 +143,10 @@ the API's own `DefaultProvider = "Sqlite"`.
 
 ## Migration Plan
 
-1. Add `HasDefaultSchema("auth")`, regenerate Postgres and SQL Server migrations (SQLite
-   migration is unaffected — the provider ignores the call).
+1. Add `HasDefaultSchema("auth")`, regenerate Postgres, SQL Server, **and SQLite** migrations —
+   verified during implementation that SQLite also needs a migration (`has-pending-model-changes`
+   flags the model annotation regardless of provider), but applying it is a harmless no-op:
+   table names stay bare, confirmed against a throwaway file.
 2. Move the SQLite connection string to the repo-root path; update `.gitignore`.
 3. Add `app/lib/db/sqlite.ts`, wire `Database__Provider`-based selection into `auth.config.ts`,
    add `better-sqlite3` to `app/package.json`.

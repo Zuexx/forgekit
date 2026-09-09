@@ -57,14 +57,14 @@ questions.
 
 ## 4. Frontend SQLite adapter and provider selection
 
-- [ ] 4.1 Add `better-sqlite3` to `app/package.json`. Add `app/lib/db/sqlite.ts`: a Kysely
+- [x] 4.1 Add `better-sqlite3` to `app/package.json`. Add `app/lib/db/sqlite.ts`: a Kysely
   `SqliteDialect` over `better-sqlite3`, wrapped as `{ db, type: "sqlite" as const }` matching
   `mssql.ts`'s shape, defaulting its file path to
   `path.resolve(process.cwd(), "../data/forgekit.db")` and creating the directory if absent.
   _Done when:_ a real Kysely query (not just a type check) through the new adapter against a
   throwaway SQLite file succeeds — the adapter-shape mismatch this kit has already been bitten
   by fails at query time, not compile time, so this has to be exercised, not just built.
-- [ ] 4.2 In `app/lib/auth.config.ts`, replace the hardcoded `export const database = postgresDb`
+- [x] 4.2 In `app/lib/auth.config.ts`, replace the hardcoded `export const database = postgresDb`
   with a selection driven by `Database__Provider` (loaded via the same explicit repo-root
   `dotenv` pattern `postgres.ts`/`mssql.ts` already use), normalised the same way the API's
   `NormalizeProvider` is (`sqlite|postgres|sqlserver`, case-insensitive) and defaulting to

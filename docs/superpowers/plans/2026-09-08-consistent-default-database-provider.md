@@ -171,7 +171,7 @@ dotnet ef migrations add AddAuthSchema \
 ```
 Expected: same shape as Step 4, under `api/ForgeKit.Api.Migrations.SqlServer/Migrations/`.
 
-- [ ] **Step 6: Confirm the SQLite migration set is unaffected**
+- [ ] **Step 6: Check whether SQLite needs its own migration — verified, not assumed**
 
 Run:
 ```bash
@@ -180,10 +180,30 @@ dotnet ef migrations has-pending-model-changes \
   --startup-project api/ForgeKit.Api.Migrations.Sqlite \
   --context BetterAuthDbContext
 ```
-Expected: no pending changes reported (exit 0, no "Reminder" message about pending changes) —
-`HasDefaultSchema` produced no diff for the SQLite provider, so no new migration file should
-exist under `api/ForgeKit.Api.Migrations.Sqlite/Migrations/`. Confirm with
-`git status api/ForgeKit.Api.Migrations.Sqlite` showing nothing new.
+**Correction found here, not assumed:** this reports pending changes for SQLite too —
+`HasDefaultSchema`'s model annotation is a real diff regardless of provider, even though the
+SQLite SQL generator does not act on it. Generate the migration the same way as Steps 4–5:
+```bash
+dotnet ef migrations add AddAuthSchema \
+  --project api/ForgeKit.Api.Migrations.Sqlite \
+  --startup-project api/ForgeKit.Api.Migrations.Sqlite \
+  --context BetterAuthDbContext
+```
+Then prove it is harmless by applying it to a throwaway file:
+```bash
+rm -f /tmp/sqlite-schema-check.db
+dotnet ef database update \
+  --project api/ForgeKit.Api.Migrations.Sqlite \
+  --startup-project api/ForgeKit.Api.Migrations.Sqlite \
+  --context BetterAuthDbContext \
+  --connection "Data Source=/tmp/sqlite-schema-check.db"
+sqlite3 /tmp/sqlite-schema-check.db ".tables"
+rm -f /tmp/sqlite-schema-check.db
+```
+Expected: the migration applies without error; `.tables` lists bare names (`user`, `session`,
+`account`, `jwks`, `verification`) with no `auth.` prefix — this is `tasks.md` 1.1's actual,
+corrected done-when, and both `tasks.md` and `design.md` were updated in place to say so rather
+than left describing the wrong expectation.
 
 - [ ] **Step 7: Apply the Postgres migration to the running container and verify live**
 
@@ -508,8 +528,8 @@ Delivers OpenSpec tasks **4.1** and **4.2**. Covers spec scenarios: *Local Bette
 
 - [ ] **Step 1: Add `better-sqlite3`**
 
-In `app/package.json`, add to `dependencies`: `"better-sqlite3": "^12.4.1"`, and to
-`devDependencies`: `"@types/better-sqlite3": "^7.6.14"`. Run `pnpm install` from `app/`.
+In `app/package.json`, add to `dependencies`: `"better-sqlite3": "^13.0.3"`, and to
+`devDependencies`: `"@types/better-sqlite3": "^7.6.13"`. Run `pnpm install` from `app/`.
 
 - [ ] **Step 2: Write the failing runtime-query test first**
 
