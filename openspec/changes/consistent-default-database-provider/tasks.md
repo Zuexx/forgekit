@@ -95,7 +95,7 @@ questions.
 
 ## 7. End-to-end verification through the template
 
-- [ ] 7.1 Generate a product with `dotnet new forgekit`, confirm it builds and migrates on the
+- [x] 7.1 Generate a product with `dotnet new forgekit`, confirm it builds and migrates on the
   default (SQLite) and at least one of Postgres/SQL Server with the new `auth` schema, then
   demonstrate — not assume — the spec's "share one SQLite database" scenario: a row written
   through a Better Auth sign-up (Next.js, `pnpm dev`) is readable by an API-side query against
