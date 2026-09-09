@@ -85,7 +85,7 @@ questions.
 
 ## 6. Documentation
 
-- [ ] 6.1 Update `compose.yaml`'s comments, `README.md`, and `docs/FORKING_GUIDE.md` (and any
+- [x] 6.1 Update `compose.yaml`'s comments, `README.md`, and `docs/FORKING_GUIDE.md` (and any
   ADR that currently states or implies Postgres is required to start the kit) to describe
   SQLite as the zero-service default and the root `.env`'s `Database__Provider` as the single
   switch that moves both the API and Better Auth together.
