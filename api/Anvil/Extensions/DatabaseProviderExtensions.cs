@@ -53,6 +53,7 @@ public static class DatabaseProviderExtensions
         {
             case "Sqlite":
                 options.UseSqlite(settings.ConnectionString);
+                options.AddInterceptors(new SqlitePragmaInterceptor());
                 break;
 
             case "Postgres":
@@ -80,6 +81,37 @@ public static class DatabaseProviderExtensions
             _ => throw new InvalidOperationException(
                 $"Unsupported database provider '{provider}'. Supported providers: Sqlite, Postgres, SqlServer.")
         };
+    }
+
+    // WAL lets one writer proceed concurrent with readers instead of locking the whole database
+    // file for the duration of a write; a non-zero busy_timeout makes a writer wait for a
+    // released lock instead of failing immediately with SQLITE_BUSY. Both matter because the
+    // frontend (better-sqlite3, app/lib/db/sqlite.ts) opens its own, independent connection to
+    // this same file — see openspec/specs/database-provider/spec.md, "Concurrent local writes
+    // do not fail".
+    public static void ApplySqlitePragmas(System.Data.Common.DbConnection connection)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;";
+        command.ExecuteNonQuery();
+    }
+}
+
+file sealed class SqlitePragmaInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.DbConnectionInterceptor
+{
+    public override void ConnectionOpened(
+        System.Data.Common.DbConnection connection,
+        Microsoft.EntityFrameworkCore.Diagnostics.ConnectionEndEventData eventData)
+        => DatabaseProviderExtensions.ApplySqlitePragmas(connection);
+
+    public override async Task ConnectionOpenedAsync(
+        System.Data.Common.DbConnection connection,
+        Microsoft.EntityFrameworkCore.Diagnostics.ConnectionEndEventData eventData,
+        CancellationToken cancellationToken = default)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;";
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 }
 

@@ -75,7 +75,7 @@ questions.
 
 ## 5. Concurrent local writes
 
-- [ ] 5.1 Set `PRAGMA journal_mode=WAL` and a non-zero `PRAGMA busy_timeout` on every SQLite
+- [x] 5.1 Set `PRAGMA journal_mode=WAL` and a non-zero `PRAGMA busy_timeout` on every SQLite
   connection open, on both the API side (an EF Core connection-interceptor or equivalent
   connection-opened hook) and in `sqlite.ts` (`better-sqlite3`'s `.pragma()`).
   _Done when:_ a test that opens a .NET EF Core connection and a `better-sqlite3` connection to
