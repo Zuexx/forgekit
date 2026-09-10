@@ -1,10 +1,22 @@
+import { config } from "dotenv"
+import { resolve } from "path"
+
+// `sqlite.ts` below also loads this file, and ES module evaluation order means its call runs
+// before this one either way. This call exists so the guarantee does not quietly depend on that:
+// `normalizeProvider` below reads `Database__Provider` on the assumption it is already loaded,
+// and that has to hold even if an adapter stops loading it — dotenv's `config` does not
+// override an already-set variable, so calling it again here is a safe no-op today.
+config({ path: resolve(process.cwd(), "..", ".env") })
+
 import { betterAuth } from "better-auth"
 import { nextCookies } from "better-auth/next-js"
 import { admin } from "better-auth/plugins"
 import { customSession, jwt, openAPI } from "better-auth/plugins"
 
 import { AUTH_COOKIE } from "@/constants/cookies"
+import { db as mssqlDb } from "@/lib/db/mssql"
 import { db as postgresDb } from "@/lib/db/postgres"
+import { db as sqliteDb } from "@/lib/db/sqlite"
 
 /**
  * Reads a comma-separated environment variable into a list.
@@ -20,20 +32,54 @@ export function parseEnvList(value: string | undefined): string[] {
 }
 
 /**
- * The two adapters this kit ships need different shapes, and getting it wrong fails at
+ * Normalises `Database__Provider` the same way the API's own
+ * `DatabaseProviderExtensions.NormalizeProvider` does, so a value that resolves on one side
+ * resolves identically on the other. Defaults to `"sqlite"`, matching the API's
+ * `DefaultProvider`.
+ */
+export function normalizeProvider(
+  value: string | undefined,
+): "sqlite" | "postgres" | "sqlserver" {
+  const normalized = (value ?? "").trim().toLowerCase()
+  switch (normalized) {
+    case "":
+    case "sqlite":
+      return "sqlite"
+    case "postgres":
+    case "postgresql":
+    case "npgsql":
+      return "postgres"
+    case "sqlserver":
+    case "sql-server":
+    case "mssql":
+      return "sqlserver"
+    default:
+      throw new Error(
+        `Unsupported database provider '${value}'. Supported providers: sqlite, postgres, sqlserver.`,
+      )
+  }
+}
+
+/**
+ * The three adapters this kit ships need different shapes, and getting it wrong fails at
  * runtime rather than at compile time — Better Auth does not type-check this option.
  *
  * - `postgres.ts` exports a `pg.Pool`. Pass it directly; Better Auth builds the Kysely
  *   instance and detects the dialect itself.
- * - `mssql.ts` exports a Kysely instance. That one needs the wrapper:
- *
- *       import { db as mssqlDb } from "@/lib/db/mssql"
- *       export const database = { db: mssqlDb, type: "mssql" as const }
+ * - `mssql.ts` and `sqlite.ts` export a Kysely instance. Those need the wrapper:
+ *   `{ db: kyselyInstance, type: "mssql" | "sqlite" as const }`.
  *
  * Wrapping the Pool instead hands the adapter a Pool where it expects a Kysely, and every
  * query throws "db.selectFrom is not a function".
  */
-export const database = postgresDb
+const selectedProvider = normalizeProvider(process.env.Database__Provider)
+
+export const database =
+  selectedProvider === "postgres"
+    ? postgresDb
+    : selectedProvider === "sqlserver"
+      ? { db: mssqlDb, type: "mssql" as const }
+      : { db: sqliteDb, type: "sqlite" as const }
 
 const microsoftClientId = process.env.AZURE_AD_CLIENT_ID
 const microsoftTenantId = process.env.AZURE_AD_TENANT_ID

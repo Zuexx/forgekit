@@ -3,6 +3,7 @@ using System;
 using Anvil.Data.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
 {
     [DbContext(typeof(BetterAuthDbContext))]
-    partial class BetterAuthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260908070509_AddAuthSchema")]
+    partial class AddAuthSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

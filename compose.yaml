@@ -1,5 +1,7 @@
 name: forgekit
 
+# Opt-in: the default provider (Database__Provider=Sqlite, set in the repository-root .env) needs
+# no service at all. Start this only when Database__Provider is Postgres.
 services:
   postgres:
     image: postgres:17-alpine

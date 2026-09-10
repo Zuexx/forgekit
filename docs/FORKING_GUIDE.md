@@ -127,8 +127,10 @@ cp app/.env.local.example app/.env.local
 Then fill only local values:
 
 - `BETTER_AUTH_SECRET`: generate with `openssl rand -base64 32`
-- `DATABASE_URL`: required by the frontend Better Auth PostgreSQL adapter
-- `Database:Provider`: API provider, defaults to `Sqlite`
+- `Database__Provider` (repository-root `.env`, copy from `.env.example`): the one setting that
+  selects the provider for both the API and Better Auth — `Sqlite` (default), `Postgres`, or
+  `SqlServer`
+- `DATABASE_URL`: only read when `Database__Provider` is `Postgres`
 - `ConnectionStrings:<Provider>`: API connection string for the selected provider
 - `BETTER_AUTH_ADMIN_USER_IDS`: comma-separated ids granted the admin role, empty by
   default — set it after creating the account that should administer the fork
@@ -146,7 +148,9 @@ ForgeKit supports three API migration tracks:
 - PostgreSQL: optional API provider
 - SQL Server: optional API provider
 
-The frontend currently uses Better Auth with PostgreSQL, so auth flows need PostgreSQL even if the API stays on SQLite.
+The frontend and the API always use the same provider — `Database__Provider` in the
+repository-root `.env` selects it for both. There is no configuration that leaves one side on
+SQLite while the other needs PostgreSQL.
 
 For a new fork, decide early:
 

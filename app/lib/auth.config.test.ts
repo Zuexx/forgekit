@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { parseEnvList } from "./auth.config"
 
@@ -38,7 +38,12 @@ describe("parseEnvList", () => {
 })
 
 describe("database option", () => {
-    it("is passed in the shape Better Auth expects for a pg Pool", async () => {
+    afterEach(() => {
+        delete process.env.Database__Provider
+        vi.resetModules()
+    })
+
+    it("is passed in the shape Better Auth expects for a pg Pool when Postgres is selected", async () => {
         // Regression guard. Better Auth does not type-check this option, so the wrong
         // shape compiles and then fails on the first query:
         //
@@ -47,10 +52,43 @@ describe("database option", () => {
         //                                       "db.selectFrom is not a function"
         //
         // A pg.Pool must be passed directly so the adapter builds Kysely itself. Only a
-        // real Kysely instance — what lib/db/mssql.ts exports — takes the wrapper.
+        // real Kysely instance — what lib/db/mssql.ts and lib/db/sqlite.ts export — takes
+        // the wrapper. sqlite is the default now, so this test selects postgres explicitly
+        // to keep guarding the shape that trips this class of bug.
+        process.env.Database__Provider = "Postgres"
+        vi.resetModules()
         const { database } = await import("./auth.config")
 
         expect(database).not.toHaveProperty("type")
         expect(database).toHaveProperty("connect")
+    })
+
+    it("selects the sqlite adapter by default", async () => {
+        delete process.env.Database__Provider
+        vi.resetModules()
+        const { database } = await import("./auth.config")
+        expect(database).toHaveProperty("type", "sqlite")
+    })
+})
+
+describe("normalizeProvider", () => {
+    it("defaults an unset value to sqlite", async () => {
+        const { normalizeProvider } = await import("./auth.config")
+        expect(normalizeProvider(undefined)).toBe("sqlite")
+    })
+
+    it("is case-insensitive and accepts the API's aliases", async () => {
+        const { normalizeProvider } = await import("./auth.config")
+        expect(normalizeProvider("SQLite")).toBe("sqlite")
+        expect(normalizeProvider("Postgres")).toBe("postgres")
+        expect(normalizeProvider("PostgreSQL")).toBe("postgres")
+        expect(normalizeProvider("npgsql")).toBe("postgres")
+        expect(normalizeProvider("SqlServer")).toBe("sqlserver")
+        expect(normalizeProvider("mssql")).toBe("sqlserver")
+    })
+
+    it("rejects an unsupported value", async () => {
+        const { normalizeProvider } = await import("./auth.config")
+        expect(() => normalizeProvider("Oracle")).toThrow("Unsupported database provider")
     })
 })
