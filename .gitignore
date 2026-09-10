@@ -8,13 +8,17 @@ appsettings.Local.json
 !appsettings.*.example
 appsettings.Staging.json
 appsettings.Production.json
-api/ForgeKit.Api/data/
+/data/
 *.db
 *.db-shm
 *.db-wal
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+# On a case-insensitive filesystem (macOS/Windows default, core.ignorecase=true) the *.sqlite
+# glob above also matches the ForgeKit.Api.Migrations.Sqlite project directory, silently
+# excluding any new file added under it that was not already force-added. Re-include it.
+!api/ForgeKit.Api.Migrations.Sqlite/
 
 # Visual Studio Code
 .vscode/
@@ -83,6 +87,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.*.example
+!.env.example
 
 # vercel
 .vercel

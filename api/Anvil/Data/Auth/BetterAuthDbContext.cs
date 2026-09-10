@@ -19,6 +19,12 @@ public class BetterAuthDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // Keeps Better Auth's tables out of the same namespace as the product's tables when
+        // both share one database instance (Postgres, SQL Server). EF Core's SQLite provider
+        // accepts this call but does not honour it — SQLite has no schema concept, and the
+        // two DbContexts' table names do not collide, so one flat file is still "separate".
+        modelBuilder.HasDefaultSchema("auth");
+
         modelBuilder.Entity<Account>()
             .HasOne(a => a.User)
             .WithMany(u => u.Accounts)

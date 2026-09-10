@@ -15,9 +15,11 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.4");
+            modelBuilder
+                .HasDefaultSchema("auth")
+                .HasAnnotation("ProductVersion", "10.0.11");
 
-            modelBuilder.Entity("ForgeKit.Api.Entities.Auth.Account", b =>
+            modelBuilder.Entity("Anvil.Entities.Auth.Account", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(36)
@@ -80,10 +82,10 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("account");
+                    b.ToTable("account", "auth");
                 });
 
-            modelBuilder.Entity("ForgeKit.Api.Entities.Auth.Jwk", b =>
+            modelBuilder.Entity("Anvil.Entities.Auth.Jwk", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(36)
@@ -110,10 +112,10 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
 
                     b.HasKey("Id");
 
-                    b.ToTable("jwks");
+                    b.ToTable("jwks", "auth");
                 });
 
-            modelBuilder.Entity("ForgeKit.Api.Entities.Auth.Session", b =>
+            modelBuilder.Entity("Anvil.Entities.Auth.Session", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(36)
@@ -163,10 +165,10 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("session");
+                    b.ToTable("session", "auth");
                 });
 
-            modelBuilder.Entity("ForgeKit.Api.Entities.Auth.User", b =>
+            modelBuilder.Entity("Anvil.Entities.Auth.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(36)
@@ -222,10 +224,10 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("user");
+                    b.ToTable("user", "auth");
                 });
 
-            modelBuilder.Entity("ForgeKit.Api.Entities.Auth.Verification", b =>
+            modelBuilder.Entity("Anvil.Entities.Auth.Verification", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(36)
@@ -258,12 +260,12 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
 
                     b.HasIndex("Identifier");
 
-                    b.ToTable("verification");
+                    b.ToTable("verification", "auth");
                 });
 
-            modelBuilder.Entity("ForgeKit.Api.Entities.Auth.Account", b =>
+            modelBuilder.Entity("Anvil.Entities.Auth.Account", b =>
                 {
-                    b.HasOne("ForgeKit.Api.Entities.Auth.User", "User")
+                    b.HasOne("Anvil.Entities.Auth.User", "User")
                         .WithMany("Accounts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -272,9 +274,9 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ForgeKit.Api.Entities.Auth.Session", b =>
+            modelBuilder.Entity("Anvil.Entities.Auth.Session", b =>
                 {
-                    b.HasOne("ForgeKit.Api.Entities.Auth.User", "User")
+                    b.HasOne("Anvil.Entities.Auth.User", "User")
                         .WithMany("Sessions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -283,7 +285,7 @@ namespace ForgeKit.Api.Migrations.Sqlite.Migrations.Auth
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ForgeKit.Api.Entities.Auth.User", b =>
+            modelBuilder.Entity("Anvil.Entities.Auth.User", b =>
                 {
                     b.Navigation("Accounts");
 

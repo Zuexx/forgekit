@@ -41,9 +41,15 @@ See [docs/FORKING_GUIDE.md](docs/FORKING_GUIDE.md) for what to do next and for t
 ### Prerequisites
 - **.NET 10** (for API)
 - **Node.js 24** + **pnpm 11** (for App)
-- **PostgreSQL** for the frontend's Better Auth database
 
-The API uses SQLite by default and does not require an external database. PostgreSQL and SQL Server are optional API provider choices. The frontend currently uses Better Auth's PostgreSQL adapter and therefore needs PostgreSQL for authentication flows.
+Neither the API nor the frontend requires an external database to start — both default to one
+shared SQLite file at `<repo root>/data/forgekit.db`. PostgreSQL and SQL Server are opt-in for
+both sides together, switched with a single setting.
+
+The API uses SQLite by default. The frontend's Better Auth instance uses the same provider —
+never a different one — selected by `Database__Provider` in a repository-root `.env` (copy
+`.env.example`). Editing only `app/.env.local` or only `api/**/appsettings*.json` no longer has
+any effect on which provider either side uses.
 
 ### API (Backend)
 
