@@ -49,7 +49,9 @@ context: |
   - Breaking API changes require a change proposal.
   - Do not commit local secrets. `appsettings.Local.json` and `.env.local` are ignored and
     have committed `.example` counterparts.
-  - The frontend's Better Auth adapter requires PostgreSQL even when the API uses SQLite.
+  - The API and the frontend's Better Auth adapter share one database provider selection
+    (root `.env`'s `Database__Provider`); both default to SQLite, sharing one instance with
+    logically separate schemas.
 
   ## Reference docs
 
