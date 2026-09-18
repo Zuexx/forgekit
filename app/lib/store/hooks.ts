@@ -1,14 +1,16 @@
+import { useShallow } from 'zustand/react/shallow'
+
 import { useAppStore } from './index'
 
-export const useUser = () => useAppStore((state) => ({
+export const useUser = () => useAppStore(useShallow((state) => ({
   user: state.user,
   isAuthenticated: state.isAuthenticated,
   setUser: state.setUser,
   updateUser: state.updateUser,
   logout: state.logout,
-}))
+})))
 
-export const useUI = () => useAppStore((state) => ({
+export const useUI = () => useAppStore(useShallow((state) => ({
   theme: state.theme,
   sidebarOpen: state.sidebarOpen,
   loading: state.loading,
@@ -16,7 +18,7 @@ export const useUI = () => useAppStore((state) => ({
   toggleSidebar: state.toggleSidebar,
   setSidebarOpen: state.setSidebarOpen,
   setLoading: state.setLoading,
-}))
+})))
 
 export const useTheme = () => useAppStore((state) => state.theme)
 export const useSidebarOpen = () => useAppStore((state) => state.sidebarOpen)
