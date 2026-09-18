@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@colbymchenry/codegraph": "^1.6.0",
-    "@fission-ai/openspec": "^1.13.0",
+    "@fission-ai/openspec": "^1.13.1",
     "grillme": "latest"
   }
 }
