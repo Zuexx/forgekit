@@ -311,7 +311,7 @@ proxies/
 
 ```
 i18n/
-├── config.ts                          # Supported locales: en, ko-KR, zh-TW
+├── config.ts                          # Supported locales: en, zh-TW
 ├── routing.ts
 └── request.ts
 ```
@@ -321,7 +321,6 @@ i18n/
 ```
 messages/
 ├── en/          # auth, common, form, toast, validation
-├── ko-KR/
 └── zh-TW/
 ```
 
@@ -361,5 +360,5 @@ types/
 | Server state | TanStack Query |
 | Auth (App) | Better Auth |
 | RPC | Hono (typed client/server) |
-| i18n | next-intl (en / ko-KR / zh-TW) |
+| i18n | next-intl (en / zh-TW) |
 | Package manager | pnpm |

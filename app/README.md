@@ -76,7 +76,7 @@ pnpm auth.codegen
 - `lib/db/mssql.ts` is an optional Kysely MSSQL helper and is not the default app database.
 - `lib/rpc/` contains the Hono typed client and session middleware.
 - `providers/` contains app-level React providers.
-- `messages/` contains `en`, `ko-KR`, and `zh-TW` translations.
+- `messages/` contains `en` and `zh-TW` translations.
 
 ## Local API
 
