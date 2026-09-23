@@ -39,3 +39,11 @@
   authenticated-visitor leak, not an unauthenticated one)
 - [x] 5.4 Verified against the real rendered `/sign-in` page HTML: no Korean label text
   ("한국어"/"한") present; "中"/"English" (the two remaining locales) each appear exactly once
+
+## 6. Post-review fix
+
+- [x] 6.1 A code review found `app/public/ko-KR.mp4` (31MB) still present, referenced only
+  dynamically via `src={`/${locale}.mp4`}` in the sign-in/sign-up pages — a binary filename a
+  text-content grep can't match, so task 5.1's check never caught it. Confirmed no literal
+  `"ko-KR.mp4"` reference exists anywhere (only the dynamic template), so removing the file
+  is safe: the interpolation can simply never produce that path again. Deleted the file.

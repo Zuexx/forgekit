@@ -56,7 +56,11 @@ Grounded in `codegraph_explore` over the `forgekit` project (not estimated):
   `messages/index.ts`, `components/locale-switcher.tsx`, `i18n/config.ts`,
   `proxies/resolve-context.test.ts`, and `app/README.md`. The same search at the repo root
   additionally found `README.md` and `docs/STRUCTURE.md`. No other file, including every e2e
-  spec under `app/e2e/`, references `ko-KR`.
+  spec under `app/e2e/`, references `ko-KR`. **Correction, found by code review**: this grep
+  is text-content-only and cannot match a binary filename — it missed `app/public/ko-KR.mp4`
+  (31MB, a sign-in/sign-up background video referenced only dynamically via
+  `src={`/${locale}.mp4`}`, alongside sibling `en.mp4`/`zh-TW.mp4`). Confirmed no literal
+  `"ko-KR.mp4"` reference exists anywhere, so deleting the file is safe. See tasks.md §6.
 - No currently-shipped API or component prop is typed against the specific locale set (e.g.
   no `type Locale = 'en' | 'zh-TW' | 'ko-KR'` union outside `messages/index.ts`'s own
   `Locale = keyof typeof locales`, which narrows automatically once the `ko-KR` entry is
