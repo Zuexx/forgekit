@@ -4,4 +4,12 @@
 // always throws under Vitest, even from a file that is genuinely only ever loaded server-side --
 // this stub is aliased in for exactly that import, in vitest.config.mts, to restore Next's
 // server-side behavior (a no-op) in the one environment where it can't tell them apart.
+//
+// Residual consequence, not just a mechanical detail: this alias means `pnpm test` alone can
+// no longer catch a client-bundle leak of a guarded module (it would have thrown loudly,
+// if bluntly, pre-alias -- now it won't). That signal was never reliable anyway: this suite
+// has no component-level test that renders a "use client" file, so nothing here could
+// exercise a transitive client import either way. The guarantee the guard actually promises
+// is enforced by `pnpm build`, which runs unconditionally as part of `pnpm verify`/CI right
+// after `pnpm test` (see scripts/verify.sh) -- that's the real backstop, not this suite.
 export {}

@@ -30,3 +30,15 @@
   full import trace (`auth.config.ts` → `locale-switcher.tsx` →
   `sign-in-card.tsx`) pointing at the real offending chain. Reverted the temporary import;
   `pnpm build` confirmed green again afterward.
+
+## 4. Post-review fix
+
+- [x] 4.1 A code review found real Important-but-not-blocking gaps in the Vitest alias from
+  task 3.2: it means `pnpm test` alone can no longer catch a client-bundle leak of a guarded
+  module (a blunt but real signal it gave, pre-alias). The review independently confirmed
+  this doesn't weaken the actual guarantee the spec requires -- `pnpm build` (which does
+  catch it) runs unconditionally right after `pnpm test` in `pnpm verify`/CI -- and that this
+  suite has no component-level test that would have exercised the leak either way. Added a
+  paragraph to `app/vitest.server-only-stub.ts`'s comment making this trade-off explicit
+  instead of leaving it for a future reader to reconstruct. Re-ran `pnpm test`: 53/53 passing,
+  unaffected by the comment-only change.
