@@ -42,3 +42,47 @@
   paragraph to `app/vitest.server-only-stub.ts`'s comment making this trade-off explicit
   instead of leaving it for a future reader to reconstruct. Re-ran `pnpm test`: 53/53 passing,
   unaffected by the comment-only change.
+
+## 5. CI failure: a third loader that can't resolve "server-only"
+
+Opening the PR surfaced a real, blocking failure neither the design, the two rounds of local
+verification, nor the code review caught, because none of them ran the one thing CI actually
+runs that neither `pnpm build` nor `pnpm test` do: the better-auth CLI, invoked directly
+against `lib/auth.config.ts`.
+
+- [x] 5.1 CI's "Create auth schema" step
+  (`pnpm dlx @better-auth/cli@latest migrate --config ./lib/auth.config.ts -y`) failed:
+  `Please remove import 'server-only' from your auth config file temporarily. The CLI cannot
+  resolve the configuration with it included.` The CLI loads its `--config` target with its
+  own module loader, entirely outside both Next's webpack build (which has the special-cased
+  resolution that makes `server-only` a no-op server-side) and Vitest (aliased in task 3.2) --
+  a third environment this design never accounted for, and the one every migration in CI and
+  every contributor running `pnpm auth.migration`/`pnpm auth.generate` actually depends on.
+- [x] 5.2 Fixed by splitting every guarded file into two: an unguarded `*-instance.ts` holding
+  the real implementation, and the original filename reduced to a two-line guarded wrapper
+  (`import "server-only"; export * from "./*-instance"`). Applied consistently to all four
+  guarded files from task 2, not just `auth.config.ts` -- `auth-instance.ts` (new) imports the
+  three database adapters from their own new `*-instance.ts` files, not their guarded
+  wrapper filenames, so loading it never transitively re-triggers a guard one level deeper
+  (which a narrower fix touching only `auth.config.ts` would have hit immediately, since it
+  still imports `lib/db/{sqlite,postgres,mssql}.ts`, each guarded since task 2). This keeps
+  every guarantee task 2 established intact -- including the "defense in depth" reasoning in
+  `design.md` for guarding the database adapters independently of `auth.config.ts` -- while
+  giving the CLI (and only the CLI) an entry point with no guard anywhere in its import graph.
+  Updated the CLI's three callers to the new unguarded path: `app/package.json`'s
+  `auth.generate`/`auth.migration` scripts and `.github/workflows/ci.yml`'s "Create auth
+  schema" step now point at `lib/auth-instance.ts` instead of `lib/auth.config.ts`.
+- [x] 5.3 Verified the fix directly, not just inferred it: ran
+  `pnpm dlx @better-auth/cli@latest migrate --config lib/auth-instance.ts` against a scratch
+  SQLite database (not the dev database) -- completed successfully, no `server-only`
+  resolution error, matching exactly what CI's step now does.
+- [x] 5.4 Re-ran the full local verification after the restructure: `pnpm check`/`lint`/`test`
+  all clean (53/53 tests), `pnpm build` succeeds. Re-ran task 3.3's regression check
+  (temporarily importing `auth.config` from a real `"use client"` component) against the
+  restructured files: the build still fails with the same webpack error naming
+  `./lib/auth.config.ts` and the same import trace, confirming the guard itself is unaffected
+  by the split. Reverted the temporary import; build green again.
+- [x] 5.5 Confirmed no app code imports any of the four new `*-instance.ts` files directly
+  (`grep -rn "auth-instance\|sqlite-instance\|postgres-instance\|mssql-instance"` across
+  `app/`) -- each is reachable only through its own guarded wrapper, or (for `auth-instance.ts`
+  and the two database instance files it imports) through the CLI's `--config` flag.

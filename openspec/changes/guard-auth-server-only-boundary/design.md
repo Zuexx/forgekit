@@ -55,6 +55,21 @@ goes through it. Guarding the adapters too is defense in depth: if a future chan
 import gets the same protection without depending on it happening to go through
 `auth.config.ts` first.
 
+**Split each guarded file into an unguarded `*-instance.ts` plus a two-line guarded wrapper
+at the original filename.** Added after opening the PR surfaced a real gap this design didn't
+originally account for: the better-auth CLI (`pnpm auth.generate`/`pnpm auth.migration`, and
+CI's schema-creation step) loads its `--config` target directly, with its own module loader,
+outside both Next's webpack build and Vitest — a third environment, and one that cannot
+resolve `import "server-only"` at all (its own error: *"Please remove import 'server-only'
+from your auth config file temporarily. The CLI cannot resolve the configuration with it
+included."*). Pointing the CLI at a config file with zero `server-only` anywhere in its
+import graph needed *every* guarded file split this way, not just `auth.config.ts` — a
+version that only split the top-level file would still transitively hit the three database
+adapters' own guards one level deeper, since `auth-instance.ts` still needs a real `db`
+connection from somewhere. Each `*-instance.ts` carries a comment warning it must never be
+imported directly by app code; `grep` confirms nothing does. See tasks.md §5 for the full
+account, including how this was verified against the real CLI, not just inferred.
+
 ## Risks / Trade-offs
 
 - [A future contributor sees `server-only`'s build error and "fixes" it by removing the
