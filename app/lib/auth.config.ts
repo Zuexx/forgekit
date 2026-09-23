@@ -1,3 +1,9 @@
+// Fails the build if this module is ever pulled into a client bundle, rather than shipping
+// broken client JS that only fails at runtime -- the sibling TanStack Start starter shipped
+// exactly that failure mode once, from a module with this same import-time-side-effect shape.
+// See openspec/changes/guard-auth-server-only-boundary/design.md for the full rationale.
+import "server-only"
+
 import { config } from "dotenv"
 import { resolve } from "path"
 

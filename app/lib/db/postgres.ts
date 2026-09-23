@@ -1,3 +1,6 @@
+// See lib/auth.config.ts's own "server-only" import for why.
+import "server-only"
+
 import { config } from 'dotenv'
 import { resolve } from 'path'
 
