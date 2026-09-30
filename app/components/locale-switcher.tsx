@@ -10,7 +10,6 @@ import { routingConfig } from "@/i18n/config"
 const localeLabels: Record<string, { short: string; full: string }> = {
   en: { short: "EN", full: "English" },
   "zh-TW": { short: "中", full: "繁體中文" },
-  "ko-KR": { short: "한", full: "한국어" },
 }
 
 type LocaleSwitcherProps = {
