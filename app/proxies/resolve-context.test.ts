@@ -17,7 +17,7 @@ vi.mock("next/headers", () => ({
 const { resolveContext } = await import("./resolve-context")
 
 const config = {
-    routing: { locales: ["en", "zh-TW", "ko-KR"], defaultLocale: "en" },
+    routing: { locales: ["en", "zh-TW"], defaultLocale: "en" },
     apiPrefix: "/api",
     authRoutes: ["/sign-in", "/sign-up"],
     publicRoutes: ["/", "/about"],
@@ -117,7 +117,7 @@ describe("resolveContext", () => {
         it("classifies against the locale-stripped path", async () => {
             // Route lists hold "/about", so classification has to run after the locale
             // prefix is removed or every localised URL falls through as protected.
-            const ctx = await resolveContext({ request: request("/ko-KR/about"), config })
+            const ctx = await resolveContext({ request: request("/zh-TW/about"), config })
 
             expect(ctx.resource.isPublic).toBe(true)
         })

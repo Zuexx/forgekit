@@ -1,5 +1,5 @@
 export const routingConfig = {
-    locales: ["en", "zh-TW", "ko-KR"],
+    locales: ["en", "zh-TW"],
     defaultLocale: "en",
     pathnames: {},
     localePrefix: "as-needed",

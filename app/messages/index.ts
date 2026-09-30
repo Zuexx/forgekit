@@ -1,6 +1,5 @@
 const locales = {
     en: () => import('./en'),
-    'ko-KR': () => import('./ko-KR'),
     'zh-TW': () => import('./zh-TW'),
 } as const;
 

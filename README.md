@@ -139,7 +139,7 @@ App runs on `http://localhost:3000`. Azure AD values in `.env.local` are optiona
 | **Server State** | TanStack Query |
 | **Auth (App)** | Better Auth |
 | **RPC** | Hono (typed client/server) |
-| **i18n** | next-intl (en / ko-KR / zh-TW) |
+| **i18n** | next-intl (en / zh-TW) |
 | **Package Manager** | pnpm |
 
 ---
