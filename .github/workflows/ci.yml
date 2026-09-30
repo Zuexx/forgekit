@@ -85,7 +85,7 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - name: Create auth schema
-        run: pnpm dlx @better-auth/cli@latest migrate --config ./lib/auth.config.ts -y
+        run: pnpm dlx @better-auth/cli@latest migrate --config ./lib/auth-instance.ts -y
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
