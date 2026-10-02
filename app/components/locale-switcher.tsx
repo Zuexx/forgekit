@@ -17,7 +17,7 @@ type LocaleSwitcherProps = {
   startAngle?: number
 }
 
-export const LocaleSwitcher = ({ arc = 75, startAngle = 340 }: LocaleSwitcherProps = {}) => {
+export const LocaleSwitcher = ({ arc = 37.5, startAngle = 340 }: LocaleSwitcherProps = {}) => {
   const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname()

@@ -1,7 +1,6 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import Image from "next/image"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { useForm } from "react-hook-form"
@@ -10,6 +9,7 @@ import z from "zod"
 import { InputField } from "@/components/form-fields/input-field"
 import { PasswordField } from "@/components/form-fields/password-field"
 import { LocaleSwitcher } from "@/components/locale-switcher"
+import { Logo } from "@/components/logo"
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { Button } from "@/components/ui/button"
 import {
@@ -64,14 +64,7 @@ export function SingUpCard({
                         <ThemeSwitcher />
                         <LocaleSwitcher />
                     </div>
-                    <Image
-                        src={"/logo.svg"}
-                        height={56}
-                        width={152}
-                        alt={"App Logo"}
-                        priority
-                        className="h-auto w-auto"
-                    />
+                    <Logo className="h-14 w-auto text-foreground" role="img" aria-label="App Logo" />
                     <CardTitle className="text-xl">
                         {tAuth('subtitle')}
                     </CardTitle>

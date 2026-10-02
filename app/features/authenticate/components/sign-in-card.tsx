@@ -1,7 +1,6 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import Image from "next/image"
 import Link from "next/link"
 import { useTranslations } from 'next-intl'
 import {
@@ -13,6 +12,7 @@ import { z } from "zod"
 import { InputField } from "@/components/form-fields/input-field"
 import { PasswordField } from "@/components/form-fields/password-field"
 import { LocaleSwitcher } from "@/components/locale-switcher"
+import { Logo, LogoMark } from "@/components/logo"
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { Button } from "@/components/ui/button"
 import {
@@ -69,14 +69,7 @@ export function SignInCard({
             <ThemeSwitcher />
             <LocaleSwitcher />
           </div>
-          <Image
-            src={"/logo.svg"}
-            height={56}
-            width={152}
-            alt={"App Logo"}
-            priority
-            className="h-auto w-auto"
-          />
+          <Logo className="h-14 w-auto text-foreground" role="img" aria-label="App Logo" />
           <CardTitle className="text-xl">
             {tAuth('subtitle')}
           </CardTitle>
@@ -88,10 +81,7 @@ export function SignInCard({
             <FieldGroup>
               <Field>
                 <Button variant="outline" type="button" onClick={onSocialSignIn}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" className="mr-2 antialiased" fill="none" xmlns="http://www.w3.org/2000/svg" shapeRendering="geometricPrecision" preserveAspectRatio="xMidYMid meet">
-                    <circle cx="11.25" cy="11.25" r="11.25" fill="black" />
-                    <path d="M11.483 1.75 H15.75 L11.620 16.123 C11.492 16.697 11.515 17.224 12.312 17.224 C13.158 17.224 14.428 17.172 14.428 17.172 L13.548 20.531 C13.548 20.531 11.951 20.768 10.788 20.749 C7.973 20.704 7.043 19.734 7.001 18.097 C6.991 17.727 7.060 17.267 7.168 16.757 L11.483 1.75 Z" fill="white" vectorEffect="non-scaling-stroke" />
-                  </svg>
+                  <LogoMark className="mr-2 h-6 w-6 text-foreground" aria-hidden="true" />
                   {tAuth("loginWithSSO")}
                 </Button>
               </Field>

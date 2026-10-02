@@ -2,6 +2,7 @@ import "../globals.css"
 
 import type { Metadata } from "next"
 import { notFound } from 'next/navigation'
+import Script from 'next/script'
 import { hasLocale } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 
@@ -32,7 +33,9 @@ export default async function LocaleLayout({ children, params }: Props) {
     return (
         <html lang={locale} suppressHydrationWarning>
             <head>
-                <script
+                <Script
+                    id="theme-init"
+                    strategy="beforeInteractive"
                     dangerouslySetInnerHTML={{
                         __html: `
                             (function() {

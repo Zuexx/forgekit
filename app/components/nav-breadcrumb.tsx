@@ -60,7 +60,7 @@ export const NavBreadCrumb = () => {
             </section>
             <section className="flex gap-2 shrink-0 ml-4">
                 <ThemeSwitcher />
-                <LocaleSwitcher arc={75} startAngle={125} />
+                <LocaleSwitcher arc={37.5} startAngle={125} />
             </section>
         </div>
     )
