@@ -35,7 +35,7 @@ export default async function UserLayout({ children, params }: Props) {
                     <div className="flex items-center space-x-4">
                         <div className="flex place-items-center space-x-2">
                             <ThemeSwitcher />
-                            <LocaleSwitcher arc={75} startAngle={65} />
+                            <LocaleSwitcher arc={37.5} startAngle={65} />
                         </div>
                         <UserMenu />
                     </div>
