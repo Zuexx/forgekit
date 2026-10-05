@@ -40,7 +40,7 @@ Thrown when a required resource cannot be found.
 - Referenced entity in a relationship doesn't exist
 - Resource has been deleted
 
-**Applies to:** Any domain entity (Patient, Visit, Order, etc.)
+**Applies to:** Any domain entity (TodoItem, Member, Category, etc.)
 
 **Constructor:**
 ```csharp
@@ -103,14 +103,14 @@ Use UnauthorizedException for business-level authorization checks.
 
 **Example:**
 ```csharp
-if (!user.HasPermission("cancel_visit"))
+if (!user.HasPermission("delete_todo"))
 {
-    throw new UnauthorizedException("You lack permission to cancel visits");
+    throw new UnauthorizedException("You lack permission to delete todos");
 }
 
-if (visit.IsInPast())
+if (todoItem.CurrentStatus == "Done")
 {
-    throw new UnauthorizedException("Cannot cancel a visit that has already occurred");
+    throw new UnauthorizedException("Cannot delete a todo that has already been completed");
 }
 ```
 
@@ -181,57 +181,57 @@ These scenarios apply across all domains:
 
 ## Usage Examples
 
-### Example 1: Create Patient with Validation
+### Example 1: Create Todo with Validation
 ```csharp
 [HttpPost]
-public async Task<ActionResult> CreatePatient(CreatePatientRequest request)
+public async Task<ActionResult> CreateTodo(CreateTodoRequest request)
 {
     // Validation happens automatically via pipeline
     // If invalid, ValidationAppException is thrown with field errors
     
-    // Check for duplicate email
-    var existing = await _repository.FindByEmailAsync(request.Email);
+    // Check for a duplicate title in the same workspace
+    var existing = await _repository.FindByTitleAsync(request.WorkspaceId, request.Title);
     if (existing != null)
     {
         throw new ConflictException(
-            "Patient with this email already exists", 
-            "email"
+            "A todo with this title already exists in this workspace", 
+            "title"
         );
     }
     
-    var patient = new Patient { Email = request.Email, ... };
-    await _repository.AddAsync(patient);
-    return CreatedAtAction(nameof(GetPatient), patient);
+    var todoItem = new TodoItem { Title = request.Title, WorkspaceId = request.WorkspaceId, ... };
+    await _repository.AddAsync(todoItem);
+    return CreatedAtAction(nameof(GetTodo), todoItem);
 }
 ```
 
-### Example 2: Update Visit with Authorization Check
+### Example 2: Update Todo Status with Authorization Check
 ```csharp
 [HttpPut("{id}")]
-public async Task<ActionResult> UpdateVisit(int id, UpdateTodoStatusRequest request)
+public async Task<ActionResult> UpdateTodoStatus(int id, UpdateTodoStatusRequest request)
 {
-    var visit = await _repository.GetVisitAsync(id);
+    var todoItem = await _repository.GetTodoAsync(id);
     
     // Not found
-    if (visit == null)
+    if (todoItem == null)
     {
         throw new NotFoundException(
-            $"Visit with ID {id} not found",
-            "Visit"
+            $"Todo with ID {id} not found",
+            "TodoItem"
         );
     }
     
     // Authorization - business rule check
-    if (visit.Date < DateTime.Today)
+    if (todoItem.CurrentStatus == "Done")
     {
         throw new UnauthorizedException(
-            "Cannot modify a visit that has already occurred"
+            "Cannot modify a todo that has already been completed"
         );
     }
     
-    visit.Update(request);
+    todoItem.Update(request);
     await _repository.SaveAsync();
-    return Ok(visit);
+    return Ok(todoItem);
 }
 ```
 
@@ -291,7 +291,7 @@ All errors are returned in **RFC 7807 Problem Details** format:
 {
   "title": "Not Found",
   "status": 404,
-  "detail": "Patient with ID 999 not found",
+  "detail": "Todo with ID 999 not found",
   "traceId": "0HN8KHDG7H9L0:00000001"
 }
 ```
@@ -314,7 +314,7 @@ All errors are returned in **RFC 7807 Problem Details** format:
 {
   "title": "Forbidden",
   "status": 403,
-  "detail": "Cannot cancel a visit that has already occurred",
+  "detail": "Cannot modify a todo that has already been completed",
   "traceId": "0HN8KHDG7H9L0:00000003"
 }
 ```
@@ -328,7 +328,7 @@ All errors are returned in **RFC 7807 Problem Details** format:
   "traceId": "0HN8KHDG7H9L0:00000004",
   "errors": {
     "email": ["Invalid email format"],
-    "dateOfBirth": ["Patient must be at least 18 years old"]
+    "dueDate": ["Due date must be in the future"]
   }
 }
 ```
@@ -350,7 +350,7 @@ A correlation ID (trace ID) is a unique identifier generated for each request. I
 
 **When sending requests:**
 ```http
-GET /api/patients/999
+GET /api/todos/999
 X-Correlation-ID: client-request-123
 ```
 
@@ -359,14 +359,14 @@ X-Correlation-ID: client-request-123
 {
   "title": "Not Found",
   "status": 404,
-  "detail": "Patient not found",
+  "detail": "Todo not found",
   "traceId": "client-request-123"
 }
 ```
 
 **In logs:**
 ```
-[ERROR] Unhandled exception with correlation ID client-request-123: Patient not found
+[ERROR] Unhandled exception with correlation ID client-request-123: Todo not found
 ```
 
 ### Troubleshooting with Correlation IDs

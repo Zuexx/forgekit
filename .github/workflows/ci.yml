@@ -47,26 +47,12 @@ jobs:
       run:
         working-directory: app
     env:
-      DATABASE_URL: postgresql://localhost:5432/forgekit
-      # The service trusts any user; naming it here keeps it out of the connection URI,
-      # where a user:host string reads as a credential to secret scanners.
-      PGUSER: postgres
-      BETTER_AUTH_URL: http://localhost:3000
-    services:
       # The end-to-end tests exercise sign-in through to the database. Without a real one
-      # they would only prove that the pages render.
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_DB: forgekit
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d forgekit"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 12
+      # they would only prove that the pages render. Database__Provider is unset here, so
+      # this runs against the default SQLite file -- no external service needed. Set
+      # Database__Provider=Postgres (or SqlServer) plus the matching connection settings
+      # to run this job against a different provider.
+      BETTER_AUTH_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6

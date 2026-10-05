@@ -42,17 +42,18 @@ public class CreateTodoHandler : ResultCommandHandler<CreateTodoCommand, TodoIte
         
         try
         {
-            var visit = await _service.CreateTodoAsync(
-                request.VisitDate,
-                request.Notes,
+            var todoItem = await _service.CreateTodoAsync(
+                request.WorkspaceId,
+                request.Title,
+                request.DueDate,
                 cancellationToken);
 
             // Base class logs: "CreateTodoHandler completed successfully for CreateTodoCommand"
-            return Success(visit);
+            return Success(todoItem);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error creating visit request");
+            _logger.LogError(ex, "Unexpected error creating todo");
             // Base class logs: warning with failure details
             throw;
         }
@@ -63,43 +64,43 @@ public class CreateTodoHandler : ResultCommandHandler<CreateTodoCommand, TodoIte
 **Logging Output:**
 ```
 [09:15:23 DBG] Executing CreateTodoHandler for CreateTodoCommand {X-Correlation-ID=abc123xyz}
-[09:15:24 INF] Visit request created: {VisitId=v-001, Status=Pending, CreatedBy=user-42}
+[09:15:24 INF] Todo created: {TodoItemId=t-001, Status=Todo, CreatedBy=user-42}
 [09:15:24 DBG] CreateTodoHandler completed successfully for CreateTodoCommand {X-Correlation-ID=abc123xyz}
 ```
 
 ### Query Handler (Informational)
 
 ```csharp
-public class GetVisitByIdHandler : ResultQueryHandler<GetVisitByIdQuery, VisitDetailDto>
+public class GetTodoByIdHandler : ResultQueryHandler<GetTodoByIdQuery, TodoItemDto>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<GetVisitByIdHandler> _logger;
+    private readonly ILogger<GetTodoByIdHandler> _logger;
 
-    public GetVisitByIdHandler(
+    public GetTodoByIdHandler(
         IUnitOfWork unitOfWork,
-        ILogger<GetVisitByIdHandler> logger)
+        ILogger<GetTodoByIdHandler> logger)
         : base(logger)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
-    public override async Task<Result<VisitDetailDto>> HandleAsync(
-        GetVisitByIdQuery request,
+    public override async Task<Result<TodoItemDto>> HandleAsync(
+        GetTodoByIdQuery request,
         CancellationToken cancellationToken)
     {
         // Base class logs entry at Debug level
         
-        var visit = await _unitOfWork.DbContext.Visits
-            .FirstOrDefaultAsync(v => v.Id == request.VisitId, cancellationToken);
+        var todoItem = await _unitOfWork.DbContext.TodoItems
+            .FirstOrDefaultAsync(t => t.Id == request.TodoItemId, cancellationToken);
 
-        if (visit == null)
+        if (todoItem == null)
         {
-            _logger.LogDebug("Visit not found: {VisitId}", request.VisitId);
-            return NotFound("Visit not found", "Visit");
+            _logger.LogDebug("Todo not found: {TodoItemId}", request.TodoItemId);
+            return NotFound("Todo not found", "TodoItem");
         }
 
-        var dto = new VisitDetailDto { /* ... */ };
+        var dto = new TodoItemDto { /* ... */ };
         
         // Base class logs success at Debug level (queries don't have business significance)
         return Success(dto);
@@ -109,9 +110,9 @@ public class GetVisitByIdHandler : ResultQueryHandler<GetVisitByIdQuery, VisitDe
 
 **Logging Output:**
 ```
-[10:22:45 DBG] Executing GetVisitByIdHandler for GetVisitByIdQuery {X-Correlation-ID=def456uvw}
-[10:22:45 DBG] Visit not found: {VisitId=v-404}
-[10:22:45 DBG] GetVisitByIdHandler completed successfully for GetVisitByIdQuery {X-Correlation-ID=def456uvw}
+[10:22:45 DBG] Executing GetTodoByIdHandler for GetTodoByIdQuery {X-Correlation-ID=def456uvw}
+[10:22:45 DBG] Todo not found: {TodoItemId=t-404}
+[10:22:45 DBG] GetTodoByIdHandler completed successfully for GetTodoByIdQuery {X-Correlation-ID=def456uvw}
 ```
 
 ## Service Logging
@@ -141,49 +142,51 @@ public class TodoService : ITodoService
     }
 
     public async Task<TodoItemDto> CreateTodoAsync(
-        DateTime visitDate,
-        string? notes,
+        string workspaceId,
+        string title,
+        DateTime? dueDate,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Creating visit request for date {VisitDate}", visitDate);
+        _logger.LogDebug("Creating todo {Title} due {DueDate}", title, dueDate);
 
         // Validation
-        if (visitDate < DateTime.UtcNow.Date)
+        if (dueDate < DateTime.UtcNow.Date)
         {
             _logger.LogWarning(
-                "Visit request with past date rejected: {VisitDate} (today={Today})",
-                visitDate, DateTime.UtcNow.Date);
-            throw new ValidationException("Visit date cannot be in the past");
+                "Todo with past due date rejected: {DueDate} (today={Today})",
+                dueDate, DateTime.UtcNow.Date);
+            throw new ValidationException("Due date cannot be in the past");
         }
 
         try
         {
             _unitOfWork.BeginTransaction();
 
-            var visit = new Visit
+            var todoItem = new TodoItem
             {
                 Id = Guid.NewGuid().ToString("N"),
-                VisitDate = visitDate,
-                Notes = notes,
-                Status = VisitStatus.Pending,
+                WorkspaceId = workspaceId,
+                Title = title,
+                DueDate = dueDate,
+                CurrentStatus = "Todo",
                 // Audit fields set by DbContext interceptor
             };
 
-            _unitOfWork.DbContext.Visits.Add(visit);
+            _unitOfWork.DbContext.TodoItems.Add(todoItem);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _unitOfWork.CommitTransaction();
 
             _logger.LogInformation(
-                "Visit request created successfully: {VisitId} by {UserId} on {VisitDate}",
-                visit.Id,
+                "Todo created successfully: {TodoItemId} by {UserId} due {DueDate}",
+                todoItem.Id,
                 _auditContext.UserId,
-                visitDate);
+                dueDate);
 
             return new TodoItemDto
             {
-                Id = visit.Id,
-                Status = visit.Status.ToString(),
+                Id = todoItem.Id,
+                Status = todoItem.CurrentStatus,
                 CreatedBy = _auditContext.UserId,
                 // ...
             };
@@ -193,48 +196,50 @@ public class TodoService : ITodoService
             _unitOfWork.RollbackTransaction();
             _logger.LogError(
                 ex,
-                "Failed to create visit request for date {VisitDate}: {ErrorMessage}",
-                visitDate,
+                "Failed to create todo {Title}: {ErrorMessage}",
+                title,
                 ex.Message);
             throw;
         }
     }
 
     public async Task UpdateTodoStatusAsync(
-        string visitId,
+        string todoItemId,
+        string status,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Approving visit request: {VisitId}", visitId);
+        _logger.LogDebug("Updating todo status: {TodoItemId} -> {Status}", todoItemId, status);
 
-        var visit = await _unitOfWork.DbContext.Visits.FirstOrDefaultAsync(
-            v => v.Id == visitId, cancellationToken);
+        var todoItem = await _unitOfWork.DbContext.TodoItems.FirstOrDefaultAsync(
+            t => t.Id == todoItemId, cancellationToken);
 
-        if (visit == null)
+        if (todoItem == null)
         {
-            _logger.LogWarning("Approval attempted on non-existent visit: {VisitId}", visitId);
-            throw new NotFoundException($"Visit {visitId} not found");
+            _logger.LogWarning("Status update attempted on non-existent todo: {TodoItemId}", todoItemId);
+            throw new NotFoundException($"Todo {todoItemId} not found");
         }
 
-        if (visit.Status != VisitStatus.Pending)
+        if (todoItem.CurrentStatus == "Cancelled")
         {
             _logger.LogWarning(
-                "Approval rejected: invalid status transition from {CurrentStatus} to Approved for {VisitId}",
-                visit.Status,
-                visitId);
+                "Status update rejected: invalid transition from {CurrentStatus} to {NewStatus} for {TodoItemId}",
+                todoItem.CurrentStatus,
+                status,
+                todoItemId);
             throw new ValidationException(
-                $"Cannot approve visit in {visit.Status} status");
+                $"Cannot update a todo in {todoItem.CurrentStatus} status");
         }
 
-        var oldStatus = visit.Status;
-        visit.Status = VisitStatus.Approved;
+        var oldStatus = todoItem.CurrentStatus;
+        todoItem.CurrentStatus = status;
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
-            "Visit request approved: {VisitId} status {OldStatus}->{NewStatus} by {UserId}",
-            visitId,
+            "Todo status updated: {TodoItemId} status {OldStatus}->{NewStatus} by {UserId}",
+            todoItemId,
             oldStatus,
-            visit.Status,
+            status,
             _auditContext.UserId);
     }
 }
@@ -242,20 +247,20 @@ public class TodoService : ITodoService
 
 **Logging Output for CreateTodoAsync (Success):**
 ```
-[14:32:10 DBG] Creating visit request for date 2026-02-15
-[14:32:11 INF] Visit request created successfully: v-xyz123 by user-42 on 2026-02-15
+[14:32:10 DBG] Creating todo Review the launch plan due 2026-02-15
+[14:32:11 INF] Todo created successfully: t-xyz123 by user-42 due 2026-02-15
 ```
 
 **Logging Output for CreateTodoAsync (Validation Failure):**
 ```
-[14:33:20 DBG] Creating visit request for date 2026-02-01
-[14:33:20 WRN] Visit request with past date rejected: 2026-02-01 (today=2026-02-09)
+[14:33:20 DBG] Creating todo Review the launch plan due 2026-02-01
+[14:33:20 WRN] Todo with past due date rejected: 2026-02-01 (today=2026-02-09)
 ```
 
 **Logging Output for UpdateTodoStatusAsync (Status Transition):**
 ```
-[14:35:45 DBG] Approving visit request: v-xyz123
-[14:35:46 INF] Visit request approved: v-xyz123 status Pending->Approved by user-42
+[14:35:45 DBG] Updating todo status: t-xyz123 -> Done
+[14:35:46 INF] Todo status updated: t-xyz123 status InProgress->Done by user-42
 ```
 
 ## Middleware Logging
@@ -366,9 +371,9 @@ ExceptionHandlingMiddleware automatically logs exceptions with:
 ```
 [15:47:22 ERR] System.InvalidOperationException: Database connection failed
       at Api.Data.UnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
-      at Api.Services.TodoService.CreateTodoAsync(DateTime visitDate, String notes, CancellationToken cancellationToken)
+      at Api.Services.TodoService.CreateTodoAsync(String workspaceId, String title, DateTime? dueDate, CancellationToken cancellationToken)
       ...
-[15:47:22 INF] Error response: HTTP 500, Status=InternalServerError, TraceId=v-xyz123:{X-Correlation-ID=abc123xyz}
+[15:47:22 INF] Error response: HTTP 500, Status=InternalServerError, TraceId=t-xyz123:{X-Correlation-ID=abc123xyz}
 ```
 
 ## Log Output Examples
@@ -376,8 +381,8 @@ ExceptionHandlingMiddleware automatically logs exceptions with:
 ### Console Output (Development)
 ```
 [09:15:23 DBG] Executing CreateTodoHandler for CreateTodoCommand {X-Correlation-ID=abc123xyz}
-[09:15:23 DBG] Creating visit request for date 2026-02-15
-[09:15:24 INF] Visit request created successfully: v-xyz123 by user-42 on 2026-02-15
+[09:15:23 DBG] Creating todo Review the launch plan due 2026-02-15
+[09:15:24 INF] Todo created successfully: t-xyz123 by user-42 due 2026-02-15
 [09:15:24 INF] TodoService completed successfully {X-Correlation-ID=abc123xyz}
 [09:15:24 DBG] CreateTodoHandler completed successfully for CreateTodoCommand {X-Correlation-ID=abc123xyz}
 ```
@@ -391,11 +396,11 @@ Structure easily parsed as JSON or key=value pairs:
 {
   "Timestamp": "2026-02-09T15:47:22.1234567Z",
   "Level": "Information",
-  "MessageTemplate": "Visit request created successfully: {VisitId} by {UserId} on {VisitDate}",
+  "MessageTemplate": "Todo created successfully: {TodoItemId} by {UserId} due {DueDate}",
   "Properties": {
-    "VisitId": "v-xyz123",
+    "TodoItemId": "t-xyz123",
     "UserId": "user-42",
-    "VisitDate": "2026-02-15",
+    "DueDate": "2026-02-15",
     "X-Correlation-ID": "abc123xyz"
   }
 }
@@ -413,10 +418,10 @@ public async Task CreateTodoHandler_LogsSuccessfully()
     var mockLogger = Substitute.For<ILogger<CreateTodoHandler>>();
     var mockService = Substitute.For<ITodoService>();
     var handler = new CreateTodoHandler(mockService, mockLogger);
-    var command = new CreateTodoCommand { VisitDate = DateTime.UtcNow.AddDays(1) };
+    var command = new CreateTodoCommand { Title = "Review the launch plan", DueDate = DateTime.UtcNow.AddDays(1) };
 
-    mockService.CreateTodoAsync(Arg.Any<DateTime>(), Arg.Any<string>())
-        .Returns(new TodoItemDto { Id = "v-001" });
+    mockService.CreateTodoAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTime?>())
+        .Returns(new TodoItemDto { Id = "t-001" });
 
     // Act
     var result = await handler.Handle(command, CancellationToken.None);
@@ -447,10 +452,10 @@ public async Task CreateTodoItem_EndToEnd_CreatesLogWithCorrelationId()
     var correlationId = "test-correlation-123";
     
     // Act
-    var request = new HttpRequestMessage(HttpMethod.Post, "/api/visits");
+    var request = new HttpRequestMessage(HttpMethod.Post, "/api/todos");
     request.Headers.Add("X-Correlation-ID", correlationId);
     request.Content = new StringContent(
-        JsonSerializer.Serialize(new { visitDate = DateTime.UtcNow.AddDays(1) }),
+        JsonSerializer.Serialize(new { title = "Review the launch plan", dueDate = DateTime.UtcNow.AddDays(1) }),
         Encoding.UTF8,
         "application/json");
     
