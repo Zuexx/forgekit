@@ -79,12 +79,15 @@ pnpm install
 pnpm check           # tsc --noEmit
 pnpm lint
 pnpm test            # vitest
-pnpm test:e2e        # playwright; needs postgres and a built app
+pnpm test:e2e        # playwright; needs a built app
 ```
 
-End-to-end tests run against a real database. Start one with `podman compose up -d` (or
-docker), point `DATABASE_URL` at it and set `PGUSER=postgres`, create the auth schema with `pnpm auth.migration`,
-then `pnpm build` before `pnpm test:e2e`.
+End-to-end tests run against a real database. `Database__Provider` (repository-root `.env`)
+selects it for both the API and the frontend and defaults to SQLite, which needs no setup --
+create the auth schema with `pnpm auth.migration`, then `pnpm build` before `pnpm test:e2e`. To
+run against Postgres or SQL Server instead, set `Database__Provider` accordingly, start that
+provider with `podman compose up -d` (or docker), and point `DATABASE_URL` (Postgres) or the
+matching connection settings at it before migrating.
 
 `.githooks/pre-push` checks that implementation plans cite OpenSpec task ids that
 actually resolve — the one link between the two systems that nothing else validates.
