@@ -3,7 +3,6 @@
 import type { InferResponseType } from "hono/client"
 import {
   Bell,
-  History,
   LogOut,
   RotateCcw,
   User,
@@ -96,10 +95,6 @@ export const UserMenuContent = ({ user }: UserMenuContentProps) => {
         <DropdownMenuItem onSelect={() => router.push("/user/notification")}>
           <Bell />
           Notifications
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => router.push("/user/trained-document")}>
-          <History />
-          Training History
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => router.push("/user/change-password")}>
           <RotateCcw />
