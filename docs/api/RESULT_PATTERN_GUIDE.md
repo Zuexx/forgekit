@@ -303,7 +303,7 @@ Always use consistent error codes following universal conventions:
 ```csharp
 // These codes work universally across all domains:
 return Failure("USER_NOT_FOUND", "User not found");           // 404
-return Failure("VISIT_CONFLICT", "MR already has visit");     // 409
+return Failure("TODO_CONFLICT", "Workspace already has a todo with this title"); // 409
 return Failure("INVALID_DATE", "Date must be future");        // 400
 ```
 
@@ -314,8 +314,8 @@ Include field-level errors in the Details dictionary:
 ```csharp
 var errors = new Dictionary<string, string[]>
 {
-    { "visitDate", new[] { "Visit date must be at least 5 days in advance" } },
-    { "mrId", new[] { "Medical Representative does not exist" } }
+    { "dueDate", new[] { "Due date must be at least 5 days in advance" } },
+    { "assignedToMemberId", new[] { "Member does not exist" } }
 };
 
 return Failure("VALIDATION_FAILED", "One or more validation errors occurred", errors);
@@ -331,7 +331,7 @@ These patterns apply universally to **any domain or entity**:
 
 | Pattern | HTTP Status | Meaning | Example |
 |---------|------------|---------|---------|
-| `{ENTITY}_NOT_FOUND` | 404 | Resource doesn't exist | `USER_NOT_FOUND`, `VISIT_NOT_FOUND` |
+| `{ENTITY}_NOT_FOUND` | 404 | Resource doesn't exist | `USER_NOT_FOUND`, `TODO_NOT_FOUND` |
 | `{OPERATION}_CONFLICT` | 409 | Business rule conflict | `CREATE_CONFLICT`, `SCHEDULE_CONFLICT` |
 | `INVALID_{FIELD}` | 400 | Input validation failed | `INVALID_DATE`, `INVALID_EMAIL` |
 | `UNAUTHORIZED_{OPERATION}` | 403 | Permission denied | `UNAUTHORIZED_DELETE`, `UNAUTHORIZED_APPROVE` |
@@ -569,7 +569,7 @@ Write error messages that help API consumers understand what went wrong:
 return Failure("ERROR", "Operation failed");
 
 // ✅ Good: Specific and actionable
-return Failure("INVALID_DATE", "Visit date must be at least 5 days in the future");
+return Failure("INVALID_DATE", "Due date must be at least 5 days in the future");
 ```
 
 ### 2. Consistent Error Code Naming
@@ -579,7 +579,7 @@ Use a consistent naming convention based on entity and operation:
 ```csharp
 // ✅ Consistent pattern: {ENTITY}_{OPERATION}
 "USER_NOT_FOUND"
-"VISIT_CONFLICT"
+"TODO_CONFLICT"
 "SCHEDULE_CONFLICT"
 "INVALID_DATE"
 ```
@@ -591,9 +591,9 @@ Include field information when multiple validation failures occur:
 ```csharp
 var errors = new Dictionary<string, string[]>
 {
-    { "visitDate", new[] { "Must be at least 5 days in future" } },
-    { "mrId", new[] { "Medical Representative does not exist" } },
-    { "hcoId", new[] { "Healthcare Organization does not exist" } }
+    { "dueDate", new[] { "Must be at least 5 days in future" } },
+    { "assignedToMemberId", new[] { "Member does not exist" } },
+    { "workspaceId", new[] { "Workspace does not exist" } }
 };
 
 return Failure("VALIDATION_ERRORS", "Multiple validation errors", errors);

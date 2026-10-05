@@ -221,14 +221,12 @@ app/
 │   ├── layout.tsx
 │   ├── page.tsx
 │   ├── (admin)/
-│   │   ├── layout.tsx
-│   │   └── statisticals/regional-analytics/page.tsx
+│   │   └── layout.tsx                 # Full sidebar shell scaffold; no page.tsx yet
 │   ├── (authenticate)/
 │   │   ├── sign-in/page.tsx
 │   │   └── sign-up/page.tsx
 │   └── (user)/
-│       ├── layout.tsx
-│       └── healthcare-facility/page.tsx
+│       └── layout.tsx                 # Header-only shell scaffold; no page.tsx yet
 └── api/
     ├── [[...hono]]/route.ts           # Hono RPC handler
     └── auth/[[...all]]/route.ts       # Better Auth handler
@@ -238,10 +236,11 @@ app/
 
 ```
 components/
-├── app-siderbar.tsx
+├── app-siderbar.tsx                   # Sample sidebar shell; stock shadcn team/nav/project data, not wired to real routes
 ├── nav-breadcrumb.tsx / nav-main.tsx / nav-projects.tsx / nav-user.tsx
 ├── team-switcher.tsx / locale-switcher.tsx / theme-switcher.tsx
 ├── radial-menu.tsx
+├── logo.tsx                           # Inline <Logo>/<LogoMark>, fill="currentColor" for theme reactivity
 ├── user-menu.tsx / user-menu-content.tsx
 ├── box.tsx
 ├── form-fields/
@@ -269,10 +268,13 @@ features/
 lib/
 ├── utils.ts
 ├── auth-client.ts                     # Better Auth client
-├── auth.config.ts                     # Better Auth server config
+├── auth.config.ts                     # Guarded `server-only` wrapper around auth-instance.ts
+├── auth-instance.ts                   # Real Better Auth config; composes whichever provider
+│                                       # Database__Provider selects
 ├── db/
-│   ├── postgres.ts                    # PostgreSQL connection pool
-│   └── mssql.ts                       # Optional Kysely MSSQL helper
+│   ├── sqlite.ts / sqlite-instance.ts       # Default provider — no external service needed
+│   ├── postgres.ts / postgres-instance.ts   # Optional provider
+│   └── mssql.ts / mssql-instance.ts         # Optional provider
 ├── rpc/
 │   ├── rpc-client.ts                  # Hono RPC typed client
 │   └── session-middleware.ts
@@ -292,7 +294,7 @@ lib/
 providers/
 ├── app-provider.tsx                   # Root provider tree
 ├── query-provider.tsx                 # TanStack Query
-├── store-provider.tsx                 # Redux store
+├── store-provider.tsx                 # Zustand store
 └── translation-provider.tsx           # next-intl
 ```
 
@@ -356,7 +358,7 @@ types/
 | Frontend framework | Next.js 16 (App Router) |
 | Language | TypeScript |
 | Styling | Tailwind CSS + shadcn/ui |
-| State management | Redux Toolkit |
+| State management | Zustand |
 | Server state | TanStack Query |
 | Auth (App) | Better Auth |
 | RPC | Hono (typed client/server) |

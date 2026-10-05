@@ -6,10 +6,12 @@ Next.js 16 frontend for the ForgeKit monorepo. The app uses the App Router, Type
 
 - Node.js 24
 - pnpm 11
-- PostgreSQL access for Better Auth
 - API running locally when exercising backend flows
 
-The root `compose.yaml` provides a local PostgreSQL service for development:
+Better Auth needs no external database to start — it defaults to the same SQLite file the API
+uses, at `<repo root>/data/forgekit.db`. PostgreSQL and SQL Server are opt-in, switched with a
+single setting (`Database__Provider` in the repository-root `.env`) that both the API and this
+app read. To use Postgres locally instead, the root `compose.yaml` provides a local service:
 
 ```bash
 docker compose up -d postgres
@@ -23,11 +25,9 @@ Install dependencies:
 pnpm install
 ```
 
-Create `.env.local` with the values needed by your local auth and database setup:
+Create `.env.local` with the values needed by your local auth setup:
 
 ```bash
-DATABASE_URL=postgresql://localhost:5432/forgekit
-PGUSER=postgres
 BETTER_AUTH_URL=http://localhost:3000
 BETTER_AUTH_SECRET=
 BETTER_AUTH_ADMIN_USER_IDS=
@@ -36,6 +36,9 @@ AZURE_AD_CLIENT_ID=
 AZURE_AD_TENANT_ID=
 AZURE_AD_CLIENT_SECRET=
 ```
+
+`DATABASE_URL` (Postgres) and the SQL Server connection settings only need setting when the
+repository-root `.env` selects that provider; SQLite needs neither.
 
 Generate a local secret with `openssl rand -base64 32`. Do not commit `.env.local`.
 
@@ -61,7 +64,7 @@ pnpm lint         # ESLint
 pnpm lint:fix     # ESLint autofix
 pnpm test         # Unit tests (vitest)
 pnpm test:watch   # Unit tests in watch mode
-pnpm test:e2e     # End-to-end tests (playwright); needs postgres and a built app
+pnpm test:e2e     # End-to-end tests (playwright); needs a built app
 pnpm auth.generate
 pnpm auth.migration
 pnpm auth.codegen
@@ -71,9 +74,10 @@ pnpm auth.codegen
 
 - `app/` contains App Router pages and API route handlers.
 - `features/authenticate/` contains auth UI, schemas, hooks, and Hono route definitions.
-- `lib/auth.config.ts` configures Better Auth with PostgreSQL.
-- `lib/db/postgres.ts` provides the PostgreSQL pool used by Better Auth.
-- `lib/db/mssql.ts` is an optional Kysely MSSQL helper and is not the default app database.
+- `lib/auth.config.ts` is a guarded `server-only` wrapper; the real Better Auth config, which
+  composes whichever provider `Database__Provider` selects, lives in `lib/auth-instance.ts`.
+- `lib/db/` has one guarded wrapper plus `*-instance.ts` pair per provider — `sqlite.ts`
+  (default), `postgres.ts`, and `mssql.ts` — selected at runtime by `Database__Provider`.
 - `lib/rpc/` contains the Hono typed client and session middleware.
 - `providers/` contains app-level React providers.
 - `messages/` contains `en` and `zh-TW` translations.
