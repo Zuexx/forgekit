@@ -33,7 +33,7 @@ export const NavBreadCrumb = () => {
     }
 
     return (
-        <div className="flex items-center justify-between w-full overflow-x-clip">
+        <div className="flex items-center justify-between w-full">
             <section className="flex-1 min-w-0 overflow-hidden">
                 <Breadcrumb>
                     <BreadcrumbList>
