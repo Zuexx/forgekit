@@ -127,9 +127,7 @@ project/
 │   │   ├── Base/                 # Base entity definitions
 │   │   ├── Configuration/        # Configuration entities
 │   │   ├── Core/                 # Core domain entities
-│   │   ├── Educational/          # Educational content entities
-│   │   ├── Visits/               # Visit/Request tracking
-│   │   ├── Compliance/           # Audit and compliance
+│   │   ├── Todos/                # Sample work-item entities (TodoItem, TodoStatusHistory)
 │   │   └── Analytics/            # Reporting entities
 │   │
 │   ├── Data/                     # Data access layer

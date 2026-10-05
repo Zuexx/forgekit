@@ -204,26 +204,29 @@ HTTP 400 Bad Request
 
 ## 5. 完整的实现示例
 
-### 示例: 创建 Visit Request
+### 示例: 建立 Todo
 
 ```csharp
 // ForgeKit.Api/Modules/Todos/Commands/CreateTodoCommand.cs
 using MediatR;
 using Api.Results;
 
-namespace Api.Entities.Visits.Requests;
+namespace Api.Entities.Todos.Commands;
 
 public record CreateTodoCommand(
-    string AssignedToMemberId,
     string WorkspaceId,
-    DateTime ScheduledDate,
-    string? Notes
+    string Title,
+    string Priority,
+    DateTime? DueDate,
+    string? AssignedToMemberId
 ) : IRequest<Result<TodoItemDto>>;
 
 public record TodoItemDto(
     string Id,
-    string AssignedToMemberId,
-    DateTime ScheduledDate,
+    string Title,
+    string Priority,
+    string CurrentStatus,
+    DateTime? DueDate,
     DateTime CreatedAt
 );
 ```
@@ -231,41 +234,39 @@ public record TodoItemDto(
 ### 对应的验证器
 
 ```csharp
-// ForgeKit.Api/Entities/Visits/Requests/Validators/CreateTodoCommandValidator.cs
+// ForgeKit.Api/Entities/Todos/Validators/CreateTodoCommandValidator.cs
 using FluentValidation;
 
-namespace Api.Entities.Visits.Requests.Validators;
+namespace Api.Entities.Todos.Validators;
 
 public class CreateTodoCommandValidator : AbstractValidator<CreateTodoCommand>
 {
     public CreateTodoCommandValidator()
     {
-        // Healthcare Professional ID
-        RuleFor(x => x.AssignedToMemberId)
-            .NotEmpty()
-            .WithMessage("Healthcare Professional ID is required")
-            .Matches(@"^[a-f0-9\-]{36}$")
-            .WithMessage("Healthcare Professional ID must be a valid UUID");
-
-        // Medical Representative ID
+        // Workspace ID
         RuleFor(x => x.WorkspaceId)
             .NotEmpty()
-            .WithMessage("Medical Representative ID is required")
-            .Matches(@"^[a-f0-9\-]{36}$")
-            .WithMessage("Medical Representative ID must be a valid UUID");
+            .WithMessage("Workspace ID is required")
+            .MaximumLength(32)
+            .WithMessage("Workspace ID cannot exceed 32 characters");
 
-        // Scheduled Date
-        RuleFor(x => x.ScheduledDate)
+        // Title
+        RuleFor(x => x.Title)
+            .NotEmpty()
+            .WithMessage("Title is required")
+            .MaximumLength(200)
+            .WithMessage("Title cannot exceed 200 characters");
+
+        // Priority
+        RuleFor(x => x.Priority)
+            .Must(p => p is "Low" or "Medium" or "High")
+            .WithMessage("Priority must be Low, Medium, or High");
+
+        // Due date (optional)
+        RuleFor(x => x.DueDate)
             .GreaterThan(DateTime.UtcNow)
-            .WithMessage("Scheduled date must be in the future")
-            .LessThanOrEqualTo(DateTime.UtcNow.AddYears(1))
-            .WithMessage("Scheduled date cannot be more than 1 year in the future");
-
-        // Notes (optional)
-        RuleFor(x => x.Notes)
-            .MaximumLength(2000)
-            .WithMessage("Notes cannot exceed 2000 characters")
-            .When(x => !string.IsNullOrWhiteSpace(x.Notes));
+            .WithMessage("Due date must be in the future")
+            .When(x => x.DueDate.HasValue);
     }
 }
 ```
@@ -278,7 +279,7 @@ using Api.Handlers;
 using Api.Results;
 using MediatR;
 
-namespace Api.Entities.Visits.Requests;
+namespace Api.Entities.Todos.Commands;
 
 public class CreateTodoCommandHandler(
     ILogger<CreateTodoCommandHandler> logger,
@@ -293,27 +294,32 @@ public class CreateTodoCommandHandler(
         // 不需要手动验证！ValidationBehavior 已经做了
         // 如果执行到这里，request 一定是有效的
 
-        // 业务逻辑：检查医疗专业人员是否存在
-        var professional = await unitOfWork.TodoItems.GetMemberAsync(
-            request.AssignedToMemberId, 
-            cancellationToken);
-
-        if (professional == null)
+        // 业务逻辑：确认指派的成员存在
+        if (request.AssignedToMemberId is not null)
         {
-            return NotFound(
-                $"Healthcare professional with ID '{request.AssignedToMemberId}' not found",
-                "healthcareProfessionalId"
-            );
+            var member = await unitOfWork.Members.GetAsync(
+                request.AssignedToMemberId,
+                cancellationToken);
+
+            if (member == null)
+            {
+                return NotFound(
+                    $"Member with ID '{request.AssignedToMemberId}' not found",
+                    "assignedToMemberId"
+                );
+            }
         }
 
-        // 创建新 visit request
+        // 建立新 todo
         var todoItem = new TodoItem
         {
             Id = Guid.NewGuid().ToString(),
-            AssignedToMemberId = request.AssignedToMemberId,
             WorkspaceId = request.WorkspaceId,
-            ScheduledDate = request.ScheduledDate,
-            Notes = request.Notes,
+            Title = request.Title,
+            Priority = request.Priority,
+            CurrentStatus = "Todo",
+            DueDate = request.DueDate,
+            AssignedToMemberId = request.AssignedToMemberId,
             CreatedAt = DateTime.UtcNow,
             CreatedBy = auditContext.CurrentUserId
         };
@@ -323,8 +329,10 @@ public class CreateTodoCommandHandler(
 
         var dto = new TodoItemDto(
             todoItem.Id,
-            todoItem.AssignedToMemberId,
-            todoItem.ScheduledDate,
+            todoItem.Title,
+            todoItem.Priority,
+            todoItem.CurrentStatus,
+            todoItem.DueDate,
             todoItem.CreatedAt
         );
 
@@ -427,17 +435,17 @@ public class CreateItemValidator : AbstractValidator<CreateItemRequest>
 如果验证器在 Module 内组织，确保在 `RegisterModule` 中添加：
 
 ```csharp
-// ForgeKit.Api/Modules/VisitsModule.cs
-public class VisitsModule : IModule
+// ForgeKit.Api/Modules/TodosModule.cs
+public class TodosModule : IModule
 {
     public IServiceCollection RegisterModule(IServiceCollection services)
     {
         // MediatR 会自动发现所有处理程序和验证器
         services.AddMediatR(cfg => 
-            cfg.RegisterServicesFromAssembly(typeof(VisitsModule).Assembly));
+            cfg.RegisterServicesFromAssembly(typeof(TodosModule).Assembly));
 
         // 显式注册该 module 的验证器（如果需要）
-        services.AddValidatorsFromAssembly(typeof(VisitsModule).Assembly);
+        services.AddValidatorsFromAssembly(typeof(TodosModule).Assembly);
 
         return services;
     }
