@@ -157,6 +157,10 @@ contains no substring the template rewrites.
 A generated product inherits all of this. It has no `workflow` remote until one is added, and
 `pnpm sync-workflow` says so rather than failing obscurely.
 
+Staying synced is a choice to keep making, not a one-time setup step — see "Staying synced is a
+choice, not an obligation" in forgekit-workflow's own README for when the tradeoff flips and how
+to opt out once this product's own needs have genuinely diverged from the base kit.
+
 ## Conventions that are easy to get wrong
 
 - **Migrations are provider-specific.** When the EF model changes, add migrations for all
