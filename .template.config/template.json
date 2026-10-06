@@ -69,6 +69,8 @@
             "**/*.suo",
             "**/appsettings.Local.json",
             "**/.env.local",
+            "**/.claude/settings.local.json",
+            "**/.python-version",
             "**/*.db",
             "**/*.db-shm",
             "**/*.db-wal",
