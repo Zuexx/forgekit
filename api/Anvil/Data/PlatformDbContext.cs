@@ -131,16 +131,27 @@ public abstract class PlatformDbContext : DbContext
         return sb.ToString();
     }
 
-    public override int SaveChanges()
+    /// <remarks>
+    /// Overriding the <c>bool</c>-taking overloads rather than the parameterless ones is
+    /// deliberate: <see cref="DbContext.SaveChanges()"/> and
+    /// <see cref="DbContext.SaveChangesAsync(CancellationToken)"/> both delegate to these
+    /// internally, so overriding only the parameterless pair left any caller that invokes
+    /// <c>SaveChanges(bool)</c>/<c>SaveChangesAsync(bool, CancellationToken)</c> directly
+    /// skipping <see cref="UpdateAuditFields"/> entirely -- Version never incremented,
+    /// UpdatedAt never stamped, optimistic concurrency silently inert for that call path.
+    /// </remarks>
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         UpdateAuditFields();
-        return base.SaveChanges();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
     {
         UpdateAuditFields();
-        return base.SaveChangesAsync(cancellationToken);
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
     /// <summary>
