@@ -142,12 +142,17 @@ Because `preflight.sh` is now shared verbatim, the stack half of it is declared 
 `package.json` rather than written into the script:
 
 ```jsonc
-"forgekit": {
+"workflow": {
   "sourceGlobs":     ["*.cs", "*.ts", "*.tsx", "..."],  // what counts as source
   "requiredTools":   ["dotnet"],                        // machine-level tools
   "nodeSubprojects": ["app"]                            // nested npm projects
 }
 ```
+
+Named `workflow`, not `forgekit`: this repo's own `dotnet new` template (below) replaces every
+literal `forgekit` with the product's name, including a JSON key spelled that way, which would
+desync from `preflight.sh` on the first `pnpm sync-workflow` after generation. `workflow`
+contains no substring the template rewrites.
 
 A generated product inherits all of this. It has no `workflow` remote until one is added, and
 `pnpm sync-workflow` says so rather than failing obscurely.
