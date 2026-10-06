@@ -34,10 +34,22 @@ public sealed class PlatformDbContextTests
         public string Name { get; set; } = string.Empty;
     }
 
+    private sealed class Audited : IAuditableEntity
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? UpdatedBy { get; set; }
+        public int Version { get; set; }
+    }
+
     private sealed class TestContext(DbContextOptions<TestContext> options) : PlatformDbContext(options)
     {
         public DbSet<Filtered> Filtered { get; set; } = null!;
         public DbSet<Unfiltered> Unfiltered { get; set; } = null!;
+        public DbSet<Audited> Audited { get; set; } = null!;
     }
 
     private static TestContext CreateContext()
@@ -111,5 +123,47 @@ public sealed class PlatformDbContextTests
 
         entity.GetTableName().ShouldBe("filtered");
         entity.GetProperty(nameof(Filtered.IsDeleted)).GetColumnName().ShouldBe("isDeleted");
+    }
+
+    [Fact]
+    public async Task SaveChangesAsync_BoolOverload_StampsAuditFieldsAndIncrementsVersion()
+    {
+        // EF Core's own SaveChangesAsync(CancellationToken) delegates to this overload
+        // internally, so this is the one callers (and interceptors) can also invoke
+        // directly -- proving it independently of the already-covered parameterless path.
+        await using var context = CreateContext();
+        var entity = new Audited { Name = "original" };
+        context.Audited.Add(entity);
+        await context.SaveChangesAsync(acceptAllChangesOnSuccess: true, CancellationToken.None);
+
+        var createdAt = entity.CreatedAt;
+        var updatedAt = entity.UpdatedAt;
+        createdAt.ShouldNotBe(default);
+        updatedAt.ShouldBe(createdAt);
+        entity.Version.ShouldBe(0);
+
+        entity.Name = "changed";
+        await context.SaveChangesAsync(acceptAllChangesOnSuccess: true, CancellationToken.None);
+
+        entity.UpdatedAt.ShouldBeGreaterThanOrEqualTo(updatedAt);
+        entity.Version.ShouldBe(1);
+    }
+
+    [Fact]
+    public void SaveChanges_BoolOverload_StampsAuditFieldsAndIncrementsVersion()
+    {
+        using var context = CreateContext();
+        var entity = new Audited { Name = "original" };
+        context.Audited.Add(entity);
+        context.SaveChanges(acceptAllChangesOnSuccess: true);
+
+        var updatedAt = entity.UpdatedAt;
+        entity.Version.ShouldBe(0);
+
+        entity.Name = "changed";
+        context.SaveChanges(acceptAllChangesOnSuccess: true);
+
+        entity.UpdatedAt.ShouldBeGreaterThanOrEqualTo(updatedAt);
+        entity.Version.ShouldBe(1);
     }
 }
