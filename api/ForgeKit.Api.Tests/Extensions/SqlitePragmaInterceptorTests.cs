@@ -12,7 +12,9 @@ public sealed class SqlitePragmaInterceptorTests
         var dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
         try
         {
-            await using var connection = new SqliteConnection($"Data Source={dbPath}");
+            // Unpooled: Microsoft.Data.Sqlite's pool keeps the file open after Dispose, and
+            // Windows refuses to delete an open file in the finally block below.
+            await using var connection = new SqliteConnection($"Data Source={dbPath};Pooling=False");
             await connection.OpenAsync();
             DatabaseProviderExtensions.ApplySqlitePragmas(connection);
 

@@ -340,10 +340,82 @@ public class ExceptionHandlingMiddlewareTests
         response.Status.ShouldBe(expectedStatusCode);
         response.Code.ShouldBe(expectedErrorCode);
         response.Title.ShouldBe(expectedTitle);
-        response.Message.ShouldBe(exception.Message);
-        response.Detail.ShouldBe(exception.Message);
+        var expectedMessage = expectedStatusCode == StatusCodes.Status500InternalServerError
+            ? ExceptionHandlingMiddleware.GenericServerErrorMessage
+            : exception.Message;
+        response.Message.ShouldBe(expectedMessage);
+        response.Detail.ShouldBe(expectedMessage);
         response.Timestamp.ShouldNotBe(default);
         response.TraceId.ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task InvokeAsync_WithUnhandledException_DoesNotLeakItsMessage()
+    {
+        // Arrange
+        const string secret = "Server=db.internal;Password=hunter2";
+        var context = CreateHttpContext();
+        var exception = new InvalidOperationException($"Connection failed: {secret}");
+        var next = CreateNextDelegate(() => throw exception);
+
+        // Act
+        await _middleware.InvokeAsync(context, next);
+
+        // Assert
+        context.Response.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
+        var body = ReadBody(context);
+        var response = GetErrorResponse(context);
+        response.Code.ShouldBe(ErrorCodes.InternalServerError);
+        response.Message.ShouldBe(ExceptionHandlingMiddleware.GenericServerErrorMessage);
+        response.Detail.ShouldBe(ExceptionHandlingMiddleware.GenericServerErrorMessage);
+        body.ShouldNotContain("hunter2");
+        body.ShouldNotContain("Connection failed");
+        body.ShouldNotContain(nameof(InvalidOperationException));
+    }
+
+    [Fact]
+    public async Task InvokeAsync_WithUnhandledException_LogsTheOriginalException()
+    {
+        // Arrange
+        var logger = new CapturingLogger<ExceptionHandlingMiddleware>();
+        var middleware = new ExceptionHandlingMiddleware(logger);
+        var context = CreateHttpContext();
+        var exception = new InvalidOperationException("Connection failed: secret detail");
+        var next = CreateNextDelegate(() => throw exception);
+
+        // Act
+        await middleware.InvokeAsync(context, next);
+
+        // Assert
+        context.Response.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
+        var entry = logger.Entries.ShouldHaveSingleItem();
+        entry.Level.ShouldBe(LogLevel.Error);
+        entry.Exception.ShouldBeSameAs(exception);
+        entry.Message.ShouldContain("Connection failed: secret detail");
+    }
+
+    [Fact]
+    public async Task InvokeAsync_ErrorResponse_UsesCamelCasePropertyNames()
+    {
+        // Arrange
+        var context = CreateHttpContext();
+        var exception = new NotFoundException("Test resource not found");
+        var next = CreateNextDelegate(() => throw exception);
+
+        // Act
+        await _middleware.InvokeAsync(context, next);
+
+        // Assert - read the raw JSON; case-insensitive deserialization would hide the names
+        context.Response.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
+        using var document = JsonDocument.Parse(ReadBody(context));
+        var root = document.RootElement;
+        var names = root.EnumerateObject().Select(p => p.Name).ToList();
+        names.ShouldBe(
+            ["message", "code", "timestamp", "traceId", "errors", "title", "status", "detail"],
+            ignoreOrder: true);
+        root.GetProperty("message").GetString().ShouldBe("Test resource not found");
+        root.GetProperty("code").GetString().ShouldBe(ErrorCodes.ResourceNotFound);
+        root.GetProperty("status").GetInt32().ShouldBe(StatusCodes.Status404NotFound);
     }
 
     [Fact]
@@ -378,11 +450,16 @@ public class ExceptionHandlingMiddlewareTests
         };
     }
 
-    private static ErrorResponse GetErrorResponse(HttpContext context)
+    private static string ReadBody(HttpContext context)
     {
         context.Response.Body.Seek(0, SeekOrigin.Begin);
         var reader = new StreamReader(context.Response.Body);
-        var json = reader.ReadToEnd();
+        return reader.ReadToEnd();
+    }
+
+    private static ErrorResponse GetErrorResponse(HttpContext context)
+    {
+        var json = ReadBody(context);
         var response = JsonSerializer.Deserialize<ErrorResponse>(json, 
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         return response!;
@@ -408,5 +485,25 @@ internal class MockLogger<T> : ILogger<T>
         Exception? exception,
         Func<TState, Exception?, string> formatter)
     {
+    }
+}
+
+internal sealed record CapturedLogEntry(LogLevel Level, Exception? Exception, string Message);
+
+internal class CapturingLogger<T> : ILogger<T>
+{
+    public List<CapturedLogEntry> Entries { get; } = [];
+
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+    public bool IsEnabled(LogLevel logLevel) => true;
+
+    public void Log<TState>(
+        LogLevel logLevel,
+        EventId eventId,
+        TState state,
+        Exception? exception,
+        Func<TState, Exception?, string> formatter)
+    {
+        Entries.Add(new CapturedLogEntry(logLevel, exception, formatter(state, exception)));
     }
 }

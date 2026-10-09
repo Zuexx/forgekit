@@ -4,12 +4,18 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 const testDbPath = resolve(process.cwd(), ".sqlite-adapter-test.db")
 
+// Held so afterEach can close the connection before deleting the file: Windows refuses to delete
+// a file that is still open (EPERM), where Linux and macOS unlink it regardless.
+let db: { destroy(): Promise<void> } | undefined
+
 describe("sqlite adapter", () => {
     beforeEach(() => {
         process.env.SQLITE_DATABASE_PATH = testDbPath
     })
 
-    afterEach(() => {
+    afterEach(async () => {
+        await db?.destroy()
+        db = undefined
         delete process.env.SQLITE_DATABASE_PATH
         for (const suffix of ["", "-wal", "-shm"]) {
             const f = testDbPath + suffix
@@ -23,8 +29,9 @@ describe("sqlite adapter", () => {
         // expected (or vice versa) compiles fine and fails on the first query with
         // "db.selectFrom is not a function". Importing after setting the env var, not before, so
         // the lazy dialect factory opens the test file rather than the real default.
-        const { db } = await import("./sqlite")
-        const result = await db
+        const sqlite = await import("./sqlite")
+        db = sqlite.db
+        const result = await sqlite.db
             .selectNoFrom((eb) => eb.lit(1).as("x"))
             .executeTakeFirst()
         expect(result).toEqual({ x: 1 })
