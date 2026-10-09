@@ -28,6 +28,47 @@ This starter kit keeps most packages current, but a few major versions are inten
 - Reason: Next.js 16 Turbopack build can require local process/socket behavior that is not stable in constrained local or CI environments. Webpack build passes the production verification path.
 - Revisit when: Turbopack build passes reliably in the target developer and CI environments.
 
+### Node.js
+
+- Current constraint: `app/` declares `engines.node` `^24.0.0` and `packageManager` `pnpm@11.1.1`,
+  matching CI and the README.
+- Reason: `better-sqlite3` (the default SQLite adapter) ships prebuilt binaries per Node ABI.
+  On a Node version without a prebuild, `pnpm install` falls back to compiling it and fails
+  on machines without a C++ toolchain. Node 24 is the version CI verifies.
+- Not the same as the root `package.json`, whose `>=22.16` floor is the workflow CLIs' own
+  requirement (grillme's); nothing native is built there.
+- Revisit when: CI moves to the next Node LTS. Change `engines.node` here, `node-version` in
+  `.github/workflows/ci.yml`, and the README prerequisites together.
+
+### Better Auth CLI
+
+- Current constraint: the CLI runs as `pnpm dlx auth@<version>`, where `<version>` is the
+  `better-auth` version in `app/pnpm-lock.yaml`. It appears in `app/package.json`'s
+  `auth.generate`/`auth.migration` scripts and in `.github/workflows/ci.yml`.
+- Reason: the CLI pins an exact `better-auth` dependency and reads the schema from it, so a
+  CLI from another release can generate or migrate a different schema than the app expects.
+  The old `@better-auth/cli` package is deprecated and its `latest` tag still resolves to the
+  1.4 line, which is why `@latest` silently drifted.
+- Dependabot does not see a version inside a script string. Bump these three references in the
+  same pull request that bumps `better-auth`.
+
+## Backend
+
+### Microsoft.OpenApi
+
+- Current constraint: `Microsoft.OpenApi` is held on 3.x, ahead of what
+  `Microsoft.AspNetCore.OpenApi` 10.0.x declares (`>= 2.12.0 && < 3.0.0`). Every build therefore
+  reports NU1608 for it.
+- Reason: chosen when the kit was created. 3.x is incompatible with
+  `Microsoft.AspNetCore.OpenApi`'s XML-comment source generator, which
+  `api/Directory.Build.targets` removes to keep the build compiling; OpenAPI documents are still
+  generated, without XML-comment descriptions. No other package requires 3.x.
+- Moving to 2.x would clear the warning and restore XML-comment support, but `Program.cs`'s
+  OpenAPI document and operation transformers are written against the 3.x API (2.x keeps its
+  model types under `Microsoft.OpenApi.Models`), so they would need porting, and the
+  `Directory.Build.targets` workaround removing.
+- Revisit when: a `Microsoft.AspNetCore.OpenApi` release accepts `Microsoft.OpenApi` 3.x.
+
 ## Workflow Tooling
 
 Declared in the root `package.json`, which exists only for the development workflow — these are
