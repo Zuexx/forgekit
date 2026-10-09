@@ -177,7 +177,7 @@ public sealed class AppDbContextModelTests
 
         softDeletable.ShouldNotBeEmpty();
         var unfiltered = softDeletable
-            .Where(e => e.GetQueryFilter() is null)
+            .Where(e => e.GetDeclaredQueryFilters().Count == 0)
             .Select(e => e.ClrType.Name)
             .ToList();
         unfiltered.ShouldBeEmpty(

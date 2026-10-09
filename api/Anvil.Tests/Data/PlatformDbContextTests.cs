@@ -74,7 +74,7 @@ public sealed class PlatformDbContextTests
         var entity = context.Model.FindEntityType(typeof(Filtered));
 
         entity.ShouldNotBeNull();
-        entity.GetQueryFilter().ShouldNotBeNull();
+        entity.GetDeclaredQueryFilters().ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public sealed class PlatformDbContextTests
         var entity = context.Model.FindEntityType(typeof(Unfiltered));
 
         entity.ShouldNotBeNull();
-        entity.GetQueryFilter().ShouldBeNull();
+        entity.GetDeclaredQueryFilters().ShouldBeEmpty();
     }
 
     [Fact]

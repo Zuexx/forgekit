@@ -2,12 +2,17 @@
   "name": "forgekit-app",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.1.1",
+  "engines": {
+    "node": "^24.0.0",
+    "pnpm": ">=11"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "auth.generate": "pnpm dlx @better-auth/cli@latest generate --config lib/auth-instance.ts",
-    "auth.migration": "pnpm dlx @better-auth/cli@latest migrate --config lib/auth-instance.ts",
+    "auth.generate": "pnpm dlx auth@1.7.4 generate --config lib/auth-instance.ts",
+    "auth.migration": "pnpm dlx auth@1.7.4 migrate --config lib/auth-instance.ts",
     "auth.codegen": "kysely-codegen --out-file ./types/auth.d.ts --env-file .env.local",
     "check": "tsc --noEmit",
     "lint": "eslint \"**/*.{ts,tsx,js,jsx,mjs,cjs}\"",
