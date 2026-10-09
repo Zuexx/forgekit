@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getInitials, UserMenuContent } from "@/components/user-menu-content"
-import { useMe } from "@/features/authenticate/hooks/us-me"
+import { useMe } from "@/features/authenticate/hooks/use-me"
 
 export const NavUser = () => {
   const { isMobile } = useSidebar()
