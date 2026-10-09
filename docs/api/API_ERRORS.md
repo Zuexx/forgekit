@@ -85,15 +85,19 @@ All API errors use a stable `ErrorResponse` shape. Clients can rely on `code` fo
 
 ### 500 Internal Server Error
 
+The message is always the same generic text. The exception's own message can carry
+connection strings, SQL, or file paths, so it is logged under the `traceId` and never
+returned.
+
 ```json
 {
-  "message": "Unexpected error",
+  "message": "An unexpected error occurred.",
   "code": "INTERNAL_SERVER_ERROR",
   "timestamp": "2026-07-08T08:30:00Z",
   "traceId": "trace-123",
   "title": "Server Error",
   "status": 500,
-  "detail": "Unexpected error"
+  "detail": "An unexpected error occurred."
 }
 ```
 

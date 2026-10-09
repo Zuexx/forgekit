@@ -17,7 +17,7 @@ namespace Anvil.Middlewares;
 /// - Logs all errors with structured context including correlation ID
 /// 
 /// Error responses include:
-/// - message: User-friendly error message
+/// - message: User-friendly error message (a fixed generic one for 500s)
 /// - code: Machine-readable error code for programmatic handling
 /// - timestamp: UTC timestamp when error occurred
 /// - traceId: Correlation ID for distributed tracing
@@ -30,6 +30,18 @@ namespace Anvil.Middlewares;
 public sealed class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> logger) : IMiddleware
 {
     private const string CorrelationIdHeaderName = "X-Correlation-ID";
+
+    /// <summary>
+    /// Returned as message and detail for every 500. The real exception is logged under the
+    /// response's traceId; its message can carry connection strings, SQL, or file paths, so
+    /// it never reaches the caller.
+    /// </summary>
+    public const string GenericServerErrorMessage = "An unexpected error occurred.";
+
+    // Web defaults give the camelCase names docs/api/API_ERRORS.md documents. Fixed here
+    // rather than taken from the app's JSON options, so a product's serializer setting
+    // cannot silently change the error contract.
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
     private readonly ILogger<ExceptionHandlingMiddleware> _logger = logger;
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -77,10 +89,13 @@ public sealed class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddlew
         var title = GetTitle(exception);
         var code = GetErrorCode(exception);
         var errors = GetErrors(exception);
+        var message = statusCode == StatusCodes.Status500InternalServerError
+            ? GenericServerErrorMessage
+            : exception.Message;
 
         var response = new ErrorResponse
         {
-            Message = exception.Message,
+            Message = message,
             Code = code,
             Timestamp = DateTime.UtcNow,
             TraceId = correlationId,
@@ -88,13 +103,13 @@ public sealed class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddlew
             // RFC 7807 fields for backward compatibility
             Title = title,
             Status = statusCode,
-            Detail = exception.Message
+            Detail = message
         };
 
         httpContext.Response.ContentType = "application/json";
         httpContext.Response.StatusCode = statusCode;
 
-        await httpContext.Response.WriteAsync(JsonSerializer.Serialize(response));
+        await httpContext.Response.WriteAsync(JsonSerializer.Serialize(response, SerializerOptions));
     }
 
     /// <summary>
