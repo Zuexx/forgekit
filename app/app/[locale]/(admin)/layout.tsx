@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server"
 
-import { AppSidebar } from "@/components/app-siderbar"
+import { AppSidebar } from "@/components/app-sidebar"
 import { NavBreadCrumb } from "@/components/nav-breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import {
