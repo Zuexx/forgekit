@@ -21,10 +21,12 @@ import { nextCookies } from "better-auth/next-js"
 import { admin } from "better-auth/plugins"
 import { customSession, jwt, openAPI } from "better-auth/plugins"
 
-import { AUTH_COOKIE } from "@/constants/cookies"
-import { db as mssqlDb } from "@/lib/db/mssql-instance"
-import { db as postgresDb } from "@/lib/db/postgres-instance"
-import { db as sqliteDb } from "@/lib/db/sqlite-instance"
+// Relative, not "@/": the auth CLI's loader does not read tsconfig's path aliases, so an
+// alias here fails `auth migrate`/`auth generate` with "Cannot find module '@/...'".
+import { AUTH_COOKIE } from "../constants/cookies"
+import { db as mssqlDb } from "./db/mssql-instance"
+import { db as postgresDb } from "./db/postgres-instance"
+import { db as sqliteDb } from "./db/sqlite-instance"
 
 /**
  * Reads a comma-separated environment variable into a list.
