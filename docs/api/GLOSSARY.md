@@ -338,9 +338,9 @@ A set of public keys used to verify JWT signatures. The API fetches JWKS from th
 ---
 
 ### JwksProvider
-A singleton service (`IJwksProvider`) that lazily loads and caches JWKS from the authentication server.
+A singleton service (`IJwksProvider`) that lazily loads and caches JWKS from the authentication server. It is the JWT bearer handler's configuration manager: the cached key set is replaced as a whole every hour, and a token with an unknown `kid` triggers an early refresh at most once every 30 seconds.
 
-**Location:** `ForgeKit.Api/Data/Auth/JwksProvider.cs`
+**Location:** `Anvil/Foundations/JwksProvider.cs`
 
 **Related:** [JWKS](#jwks-json-web-key-set)
 
