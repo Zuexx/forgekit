@@ -99,6 +99,9 @@ public sealed class DatabaseProviderExtensionsTests
         // this passed before this test existed; committing the check rather than relying on
         // having run it once.
         var dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+        // Unpooled: Microsoft.Data.Sqlite's pool keeps the file open after Dispose, and
+        // Windows refuses to delete an open file in the finally block below.
+        var connectionString = $"Data Source={dbPath};Pooling=False";
         try
         {
             var configuration = CreateConfiguration("Sqlite");
@@ -106,7 +109,7 @@ public sealed class DatabaseProviderExtensionsTests
                 .AddConfiguration(configuration)
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["ConnectionStrings:Sqlite"] = $"Data Source={dbPath}"
+                    ["ConnectionStrings:Sqlite"] = connectionString
                 })
                 .Build();
 
@@ -119,7 +122,7 @@ public sealed class DatabaseProviderExtensionsTests
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await context.Database.OpenConnectionAsync();
 
-            await using var probe = new SqliteConnection($"Data Source={dbPath}");
+            await using var probe = new SqliteConnection(connectionString);
             await probe.OpenAsync();
             await using var command = probe.CreateCommand();
             command.CommandText = "PRAGMA journal_mode;";
