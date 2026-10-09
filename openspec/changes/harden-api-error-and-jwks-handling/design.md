@@ -67,8 +67,10 @@ Alternatives considered:
 - A fetch replaces the cached key set wholesale, so removed keys disappear.
 - Fetches are serialized by a `SemaphoreSlim`; waiters re-check the cache after acquiring it,
   so concurrent requests produce one download.
-- On fetch failure with a cached set: keep the cached set, schedule the next attempt one
-  minimum interval later, log a warning. With no cached set: throw, as the old code did.
+- On fetch failure with a cached set: keep the cached set and schedule the next attempt one
+  minimum interval later. With no cached set: throw, as the old code did. The provider takes
+  no logger — the product constructs it as `new JwksProvider(url)` and that call is kept — so
+  a failure surfaces through the bearer handler's own logging, not a provider warning.
 
 Both intervals are constructor parameters with defaults, alongside an optional `HttpClient`
 and `TimeProvider`, so the existing `new JwksProvider(url)` call keeps working and tests can
@@ -89,6 +91,10 @@ configured to emit, where the old parser silently ignored anything but RSA `n`/`
 - [A newly rotated-in key is rejected for up to one minimum refresh interval if a token using
   it arrives just after a refresh] → 30 seconds; Better Auth publishes the new key alongside
   the old one during rotation, so in practice the set is already current.
+- [Before any key set has been fetched, an unreachable JWKS endpoint is retried on every
+  authenticated request (serialized, one at a time)] → Unchanged from the old code, and only
+  until the first success; backing off here would keep rejecting tokens for a full interval
+  after the auth server comes up, which is the common local-startup order.
 - [Custom `IJwksProvider` implementations break] → Named as BREAKING in the proposal; the
   shared layer ships the only implementation.
 

@@ -20,6 +20,12 @@ namespace Anvil.Extensions
             options.RequireHttpsMetadata = false;
             options.SaveToken = true;
 
+            // Keys come from the JWKS provider acting as the handler's configuration manager:
+            // the handler awaits it before validating, and asks it to refresh when a token
+            // names a key it does not hold. The provider rate-limits those refreshes.
+            options.ConfigurationManager = _jwksProvider;
+            options.RefreshOnIssuerKeyNotFound = true;
+
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -27,19 +33,7 @@ namespace Anvil.Extensions
                 ValidateAudience = true,
                 ValidAudience = _jwtData.Audience,
                 ValidateIssuerSigningKey = true,
-                ValidateLifetime = true,
-                IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
-                {
-                    var keys = new List<SecurityKey>();
-
-                    var key = _jwksProvider.GetKeyByIdAsync(kid).GetAwaiter().GetResult();
-                    if (key != null)
-                    {
-                        keys.Add(key);
-                    }
-
-                    return keys;
-                }
+                ValidateLifetime = true
             };
 
             options.Events = new JwtBearerEvents

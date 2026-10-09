@@ -31,6 +31,8 @@ a generated product inherits unchanged:
 - **BREAKING (shared-layer API):** `IJwksProvider` now extends
   `IConfigurationManager<OpenIdConnectConfiguration>`. `GetKeyByIdAsync` is kept. A product
   that implemented `IJwksProvider` itself must implement the two added members.
+  The hand-rolled DTOs `Anvil.Foundations.JwksObject` and `Key`, used only by the old parser,
+  are removed.
 - Anvil drops its `Newtonsoft.Json` package reference; the JWKS parser was its only user.
 
 ### Not included
@@ -76,6 +78,8 @@ searches (`grep` over `api/` and `app/`) rather than from `codegraph_explore`.
 - What breaks if this is wrong: if the JWT bearer handler does not take keys from the
   configuration manager, every authenticated request is rejected with 401. An end-to-end test
   through the real `JwtBearerHandler` covers that path; nothing covered the old resolver.
+- Docs: `docs/api/API_ERRORS.md` (500 example) and `docs/api/GLOSSARY.md` (JwksProvider
+  entry) describe the new behavior.
 - Dependencies: `Newtonsoft.Json` leaves `Anvil.csproj`. `Microsoft.IdentityModel.Protocols`
   and `.OpenIdConnect` are already present transitively through
   `Microsoft.AspNetCore.Authentication.JwtBearer`.
