@@ -135,7 +135,7 @@ App runs on `http://localhost:3000`. Azure AD values in `.env.local` are optiona
 | **Frontend Framework** | Next.js 16 (App Router) |
 | **Language** | TypeScript |
 | **Styling** | Tailwind CSS + shadcn/ui |
-| **State Management** | Redux Toolkit |
+| **State Management** | Zustand |
 | **Server State** | TanStack Query |
 | **Auth (App)** | Better Auth |
 | **RPC** | Hono (typed client/server) |
@@ -165,7 +165,7 @@ App runs on `http://localhost:3000`. Azure AD values in `.env.local` are optiona
 ✅ TypeScript strict mode  
 ✅ Tailwind CSS + shadcn/ui components  
 ✅ TanStack Query for server state  
-✅ Redux Toolkit for client state  
+✅ Zustand for client state  
 ✅ Better Auth integration  
 ✅ Hono RPC typed client  
 ✅ Internationalization (i18n)  

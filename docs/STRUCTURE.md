@@ -4,8 +4,16 @@
 
 ```
 forgekit/
-├── api/    # C# .NET 10 backend
-└── app/    # Next.js frontend
+├── api/                 # C# .NET 10 backend
+├── app/                 # Next.js frontend
+├── docs/                # Guides, ADRs, implementation plans
+├── openspec/            # Specifications and change proposals
+├── scripts/             # preflight, verify, sync-workflow
+├── .githooks/           # pre-push check for plan → OpenSpec task citations
+├── .template.config/    # `dotnet new forgekit` template definition
+├── data/                # Default shared SQLite database (created on first run)
+├── compose.yaml         # Optional local Postgres
+└── package.json         # Workflow tooling only (OpenSpec, CodeGraph, grillme)
 ```
 
 ---
@@ -18,16 +26,15 @@ api/
 ├── ForgeKit.sln
 ├── AGENTS.md
 ├── README.md
-├── .github/prompts/          # AI prompt templates (openspec)
-├── docs/                     # Guides & ADRs
-├── openspec/                 # Feature specs & changes
-├── Anvil/                    # Shared layer — never renamed by the template
-├── Anvil.Tests/              # Shared-layer tests — also never renamed
-├── ForgeKit.Api/             # Product layer — renamed per product
+├── Directory.Packages.props          # Central package versions
+├── Directory.Build.targets           # Build-wide MSBuild targets
+├── Anvil/                            # Shared layer — never renamed by the template
+├── Anvil.Tests/                      # Shared-layer tests — also never renamed
+├── ForgeKit.Api/                     # Product layer — renamed per product
 ├── ForgeKit.Api.Migrations.Sqlite/
 ├── ForgeKit.Api.Migrations.Postgres/
 ├── ForgeKit.Api.Migrations.SqlServer/
-└── ForgeKit.Api.Tests/       # Test project
+└── ForgeKit.Api.Tests/               # Product tests
 ```
 
 ### Two-Layer Boundary
@@ -48,6 +55,61 @@ interface instead — see `IDataSeeder`.
 Because `Anvil/` paths match the base exactly, a product receives shared-layer updates
 with `git checkout upstream/main -- api/Anvil api/Anvil.Tests`. See `docs/FORKING_GUIDE.md`.
 
+### `Anvil/` — Shared Layer
+
+```
+Anvil/
+├── Behaviors/
+│   └── ValidationBehavior.cs          # MediatR pipeline validation
+├── Constants/
+│   ├── AppSettingKeys.cs
+│   └── ErrorCodes.cs
+├── Data/
+│   ├── PlatformDbContext.cs           # Base DbContext: soft-delete filters, audit stamping
+│   ├── UnitOfWork.cs
+│   └── Auth/
+│       └── BetterAuthDbContext.cs     # Better Auth's tables, read by the API
+├── Domain/Services/
+│   └── SoftDeleteDomainService.cs
+├── Entities/
+│   ├── Base/                          # BaseEntity, IAuditableEntity, ISoftDelete
+│   └── Auth/                          # User, Session, Account, Jwk, Verification
+├── Exceptions/                        # BusinessLogic, Conflict, Domain, InvalidState, NotFound, Unauthorized, ValidationApp
+├── Extensions/
+│   ├── ConfigureJwtBearerOptions.cs
+│   ├── CorsExtensions.cs
+│   ├── DatabaseProviderExtensions.cs  # Provider selection, SQLite pragmas
+│   ├── HttpContextAccessorExtension.cs
+│   ├── ModuleExtension.cs             # Module discovery (RegisterModules)
+│   ├── PlatformServiceExtensions.cs   # Shared-layer DI registrations
+│   └── ResultEndpointExtensions.cs
+├── Foundations/
+│   └── JwksProvider.cs                # Signing keys for JWT bearer validation
+├── Handlers/
+│   ├── ResultCommandHandler.cs
+│   └── ResultQueryHandler.cs
+├── Interfaces/
+│   ├── IAuditContext.cs
+│   ├── IDataSeeder.cs                 # Implemented by the product; see the boundary above
+│   ├── IJwksProvider.cs
+│   ├── IModule.cs / IRootModule.cs / ISampleModule.cs
+│   └── IUnitOfWork.cs
+├── Middlewares/
+│   ├── CorrelationIdMiddleware.cs
+│   └── ExceptionHandlingMiddleware.cs
+├── Models/
+│   ├── AuthorizedUser.cs
+│   ├── ErrorResponse.cs
+│   └── JwtSetupData.cs
+├── Modules/
+│   └── HealthModule.cs
+├── Results/
+│   ├── Result.cs
+│   └── ResultExtensions.cs
+└── Services/
+    └── AuditContextService.cs
+```
+
 ### `ForgeKit.Api/` — Product Project
 
 ```
@@ -55,82 +117,33 @@ ForgeKit.Api/
 ├── Program.cs                         # Entry point & DI registration
 ├── appsettings.json
 ├── appsettings.Development.json
+├── appsettings.Local.json.example     # Copy to appsettings.Local.json (ignored) for secrets
 ├── ForgeKit.Api.http                  # Manual API testing
 ├── Properties/launchSettings.json
 │
-├── Behaviors/
-│   └── ValidationBehavior.cs          # MediatR pipeline validation
-│
-├── Constants/
-│   ├── AppSettingKeys.cs
-│   └── ErrorCodes.cs
-│
 ├── Data/
-│   ├── AppDbContext.cs                # Product DbContext (derives from Anvil's PlatformDbContext)
-│   └── Auth/
-│       └── BetterAuthDbContext.cs     # Auth-specific context
+│   └── AppDbContext.cs                # Product DbContext (derives from Anvil's PlatformDbContext)
 │
-├── Domain/
-│   └── Services/
-│       └── SoftDeleteDomainService.cs
-│
-├── Entities/
-│   ├── Base/
-│   │   ├── BaseEntity.cs
-│   │   ├── IAuditableEntity.cs
-│   │   └── ISoftDelete.cs
-│   ├── Auth/                          # User, Session, Account, Jwk, Verification
+├── Entities/                          # Sample TODO domain
 │   ├── Core/                          # Member, Workspace
 │   ├── Analytics/                     # DailyActivitySnapshot, WorkspaceAnalytics
 │   ├── Configuration/                 # Category, CategoryLabel, Label
 │   └── Todos/                         # TodoItem, TodoStatusHistory
 │
-├── Exceptions/                        # BusinessLogic, Conflict, Domain, NotFound, Unauthorized, Validation
-│
 ├── Extensions/
-│   ├── ConfigureJwtBearerOptions.cs
-│   ├── CorsExtensions.cs
-│   ├── HttpContextAccessorExtension.cs
-│   ├── ModuleExtension.cs
-│   ├── ResultEndpointExtensions.cs
-│   └── ServiceExtension.cs
+│   └── ServiceExtension.cs            # Product DI registrations (RegisterApplicationServices)
 │
 ├── Foundations/
-│   ├── JwksProvider.cs
-│   └── PocDataSeeder.cs
-│
-├── Handlers/
-│   ├── ResultCommandHandler.cs
-│   └── ResultQueryHandler.cs
-│
-├── Interfaces/
-│   ├── IAuditContext.cs
-│   ├── IJwksProvider.cs
-│   ├── IModule.cs / IRootModule.cs / ISampleModule.cs
-│   └── IUnitOfWork.cs
-│
-├── Middlewares/
-│   ├── CorrelationIdMiddleware.cs
-│   └── ExceptionHandlingMiddleware.cs
-│
-├── Models/
-│   ├── AuthorizedUser.cs
-│   ├── ErrorResponse.cs
-│   └── JwtSetupData.cs
+│   └── PocDataSeeder.cs               # IDataSeeder implementation
 │
 ├── Modules/
-│   ├── HealthModule.cs
-│   └── SampleResourceModule.cs          # Non-production endpoint convention sample
-│
-├── Results/
-│   ├── Result.cs
-│   └── ResultExtensions.cs
+│   └── SampleResourceModule.cs        # Non-production endpoint convention sample
 │
 ├── Samples/                           # Sample CQRS handlers & validators
 │
 └── Services/
     └── Todos/
-        └── TodoService.cs              # Reference domain service for persistence conventions
+        └── TodoService.cs             # Reference domain service for persistence conventions
 ```
 
 See [SAMPLES.md](SAMPLES.md) for the starter-kit sample inventory and removal guidance.
@@ -147,48 +160,58 @@ ForgeKit.Api.Migrations.<Provider>/
     └── Auth/
 ```
 
-### `ForgeKit.Api.Tests/` — Test Project
+### Test Projects
+
+`Anvil.Tests/` tests the shared layer with types defined in the tests themselves, and must not
+reference the product. `ForgeKit.Api.Tests/` covers the product, and the shared-layer behavior
+that only shows up through the product's composition root.
 
 ```
 ForgeKit.Api.Tests/
-├── Data/                              # UnitOfWork unit & audit tests
+├── Data/                              # Model, migrations, schema separation, UnitOfWork
 ├── Domain/Services/                   # SoftDelete service tests
 ├── Exceptions/                        # Exception type tests
+├── Extensions/                        # Database provider & SQLite pragma tests
 ├── Handlers/                          # ResultHandler tests
 ├── Integration/                       # WebApplicationFactory + integration tests
 ├── Middlewares/                       # Middleware unit tests
-├── Modules/                           # Health & Sample module tests
+├── Modules/                           # Health, discovery & sample module tests
 ├── Results/                           # Result type tests
 ├── Samples/                           # Sample handler tests
 ├── Services/                          # AuditContext & Todo service tests
 └── Validators/                        # FluentValidation tests
 ```
 
-### `docs/` — Documentation
+### `docs/` — Documentation (repository root)
 
 ```
 docs/
-├── USER_GUIDE.md
-├── EXTENDING_THE_API.md
-├── EXCEPTION_HANDLING_GUIDE.md
-├── FLUENT_VALIDATION_GUIDE.md
-├── RESULT_PATTERN_GUIDE.md
-├── CONFIGURATION_GUIDE.md
-├── COMMIT_CONVENTION.md
-├── API_ERRORS.md
-├── XML_DOCUMENTATION_GUIDE.md
-├── logging.md
-├── GLOSSARY.md
-└── adr/                               # Architecture Decision Records (001–007)
+├── STRUCTURE.md / FORKING_GUIDE.md / LOCAL_DEVELOPMENT.md
+├── DEPENDENCY_CONSTRAINTS.md / QUALITY_GATES.md / SAMPLES.md
+├── SECRET_INCIDENT_RESPONSE.md
+├── api/
+│   ├── USER_GUIDE.md
+│   ├── EXTENDING_THE_API.md
+│   ├── EXCEPTION_HANDLING_GUIDE.md / ADR_EXCEPTION_HANDLING.md
+│   ├── FLUENT_VALIDATION_GUIDE.md
+│   ├── RESULT_PATTERN_GUIDE.md
+│   ├── CONFIGURATION_GUIDE.md
+│   ├── COMMIT_CONVENTION.md
+│   ├── API_ERRORS.md
+│   ├── XML_DOCUMENTATION_GUIDE.md
+│   ├── logging.md
+│   └── GLOSSARY.md
+├── adr/                               # Architecture Decision Records (001–008)
+└── superpowers/plans/                 # Implementation plans citing OpenSpec task ids
 ```
 
-### `openspec/` — Feature Change Tracking
+### `openspec/` — Feature Change Tracking (repository root)
 
 ```
 openspec/
 ├── config.yaml                        # Schema + project context for planning
 ├── specs/                             # Accepted capability specs
-└── changes/                           # One folder per feature change
+└── changes/                           # One folder per change; shipped ones move to archive/
     ├── <feature>/
     │   ├── proposal.md
     │   ├── design.md
@@ -206,9 +229,14 @@ openspec/
 app/
 ├── package.json / pnpm-lock.yaml / pnpm-workspace.yaml
 ├── next.config.ts
+├── proxy.ts                           # Next.js proxy entry; policy lives in proxies/
 ├── tsconfig.json
 ├── eslint.config.mjs
 ├── postcss.config.mjs
+├── vitest.config.mts / vitest.server-only-stub.ts
+├── playwright.config.ts
+├── e2e/                               # Playwright end-to-end tests (auth flow)
+├── hooks/                             # Shared React hooks (use-mobile)
 └── components.json                    # shadcn/ui config
 ```
 
@@ -236,7 +264,7 @@ app/
 
 ```
 components/
-├── app-siderbar.tsx                   # Sample sidebar shell; stock shadcn team/nav/project data, not wired to real routes
+├── app-sidebar.tsx                    # Sample sidebar shell; stock shadcn team/nav/project data, not wired to real routes
 ├── nav-breadcrumb.tsx / nav-main.tsx / nav-projects.tsx / nav-user.tsx
 ├── team-switcher.tsx / locale-switcher.tsx / theme-switcher.tsx
 ├── radial-menu.tsx
