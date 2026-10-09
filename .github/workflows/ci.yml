@@ -71,7 +71,7 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - name: Create auth schema
-        run: pnpm dlx auth@1.7.4 migrate --config ./lib/auth-instance.ts -y
+        run: pnpm dlx auth@1.7.7 migrate --config ./lib/auth-instance.ts -y
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
