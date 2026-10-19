@@ -9,14 +9,14 @@ importers:
   .:
     devDependencies:
       '@colbymchenry/codegraph':
-        specifier: ^1.6.1
-        version: 1.6.1
+        specifier: ^1.6.2
+        version: 1.6.2
       '@fission-ai/openspec':
-        specifier: ^1.14.0
-        version: 1.14.0(@types/node@26.2.0)
+        specifier: ^1.14.2
+        version: 1.14.2(@types/node@26.2.0)
       grillme:
         specifier: ^0.1.2
-        version: 0.1.2(@anthropic-ai/sdk@0.116.0(zod@4.6.5))(@modelcontextprotocol/sdk@1.30.0(zod@4.6.5))(@shikijs/themes@4.4.3)(ioredis@5.11.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@4.6.5)
+        version: 0.1.2(@anthropic-ai/sdk@0.116.0(zod@4.6.7))(@modelcontextprotocol/sdk@1.30.0(zod@4.6.7))(@shikijs/themes@4.4.3)(ioredis@5.11.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@4.6.7)
 
 packages:
 
@@ -81,42 +81,42 @@ packages:
       zod:
         optional: true
 
-  '@babel/runtime@7.29.7':
-    resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
+  '@babel/runtime@7.29.10':
+    resolution: {integrity: sha512-NpugTzbKgGrNe45Ui32cN8vCFFMxVtP/9rtfwv0nP5FRDAjvYBxJcLVpYA9mr1jxP6cnIT7x9LUzuDTbWYYNRA==}
     engines: {node: '>=6.9.0'}
 
-  '@colbymchenry/codegraph-darwin-arm64@1.6.1':
-    resolution: {integrity: sha512-PCyaJg40RDjuZIH42IaMZfpSFC8Of8INzGCQI0CvIL2l5JD+89oBzTmeeqoJCJPCVYEmUg0ZX2RWdH6nTbM7kA==}
+  '@colbymchenry/codegraph-darwin-arm64@1.6.2':
+    resolution: {integrity: sha512-r2gMjnZCyIABkAi5WdQ9cADHIDhfEU1K6K7DelR0Un9lDp+BFK+2ocLyfgMFfLJQeFPCiu4TL5npJRVT3tnchQ==}
     cpu: [arm64]
     os: [darwin]
 
-  '@colbymchenry/codegraph-darwin-x64@1.6.1':
-    resolution: {integrity: sha512-G+WMLhf67ocEKB9WF4W2DGOF/jkRfVDAgXMCvMCFvB9hI+A0lpZ2rUVSm58FQDq8NfX+V7KnTt17uymRlQbiOw==}
+  '@colbymchenry/codegraph-darwin-x64@1.6.2':
+    resolution: {integrity: sha512-28WglI4BwqxLXNFYlkvZXs5Ye3WYdMLeoFRKFmRA/NwlnH4if8IKGVt6oS7YiQ8qspB9nWo18O+8IDhxkFXXqA==}
     cpu: [x64]
     os: [darwin]
 
-  '@colbymchenry/codegraph-linux-arm64@1.6.1':
-    resolution: {integrity: sha512-6/SAflhcucR+H3V7FlUKcCRxl4VzRkK9D+Z9GjWHw8E3Bs03Ssbfm6Wps7xR+EQ8h4UO4DMeXsPAsLWn4IbeTQ==}
+  '@colbymchenry/codegraph-linux-arm64@1.6.2':
+    resolution: {integrity: sha512-4sUICiYzHgC3brCKw4FDiY10jVQ79oIm2wwE978IOAXj36sDxji6d9l5SEvGyHyolgSXsLImLtagTsIEN2Pvnw==}
     cpu: [arm64]
     os: [linux]
 
-  '@colbymchenry/codegraph-linux-x64@1.6.1':
-    resolution: {integrity: sha512-ekkXHFI71jtFzKxJiWVhu+St7S+lh4B9KZdMFzIyBeqyOwtTqdum/ivUQyJo7zwWAuf7VFykVBQairJLKieDQg==}
+  '@colbymchenry/codegraph-linux-x64@1.6.2':
+    resolution: {integrity: sha512-DJWizz1qHNr1MsbK6fz1mjVUQjeTH3T+L0D2BGaLkygWzBnNMG30MvLq1ae0m6cUV414U8aEow5Eb/kIORA8+w==}
     cpu: [x64]
     os: [linux]
 
-  '@colbymchenry/codegraph-win32-arm64@1.6.1':
-    resolution: {integrity: sha512-FuGOkKtd3EjqHaW/W27hf8oXp+psHVQkzWj0iqzUPjn+VNfvv4t00an60UVtBKv6OlozK2QKbCdED4k7WZ7FhQ==}
+  '@colbymchenry/codegraph-win32-arm64@1.6.2':
+    resolution: {integrity: sha512-Gl3zS0VlWfBSqbJ9zzBByrH3Mjqzq81Ub33llTmShK1UUQOO7EtC9GE5fOR3YU43CnBTws2d7lcfy+KPIsmy8Q==}
     cpu: [arm64]
     os: [win32]
 
-  '@colbymchenry/codegraph-win32-x64@1.6.1':
-    resolution: {integrity: sha512-qUcpAR32HgKMcrkZAOAXwY6vCV9TztF1YE61/SGC6TRNqPkJGHMD22yNe2VmrCmSmPNf0/aQIWS/BKGJ3ZFDPA==}
+  '@colbymchenry/codegraph-win32-x64@1.6.2':
+    resolution: {integrity: sha512-3psrtVSdZIoqHLmdeL1b9OCPeKtuPKmVjg2/3XcOLaBwu0osMRwYFHG6uN1iSKQOKfre8jL+t2KXV8fYl1VxAQ==}
     cpu: [x64]
     os: [win32]
 
-  '@colbymchenry/codegraph@1.6.1':
-    resolution: {integrity: sha512-kdyJ7Y9Q7oAMioThrNlRvm/23JRMMTlfydqsUx07eYK6EZIKlOLPgX9yA/h0TGaorQ6sWkrvzqocpoY7DgFUQw==}
+  '@colbymchenry/codegraph@1.6.2':
+    resolution: {integrity: sha512-hODH/mGnCf3IUMs6rzktv/zbecJIKJfdZAYHZ9mqecb0G7ZkHaA8CZafDVnswANFEL1YFcG+lfAwc5SIXzUH6Q==}
     hasBin: true
 
   '@effect/platform-bun@4.0.0-beta.102':
@@ -192,16 +192,16 @@ packages:
     cpu: [x64, arm64]
     os: [darwin, linux, win32]
 
-  '@fission-ai/openspec@1.14.0':
-    resolution: {integrity: sha512-V+zitRK918I6B3EIcYL3gVYoPoPgzknSxE1zL0zUQdbd4NsO5kbrxU5jVceuNNEznD94pbRPCvpCDIa6BeEaPA==}
+  '@fission-ai/openspec@1.14.2':
+    resolution: {integrity: sha512-GgCphpZD5FHfk6IGjQPkUtz+pfeztWAz2yqODlSGqOzYHRPqfYQkSds1uY783AP0S5Kx0+HiyrISlJ5LqDcsrw==}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
-  '@hono/node-server@2.1.3':
-    resolution: {integrity: sha512-TA//nWMqPhbfdfneACk6t5a9eqbS9lABEPyKn0/xZTah3H3U2XaVg85rJFl0/Fyit0I552YDHgXGVSf3GwqbUw==}
+  '@hono/node-server@2.1.5':
+    resolution: {integrity: sha512-MgP/I06GdvsilDspMk/qmRzpk8LOUStP6jFAbSRi40W09DhoyUn+Mj7eyKICPqeYKybOjVFLVIAQzvu1bfIa7Q==}
     engines: {node: '>=20'}
     peerDependencies:
-      hono: ^4
+      hono: ^4 || ^5.0.0-0
 
   '@inquirer/ansi@2.0.9':
     resolution: {integrity: sha512-0Ywt3S8tqM6TWUcsRlBFQ1x+X3/o8kktX0ZiKAnByYb9GFDknnOhse1PVtfiD2BXPI8ar+BWx9PV9R0lQIcygw==}
@@ -632,8 +632,8 @@ packages:
     resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
     engines: {node: '>=20'}
 
-  content-disposition@1.1.0:
-    resolution: {integrity: sha512-5jRCH9Z/+DRP7rkvY83B+yGIGX96OYdJmzngqnw2SBSxqCFPd0w2km3s5iawpGX8krnwSGmF0FW5Nhr0Hfai3g==}
+  content-disposition@2.0.1:
+    resolution: {integrity: sha512-e+H0ZXHSWYrENhQzw1LPuP4oF5MzVKmDU6d3hxlvaPEYLLg62MxtQNPRx4SYSuYJSBUgnQIG4HIN2tEtNv7Dog==}
     engines: {node: '>=18'}
 
   content-type@1.0.5:
@@ -733,14 +733,14 @@ packages:
     resolution: {integrity: sha512-CRT1WTyuQoD771GW56XEZFQ/ZoSfWid1alKGDYMmkt2yl8UXrVR4pspqWNEcqKvVIzg6PAltWjxcSSPrboA4iA==}
     engines: {node: '>=18.0.0'}
 
-  express-rate-limit@8.7.0:
-    resolution: {integrity: sha512-hOwV7WOxXfjRpAM1DSJWZDXx3GhplwD8IfwuwvogD8i1Qnkgosw/H45s4ZnFAUHDAhPjlY9hLBvJhKmGMyY26g==}
+  express-rate-limit@8.7.1:
+    resolution: {integrity: sha512-2FXbqkygil3mZiXzEtM0IjE/UBmBNot0J1GEVrJT4JbrvwOSoEtqtO+wHbiMQELWe1eNvHoYRg2dkjOid+6JkA==}
     engines: {node: '>= 16'}
     peerDependencies:
       express: '>= 4.11'
 
-  express@5.2.1:
-    resolution: {integrity: sha512-hIS4idWWai69NezIdRt2xFVofaF4j+6INOpJlVOLDO8zXGpUVEVzIYk12UUi2JzjEzWL3IOAxcTubgz9Po0yXw==}
+  express@5.3.0:
+    resolution: {integrity: sha512-qCqy1xSoaugxOD4IVHb1ZWdkvCF2W3aE2okKouWj8VwJ+ztskSiXoBnCSJqfKT+cVPJhuJqe9YLbY425+Zh00g==}
     engines: {node: '>= 18'}
 
   fast-check@4.9.0:
@@ -862,8 +862,8 @@ packages:
     resolution: {integrity: sha512-ehuGcf94bQXhfagULNXrJdfnWO38v070jxSx/qE87Kjzmu2fU7ro5EFAb+OPituLqgfyuQaym5DlrNydW2sJ9A==}
     engines: {node: '>=12.22.0'}
 
-  ip-address@10.7.3:
-    resolution: {integrity: sha512-A1kdq/tSb5QjvKvAMgIoEvDBIgL7qaqVP/jkvSwYYRZ9iEzvPpopxp2wQfu3SuZRHtpHNxMn8Fs0bS+gf5Xmwg==}
+  ip-address@10.7.4:
+    resolution: {integrity: sha512-DWBMKyeM25D70nrIiTkgQth59/G+naKOTep6huF9j+GmeK3DMD60Zvxg5d5qQnz+38AHgou6ean2LECX+lrKDg==}
     engines: {node: '>= 12'}
 
   ipaddr.js@1.9.1:
@@ -1057,8 +1057,8 @@ packages:
   pure-rand@8.4.2:
     resolution: {integrity: sha512-vvuOGgcuPJAirlHvuQw1TrOiw7ptaIXXmIbNuiNOY6lNGJJH49PQ1Kj4nd783nPdQhQdicgOjVI2yI/9BD6/Ng==}
 
-  qs@6.16.0:
-    resolution: {integrity: sha512-h6fhOIaRrID2CbEY2fqs+7t+UXZo+MLAnU5gRIq85uFtdiUPCdsApMlHhXogKVM4HM2DVbIjGNTTYH2OcmP1vA==}
+  qs@6.16.1:
+    resolution: {integrity: sha512-5Px6J7rfHBAGUhNQ3es4YzcOdBBw0SDcVtThJml4RdnKw4tKs2epA0kPZ+K8X+WiHktT93RHVcQ/3ym5aTCgtg==}
     engines: {node: '>=0.6'}
 
   queue-microtask@1.2.3:
@@ -1290,8 +1290,8 @@ packages:
     peerDependencies:
       zod: ^3.25.28 || ^4
 
-  zod@4.6.5:
-    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -1322,11 +1322,11 @@ snapshots:
   '@anthropic-ai/claude-agent-sdk-win32-x64@0.3.229':
     optional: true
 
-  '@anthropic-ai/claude-agent-sdk@0.3.229(@anthropic-ai/sdk@0.116.0(zod@4.6.5))(@modelcontextprotocol/sdk@1.30.0(zod@4.6.5))(zod@4.6.5)':
+  '@anthropic-ai/claude-agent-sdk@0.3.229(@anthropic-ai/sdk@0.116.0(zod@4.6.7))(@modelcontextprotocol/sdk@1.30.0(zod@4.6.7))(zod@4.6.7)':
     dependencies:
-      '@anthropic-ai/sdk': 0.116.0(zod@4.6.5)
-      '@modelcontextprotocol/sdk': 1.30.0(zod@4.6.5)
-      zod: 4.6.5
+      '@anthropic-ai/sdk': 0.116.0(zod@4.6.7)
+      '@modelcontextprotocol/sdk': 1.30.0(zod@4.6.7)
+      zod: 4.6.7
     optionalDependencies:
       '@anthropic-ai/claude-agent-sdk-darwin-arm64': 0.3.229
       '@anthropic-ai/claude-agent-sdk-darwin-x64': 0.3.229
@@ -1337,41 +1337,41 @@ snapshots:
       '@anthropic-ai/claude-agent-sdk-win32-arm64': 0.3.229
       '@anthropic-ai/claude-agent-sdk-win32-x64': 0.3.229
 
-  '@anthropic-ai/sdk@0.116.0(zod@4.6.5)':
+  '@anthropic-ai/sdk@0.116.0(zod@4.6.7)':
     dependencies:
       json-schema-to-ts: 3.1.1
       standardwebhooks: 1.1.1
     optionalDependencies:
-      zod: 4.6.5
+      zod: 4.6.7
 
-  '@babel/runtime@7.29.7': {}
+  '@babel/runtime@7.29.10': {}
 
-  '@colbymchenry/codegraph-darwin-arm64@1.6.1':
+  '@colbymchenry/codegraph-darwin-arm64@1.6.2':
     optional: true
 
-  '@colbymchenry/codegraph-darwin-x64@1.6.1':
+  '@colbymchenry/codegraph-darwin-x64@1.6.2':
     optional: true
 
-  '@colbymchenry/codegraph-linux-arm64@1.6.1':
+  '@colbymchenry/codegraph-linux-arm64@1.6.2':
     optional: true
 
-  '@colbymchenry/codegraph-linux-x64@1.6.1':
+  '@colbymchenry/codegraph-linux-x64@1.6.2':
     optional: true
 
-  '@colbymchenry/codegraph-win32-arm64@1.6.1':
+  '@colbymchenry/codegraph-win32-arm64@1.6.2':
     optional: true
 
-  '@colbymchenry/codegraph-win32-x64@1.6.1':
+  '@colbymchenry/codegraph-win32-x64@1.6.2':
     optional: true
 
-  '@colbymchenry/codegraph@1.6.1':
+  '@colbymchenry/codegraph@1.6.2':
     optionalDependencies:
-      '@colbymchenry/codegraph-darwin-arm64': 1.6.1
-      '@colbymchenry/codegraph-darwin-x64': 1.6.1
-      '@colbymchenry/codegraph-linux-arm64': 1.6.1
-      '@colbymchenry/codegraph-linux-x64': 1.6.1
-      '@colbymchenry/codegraph-win32-arm64': 1.6.1
-      '@colbymchenry/codegraph-win32-x64': 1.6.1
+      '@colbymchenry/codegraph-darwin-arm64': 1.6.2
+      '@colbymchenry/codegraph-darwin-x64': 1.6.2
+      '@colbymchenry/codegraph-linux-arm64': 1.6.2
+      '@colbymchenry/codegraph-linux-x64': 1.6.2
+      '@colbymchenry/codegraph-win32-arm64': 1.6.2
+      '@colbymchenry/codegraph-win32-x64': 1.6.2
 
   '@effect/platform-bun@4.0.0-beta.102(effect@4.0.0-beta.102)':
     dependencies:
@@ -1442,7 +1442,7 @@ snapshots:
       '@ff-labs/fff-bin-win32-arm64': 0.9.4
       '@ff-labs/fff-bin-win32-x64': 0.9.4
 
-  '@fission-ai/openspec@1.14.0(@types/node@26.2.0)':
+  '@fission-ai/openspec@1.14.2(@types/node@26.2.0)':
     dependencies:
       '@inquirer/core': 12.0.4(@types/node@26.2.0)
       '@inquirer/prompts': 8.7.3(@types/node@26.2.0)
@@ -1453,11 +1453,11 @@ snapshots:
       fast-glob: 3.3.3
       ora: 9.4.1
       yaml: 2.9.1
-      zod: 4.6.5
+      zod: 4.6.7
     transitivePeerDependencies:
       - '@types/node'
 
-  '@hono/node-server@2.1.3(hono@4.13.13)':
+  '@hono/node-server@2.1.5(hono@4.13.13)':
     dependencies:
       hono: 4.13.13
 
@@ -1582,9 +1582,9 @@ snapshots:
 
   '@ioredis/commands@1.10.0': {}
 
-  '@modelcontextprotocol/sdk@1.30.0(zod@4.6.5)':
+  '@modelcontextprotocol/sdk@1.30.0(zod@4.6.7)':
     dependencies:
-      '@hono/node-server': 2.1.3(hono@4.13.13)
+      '@hono/node-server': 2.1.5(hono@4.13.13)
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       content-type: 1.0.5
@@ -1592,15 +1592,15 @@ snapshots:
       cross-spawn: 7.0.6
       eventsource: 3.0.7
       eventsource-parser: 3.1.1
-      express: 5.2.1
-      express-rate-limit: 8.7.0(express@5.2.1)
+      express: 5.3.0
+      express-rate-limit: 8.7.1(express@5.3.0)
       hono: 4.13.13
       jose: 6.2.12
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
       raw-body: 3.0.2
-      zod: 4.6.5
-      zod-to-json-schema: 3.25.2(zod@4.6.5)
+      zod: 4.6.7
+      zod-to-json-schema: 3.25.2(zod@4.6.7)
     transitivePeerDependencies:
       - supports-color
 
@@ -1790,7 +1790,7 @@ snapshots:
       http-errors: 2.0.1
       iconv-lite: 0.7.3
       on-finished: 2.4.1
-      qs: 6.16.0
+      qs: 6.16.1
       raw-body: 3.0.2
       type-is: 2.1.0
     transitivePeerDependencies:
@@ -1836,7 +1836,7 @@ snapshots:
 
   commander@14.0.3: {}
 
-  content-disposition@1.1.0: {}
+  content-disposition@2.0.1: {}
 
   content-type@1.0.5: {}
 
@@ -1917,20 +1917,20 @@ snapshots:
     dependencies:
       eventsource-parser: 3.1.1
 
-  express-rate-limit@8.7.0(express@5.2.1):
+  express-rate-limit@8.7.1(express@5.3.0):
     dependencies:
       debug: 4.4.3
-      express: 5.2.1
-      ip-address: 10.7.3
+      express: 5.3.0
+      ip-address: 10.7.4
     transitivePeerDependencies:
       - supports-color
 
-  express@5.2.1:
+  express@5.3.0:
     dependencies:
       accepts: 2.0.0
       body-parser: 2.3.0
-      content-disposition: 1.1.0
-      content-type: 1.0.5
+      content-disposition: 2.0.1
+      content-type: 2.1.0
       cookie: 0.7.2
       cookie-signature: 1.2.2
       debug: 4.4.3
@@ -1947,7 +1947,7 @@ snapshots:
       once: 1.4.0
       parseurl: 1.3.3
       proxy-addr: 2.0.8
-      qs: 6.16.0
+      qs: 6.16.1
       range-parser: 1.3.0
       router: 2.2.0
       send: 1.2.1
@@ -2053,9 +2053,9 @@ snapshots:
 
   gopd@1.2.0: {}
 
-  grillme@0.1.2(@anthropic-ai/sdk@0.116.0(zod@4.6.5))(@modelcontextprotocol/sdk@1.30.0(zod@4.6.5))(@shikijs/themes@4.4.3)(ioredis@5.11.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@4.6.5):
+  grillme@0.1.2(@anthropic-ai/sdk@0.116.0(zod@4.6.7))(@modelcontextprotocol/sdk@1.30.0(zod@4.6.7))(@shikijs/themes@4.4.3)(ioredis@5.11.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@4.6.7):
     dependencies:
-      '@anthropic-ai/claude-agent-sdk': 0.3.229(@anthropic-ai/sdk@0.116.0(zod@4.6.5))(@modelcontextprotocol/sdk@1.30.0(zod@4.6.5))(zod@4.6.5)
+      '@anthropic-ai/claude-agent-sdk': 0.3.229(@anthropic-ai/sdk@0.116.0(zod@4.6.7))(@modelcontextprotocol/sdk@1.30.0(zod@4.6.7))(zod@4.6.7)
       '@effect/platform-bun': 4.0.0-beta.102(effect@4.0.0-beta.102)
       '@effect/platform-node': 4.0.0-beta.102(effect@4.0.0-beta.102)(ioredis@5.11.1)
       '@effect/platform-node-shared': 4.0.0-beta.102(effect@4.0.0-beta.102)
@@ -2132,7 +2132,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ip-address@10.7.3: {}
+  ip-address@10.7.4: {}
 
   ipaddr.js@1.9.1: {}
 
@@ -2156,7 +2156,7 @@ snapshots:
 
   json-schema-to-ts@3.1.1:
     dependencies:
-      '@babel/runtime': 7.29.7
+      '@babel/runtime': 7.29.10
       ts-algebra: 2.0.0
 
   json-schema-traverse@1.0.0: {}
@@ -2309,7 +2309,7 @@ snapshots:
 
   pure-rand@8.4.2: {}
 
-  qs@6.16.0:
+  qs@6.16.1:
     dependencies:
       es-define-property: 1.0.1
       side-channel: 1.1.1
@@ -2549,10 +2549,10 @@ snapshots:
 
   yoctocolors@2.2.0: {}
 
-  zod-to-json-schema@3.25.2(zod@4.6.5):
+  zod-to-json-schema@3.25.2(zod@4.6.7):
     dependencies:
-      zod: 4.6.5
+      zod: 4.6.7
 
-  zod@4.6.5: {}
+  zod@4.6.7: {}
 
   zwitch@2.0.4: {}
