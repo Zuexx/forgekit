@@ -56,14 +56,16 @@ This starter kit keeps most packages current, but a few major versions are inten
 
 - Current constraint: keep `Microsoft.OpenApi` inside the range `Microsoft.AspNetCore.OpenApi`
   declares (currently `>= 2.12.2 && < 3.0.0`; pinned at 2.x in `api/Directory.Packages.props`).
-  A Dependabot PR that moves it to 3.x fails `OpenApiDocumentTests`; close it.
+  Dependabot ignores its major updates (`.github/dependabot.yml`), and a manual move to 3.x
+  fails `OpenApiDocumentTests`.
 - Reason: the two packages are bound at runtime. An out-of-range version still compiles, then
   fails on the first request to `/openapi/v1.json` with a `MissingMethodException`, and the
   Scalar reference renders empty. That is what the earlier 3.x pin did, behind a NU1608 warning
   every build reported and a removed source generator. `OpenApiDocumentTests` now requests the
   document, so an incompatible pair fails CI.
-- Revisit when: a `Microsoft.AspNetCore.OpenApi` release accepts `Microsoft.OpenApi` 3.x. Bump
-  both in one PR and let `OpenApiDocumentTests` decide.
+- Revisit when: .NET 11 is GA. `Microsoft.AspNetCore.OpenApi` 11.0 requires `Microsoft.OpenApi`
+  3.x and targets `net11.0` only, so the two move with the .NET 11 upgrade in one PR (#131),
+  and `OpenApiDocumentTests` decides. Drop the Dependabot ignore entry in the same PR.
 
 ## AI Workflow
 

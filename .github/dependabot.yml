@@ -33,6 +33,11 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore(deps)
+    ignore:
+      # Must stay on the major Microsoft.AspNetCore.OpenApi is built against; it moves with
+      # the .NET 11 upgrade (docs/DEPENDENCY_CONSTRAINTS.md, #131).
+      - dependency-name: Microsoft.OpenApi
+        update-types: [version-update:semver-major]
     groups:
       # Minors and patches in one PR; a major still arrives on its own for review.
       nuget-minor-and-patch:

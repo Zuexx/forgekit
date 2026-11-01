@@ -42,10 +42,8 @@ Steps:
   in the list, and there is no table to query. Do not report persistence for them.
 - `GET /v1/resources/<any id>` returns `200` with a fabricated resource; there is no 404 path
   to prove without changing the sample.
-- **Known failure, 2026-11-01:** `GET /openapi/v1.json` returns `500`
-  (`MissingMethodException` on `Microsoft.OpenApi.OpenApiResponse.get_Content()`).
-  `Microsoft.AspNetCore.OpenApi` 10.0.14 is built against `Microsoft.OpenApi` 2.x while the
-  repo pins 3.x (`docs/DEPENDENCY_CONSTRAINTS.md`). `/scalar/v1` still returns its HTML shell,
-  so a status check on that page alone passes while the reference is empty.
+- Scalar lists operations by summary, and only the first group (Health) starts expanded; the
+  `/v1/resources` path text appears only after opening the Resources group. Check the
+  document's `paths` for the endpoints and use the screenshot for the rendering.
 - A `422` is logged at `ERR` as "Unhandled exception" by the exception middleware. That is the
   current design, not a failure of the run.
