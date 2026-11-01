@@ -1,5 +1,25 @@
 {
   "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
+    "pstack@pinned-plugins": true
+  },
+  "extraKnownMarketplaces": {
+    "pinned-plugins": {
+      "source": {
+        "source": "settings",
+        "name": "pinned-plugins",
+        "plugins": [
+          {
+            "name": "pstack",
+            "source": {
+              "source": "git-subdir",
+              "url": "cursor/plugins",
+              "path": "harness/pstack/claude-code",
+              "sha": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe"
+            },
+            "description": "pstack 0.15.36, pinned. Bump by changing sha; see docs/AI_WORKFLOW.md."
+          }
+        ]
+      }
+    }
   }
 }

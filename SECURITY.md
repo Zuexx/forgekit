@@ -55,7 +55,6 @@ Run before release or before making a fork public:
 ```bash
 gitleaks dir --redact .
 gitleaks git --redact --log-opts=--all
-openspec validate --all --strict --no-interactive
 ```
 
 GitHub Actions also runs a full-history Gitleaks scan on push and pull request.

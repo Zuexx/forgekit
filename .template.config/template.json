@@ -45,7 +45,8 @@
         "fallbackVariableName": "nameLower",
         "defaultValue": ""
       },
-      "replaces": "forgekit"
+      "replaces": "forgekit",
+      "fileRename": "forgekit"
     }
   },
   "sources": [
@@ -75,7 +76,10 @@
             "**/*.db-shm",
             "**/*.db-wal",
             "**/logs/**",
-            "**/.codegraph/**"
+            "**/.codegraph/**",
+            "**/.verify/**",
+            "**/test-results/**",
+            "**/playwright-report/**"
           ]
         },
         {

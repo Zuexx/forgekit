@@ -12,9 +12,16 @@
 # This is the half the pre-commit hook cannot cover: a hook lives on one machine and
 # `git commit --no-verify` steps over it, whereas this is enforced by GitHub on every push.
 #
+# It also makes the CI jobs named in REQUIRED_CHECKS required, so a red pull request cannot be
+# merged by anyone, an agent included. Keep that list in step with the job `name:` values in
+# .github/workflows/ci.yml; a name that matches no job blocks every merge.
+#
 # Requires: gh (GitHub CLI), authenticated with a token that can administer the repository.
 # Usage:    bash scripts/protect-branch.sh [--dry-run]
 set -uo pipefail
+
+# The CI job names (`name:` in .github/workflows/ci.yml) a pull request must pass.
+REQUIRED_CHECKS=("API" "App" "Secret scan")
 
 DRY_RUN=0
 [ "${1:-}" = "--dry-run" ] && DRY_RUN=1
@@ -36,6 +43,9 @@ branch=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name 2>/dev
 
 name="protect $branch"
 
+checks_json=$(printf '{"context":"%s"},' "${REQUIRED_CHECKS[@]}")
+checks_json="[${checks_json%,}]"
+
 payload=$(cat <<JSON
 {
   "name": "$name",
@@ -50,6 +60,12 @@ payload=$(cat <<JSON
         "require_code_owner_review": false,
         "require_last_push_approval": false,
         "required_review_thread_resolution": false
+      }
+    },
+    { "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": false,
+        "required_status_checks": $checks_json
       }
     },
     { "type": "non_fast_forward" },
@@ -89,5 +105,5 @@ gh repo edit "$repo" "${merge_method_args[@]}" >/dev/null || {
   exit 1
 }
 
-echo "protected: $repo — '$branch' now requires a pull request; force-push and deletion refused; no bypass."
+echo "protected: $repo — '$branch' now requires a pull request and passing checks (${REQUIRED_CHECKS[*]}); force-push and deletion refused; no bypass."
 echo "merge method: $repo now allows merge commits only — squash and rebase merging are disabled."

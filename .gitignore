@@ -107,5 +107,8 @@ Thumbs.db
 /app/playwright/.cache/
 
 # --- AI tooling (local only, never committed) ---
-# CodeGraph local symbol index — regenerate with `pnpm exec codegraph index`
+# CodeGraph local symbol index, for anyone who indexes the repo with a global install
 .codegraph/
+
+# verify-forgekit runs (databases, logs, evidence)
+.verify/

@@ -5,14 +5,13 @@ Run the same categories of checks locally before pushing a starter-kit change or
 ## One Command
 
 ```bash
-./scripts/verify.sh
+pnpm verify
 ```
 
 The script runs:
 
 - API restore, Release build, and tests
-- App install, TypeScript check, ESLint, and production build
-- strict OpenSpec validation
+- App install, TypeScript check, ESLint, unit tests, and production build
 - Gitleaks working-tree and full-history scans
 
 ## Required Tools
@@ -20,7 +19,6 @@ The script runs:
 - .NET 10 SDK
 - Node.js 24
 - pnpm 11
-- OpenSpec CLI
 - Gitleaks
 
 ## Manual Commands
@@ -40,15 +38,17 @@ cd app
 pnpm install --frozen-lockfile
 pnpm check
 pnpm lint
+pnpm test
 BETTER_AUTH_SECRET="$(openssl rand -base64 32)" BETTER_AUTH_URL="http://localhost:3000" pnpm build
 ```
 
 ```bash
-openspec validate --all --strict --no-interactive
 gitleaks dir --redact .
 gitleaks git --redact --log-opts=--all
 ```
 
 ## CI
 
-GitHub Actions runs API, App, OpenSpec, and full-history secret scanning jobs on `main` and pull requests.
+GitHub Actions runs the API, App, and Secret scan jobs on `main` and pull requests; the App job
+also runs the Playwright end-to-end tests. All three are required checks in the branch ruleset
+(`scripts/protect-branch.sh`).
