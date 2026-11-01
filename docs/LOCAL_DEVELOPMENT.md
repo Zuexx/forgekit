@@ -3,6 +3,29 @@
 ForgeKit is designed to start with minimal infrastructure: both the API and the frontend
 default to one shared SQLite file at `<repo root>/data/forgekit.db` — no service to start.
 
+## Clone With Symlinks (Windows only)
+
+The Better Auth skills in `.claude/skills/` are symlinks into `.agents/skills/`. Git for
+Windows checks symlinks out as plain text files unless symlinks are enabled, and Claude Code
+then skips those skills without an error. Before cloning, turn on Developer Mode (Settings →
+System → For developers) and run:
+
+```bash
+git config --global core.symlinks true
+```
+
+If the repository is already cloned, recreate the links in place:
+
+```bash
+git config core.symlinks true
+git ls-files -s | awk '$1 == "120000" { print $4 }' | xargs rm -f
+git checkout -- .claude/skills
+```
+
+Nothing shows in `git status` either way; check with `ls -l .claude/skills` in Git Bash.
+A product generated with `dotnet new forgekit` receives real copies instead of links and can
+drop this section.
+
 ## Configure The Shared Provider Setting (optional)
 
 ```bash
