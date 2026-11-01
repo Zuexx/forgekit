@@ -18,6 +18,18 @@ namespace Anvil.Data;
 /// </remarks>
 public abstract class PlatformDbContext : DbContext
 {
+    /// <summary>
+    /// Name of the soft-delete query filter, for
+    /// <c>IgnoreQueryFilters([PlatformDbContext.SoftDeleteFilter])</c>.
+    /// </summary>
+    /// <remarks>
+    /// Named so that a product can add its own filters to a soft-delete entity as further
+    /// named filters. EF refuses to combine an anonymous filter with named ones, so a product
+    /// calling the anonymous <c>HasQueryFilter(expr)</c> on such an entity fails when the
+    /// model is built rather than silently replacing this filter and exposing deleted rows.
+    /// </remarks>
+    public const string SoftDeleteFilter = "SoftDelete";
+
     protected PlatformDbContext(DbContextOptions options) : base(options)
     {
     }
@@ -60,7 +72,7 @@ public abstract class PlatformDbContext : DbContext
             var isDeleted = Expression.Property(parameter, nameof(ISoftDelete.IsDeleted));
             var filter = Expression.Lambda(Expression.Not(isDeleted), parameter);
 
-            modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
+            modelBuilder.Entity(entityType.ClrType).HasQueryFilter(SoftDeleteFilter, filter);
         }
     }
 

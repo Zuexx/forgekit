@@ -1,3 +1,4 @@
+using Anvil.Data;
 using Anvil.Entities.Base;
 using ForgeKit.Api.Data;
 using ForgeKit.Api.Entities.Analytics;
@@ -8,6 +9,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Shouldly;
+using System.Linq.Expressions;
 
 namespace ForgeKit.Api.Tests.Data;
 
@@ -167,7 +169,7 @@ public sealed class AppDbContextModelTests
     /// Anvil.Tests, which must not reference the product project.
     /// </remarks>
     [Fact]
-    public void EveryProductSoftDeleteEntity_HasAFilter()
+    public void EveryProductSoftDeleteEntity_IsFilteredByTheGlobalSoftDeleteFilter()
     {
         using var context = CreateContext();
 
@@ -177,14 +179,49 @@ public sealed class AppDbContextModelTests
 
         softDeletable.ShouldNotBeEmpty();
         var unfiltered = softDeletable
-            .Where(e => e.GetDeclaredQueryFilters().Count == 0)
+            .Where(e => !IsNotDeleted(e.FindDeclaredQueryFilter(PlatformDbContext.SoftDeleteFilter)?.Expression))
             .Select(e => e.ClrType.Name)
             .ToList();
         unfiltered.ShouldBeEmpty(
-            $"these entities implement ISoftDelete but have no query filter: {string.Join(", ", unfiltered)}");
+            "these entities implement ISoftDelete but lack the global !IsDeleted filter: " +
+            string.Join(", ", unfiltered));
     }
 
-    private static AppDbContext CreateContext()
+    /// <summary>
+    /// The mistake AGENTS.md used to warn about in prose: a product's own anonymous filter on a
+    /// soft-delete entity. It now fails as soon as the product model is built.
+    /// </summary>
+    [Fact]
+    public void AnonymousProductFilterOnASoftDeleteEntity_FailsWhenTheModelIsBuilt()
+    {
+        Should.Throw<InvalidOperationException>(
+            () => CreateContext(options => new ProductFilterReplacesSoftDelete(options)));
+    }
+
+    /// <summary>True only for the exact lambda PlatformDbContext installs: <c>e =&gt; !e.IsDeleted</c>.</summary>
+    private static bool IsNotDeleted(LambdaExpression? filter)
+    {
+        return filter is { Parameters.Count: 1 }
+            && filter.Body is UnaryExpression { NodeType: ExpressionType.Not, Operand: MemberExpression member }
+            && member.Member.Name == nameof(ISoftDelete.IsDeleted)
+            && member.Expression == filter.Parameters[0];
+    }
+
+    private sealed class ProductFilterReplacesSoftDelete : AppDbContext
+    {
+        public ProductFilterReplacesSoftDelete(DbContextOptions<AppDbContext> options) : base(options)
+        {
+        }
+
+        protected override void ConfigureProductModel(ModelBuilder modelBuilder)
+        {
+            base.ConfigureProductModel(modelBuilder);
+            modelBuilder.Entity<TodoItem>().HasQueryFilter(t => t.WorkspaceId != "");
+        }
+    }
+
+    private static AppDbContext CreateContext(
+        Func<DbContextOptions<AppDbContext>, AppDbContext>? create = null)
     {
         var connection = new SqliteConnection("Data Source=:memory:");
         connection.Open();
@@ -193,7 +230,7 @@ public sealed class AppDbContextModelTests
             .UseSqlite(connection)
             .Options;
 
-        var context = new AppDbContext(options);
+        var context = (create ?? (o => new AppDbContext(o)))(options);
         context.Database.EnsureCreated();
         return context;
     }

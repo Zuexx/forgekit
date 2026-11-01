@@ -20,12 +20,22 @@ public static class ModuleExtensions
     /// <remarks>
     /// Products MUST pass their own assembly. Scanning only the assembly that declares
     /// IModule would find the shared layer's modules and silently miss every product
-    /// module, mapping no product endpoints at runtime.
+    /// module, mapping no product endpoints at runtime, so that call throws instead.
     /// </remarks>
+    /// <exception cref="ArgumentException">No assembly other than the shared layer's was supplied.</exception>
     public static IServiceCollection RegisterModules(
         this IServiceCollection services,
         params Assembly[] assemblies)
     {
+        if (!assemblies.Any(a => a != typeof(IModule).Assembly))
+        {
+            throw new ArgumentException(
+                "RegisterModules needs the product's own assembly, e.g. " +
+                "RegisterModules(typeof(Program).Assembly). The shared layer is always scanned; " +
+                "without the product assembly no product endpoints would be mapped.",
+                nameof(assemblies));
+        }
+
         lock (lockObject)
         {
             // Only discover and register modules once globally
