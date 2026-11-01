@@ -3,11 +3,6 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Prefer the workflow CLIs declared in this repository's package.json over any global install,
-# so this script passes in a clone where they exist only under node_modules/.bin.
-PATH="$ROOT_DIR/node_modules/.bin:$PATH"
-export PATH
-
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
     echo "Missing required command: $1" >&2
@@ -17,7 +12,6 @@ require_command() {
 
 require_command dotnet
 require_command pnpm
-require_command openspec
 require_command gitleaks
 
 echo "==> API"
@@ -41,12 +35,6 @@ echo "==> App"
     pnpm build
 )
 
-echo "==> OpenSpec"
-(
-  cd "$ROOT_DIR"
-  openspec validate --all --strict --no-interactive
-)
-
 echo "==> Secrets"
 (
   cd "$ROOT_DIR"
@@ -56,5 +44,5 @@ echo "==> Secrets"
 
 echo "Verification completed."
 echo
-echo "Not covered here: pnpm test:e2e, which needs a running PostgreSQL and a built app."
-echo "See docs/FORKING_GUIDE.md. CI runs it on every pull request."
+echo "Not covered here: pnpm test:e2e, which needs a built app and the auth schema"
+echo "(pnpm auth.migration). It runs against SQLite by default; CI runs it on every pull request."

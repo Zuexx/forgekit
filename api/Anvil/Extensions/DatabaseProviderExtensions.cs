@@ -87,8 +87,7 @@ public static class DatabaseProviderExtensions
     // file for the duration of a write; a non-zero busy_timeout makes a writer wait for a
     // released lock instead of failing immediately with SQLITE_BUSY. Both matter because the
     // frontend (better-sqlite3, app/lib/db/sqlite.ts) opens its own, independent connection to
-    // this same file — see openspec/specs/database-provider/spec.md, "Concurrent local writes
-    // do not fail".
+    // this same file, and concurrent writes from the two must neither fail nor be lost.
     public static void ApplySqlitePragmas(System.Data.Common.DbConnection connection)
     {
         using var command = connection.CreateCommand();

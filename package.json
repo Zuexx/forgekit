@@ -1,39 +1,12 @@
 {
-  "name": "forgekit-workflow",
+  "name": "repo-tooling",
   "private": true,
-  "description": "Development-workflow tooling for this repository. Not part of the API or the app.",
+  "description": "Repository tooling. Not part of the API or the app.",
   "packageManager": "pnpm@11.1.1",
   "engines": {
-    "node": ">=22.16",
     "pnpm": ">=11"
   },
-  "workflow": {
-    "sourceGlobs": [
-      "*.cs",
-      "*.ts",
-      "*.tsx",
-      "*.js",
-      "*.jsx",
-      "*.mjs",
-      "*.cjs",
-      "*.mts",
-      "*.cts"
-    ],
-    "requiredTools": [
-      "dotnet"
-    ],
-    "nodeSubprojects": [
-      "app"
-    ]
-  },
   "scripts": {
-    "preflight": "bash scripts/preflight.sh",
-    "sync-workflow": "bash scripts/sync-workflow.sh",
     "verify": "bash scripts/verify.sh"
-  },
-  "devDependencies": {
-    "@colbymchenry/codegraph": "^1.6.1",
-    "@fission-ai/openspec": "^1.14.0",
-    "grillme": "^0.1.2"
   }
 }

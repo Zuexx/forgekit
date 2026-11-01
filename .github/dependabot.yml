@@ -1,25 +1,13 @@
 version: 2
 
-# The workflow tooling tracks the newest release its version policy permits, and nobody
-# remembers to check. docs/DEPENDENCY_CONSTRAINTS.md states each policy, which majors are held
-# back and why, and what to run before merging a tooling bump.
+# Monthly and grouped: this is a base kit that products fork and then upgrade on their own
+# schedule, so keeping every patch current here buys little and costs a PR stream.
+# docs/DEPENDENCY_CONSTRAINTS.md states which majors are held back and why.
 updates:
-  - package-ecosystem: npm
-    directory: /
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 3
-    commit-message:
-      prefix: chore(deps)
-    groups:
-      workflow-tooling:
-        patterns:
-          - "*"
-
   - package-ecosystem: npm
     directory: /app
     schedule:
-      interval: weekly
+      interval: monthly
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore(deps)
@@ -41,10 +29,14 @@ updates:
   - package-ecosystem: nuget
     directory: /api
     schedule:
-      interval: weekly
+      interval: monthly
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore(deps)
+    groups:
+      # Minors and patches in one PR; a major still arrives on its own for review.
+      nuget-minor-and-patch:
+        update-types: [minor, patch]
 
   - package-ecosystem: github-actions
     directory: /

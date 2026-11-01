@@ -82,22 +82,6 @@ jobs:
           path: app/playwright-report/
           retention-days: 7
 
-  openspec:
-    name: OpenSpec
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11.1.1
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec openspec validate --all --strict --no-interactive
-
   secrets:
     name: Secret scan
     runs-on: ubuntu-latest
