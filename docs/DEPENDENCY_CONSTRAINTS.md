@@ -54,18 +54,16 @@ This starter kit keeps most packages current, but a few major versions are inten
 
 ### Microsoft.OpenApi
 
-- Current constraint: `Microsoft.OpenApi` is held on 3.x, ahead of what
-  `Microsoft.AspNetCore.OpenApi` 10.0.x declares (`>= 2.12.0 && < 3.0.0`). Every build therefore
-  reports NU1608 for it.
-- Reason: chosen when the kit was created. 3.x is incompatible with
-  `Microsoft.AspNetCore.OpenApi`'s XML-comment source generator, which
-  `api/Directory.Build.targets` removes to keep the build compiling; OpenAPI documents are still
-  generated, without XML-comment descriptions. No other package requires 3.x.
-- Moving to 2.x would clear the warning and restore XML-comment support, but `Program.cs`'s
-  OpenAPI document and operation transformers are written against the 3.x API (2.x keeps its
-  model types under `Microsoft.OpenApi.Models`), so they would need porting, and the
-  `Directory.Build.targets` workaround removing.
-- Revisit when: a `Microsoft.AspNetCore.OpenApi` release accepts `Microsoft.OpenApi` 3.x.
+- Current constraint: keep `Microsoft.OpenApi` inside the range `Microsoft.AspNetCore.OpenApi`
+  declares (currently `>= 2.12.2 && < 3.0.0`; pinned at 2.x in `api/Directory.Packages.props`).
+  A Dependabot PR that moves it to 3.x fails `OpenApiDocumentTests`; close it.
+- Reason: the two packages are bound at runtime. An out-of-range version still compiles, then
+  fails on the first request to `/openapi/v1.json` with a `MissingMethodException`, and the
+  Scalar reference renders empty. That is what the earlier 3.x pin did, behind a NU1608 warning
+  every build reported and a removed source generator. `OpenApiDocumentTests` now requests the
+  document, so an incompatible pair fails CI.
+- Revisit when: a `Microsoft.AspNetCore.OpenApi` release accepts `Microsoft.OpenApi` 3.x. Bump
+  both in one PR and let `OpenApiDocumentTests` decide.
 
 ## AI Workflow
 

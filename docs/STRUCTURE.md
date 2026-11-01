@@ -27,7 +27,6 @@ api/
 ├── ForgeKit.sln
 ├── README.md
 ├── Directory.Packages.props          # Central package versions
-├── Directory.Build.targets           # Build-wide MSBuild targets
 ├── Anvil/                            # Shared layer — never renamed by the template
 ├── Anvil.Tests/                      # Shared-layer tests — also never renamed
 ├── ForgeKit.Api/                     # Product layer — renamed per product
