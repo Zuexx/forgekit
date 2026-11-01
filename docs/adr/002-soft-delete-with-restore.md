@@ -433,8 +433,11 @@ public class AppDbContext : DbContext
         {
             if (typeof(ISoftDelete).IsAssignableFrom(entity.ClrType))
             {
+                // Named, so a product can add its own named filters alongside it.
+                // An anonymous product filter on the same entity fails at model build.
                 modelBuilder.Entity(entity.ClrType)
                     .HasQueryFilter(
+                        SoftDeleteFilter,
                         EF.Property<bool>(entity.ClrType, "IsDeleted") == false);
             }
         }

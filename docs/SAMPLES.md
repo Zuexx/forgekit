@@ -65,7 +65,7 @@ Recommended order:
 3. Delete Todo entities and `TodoService` if they are not part of the product domain.
 4. Remove sample tests.
 5. Create provider migrations that remove sample tables from every supported migration project.
-6. Update `docs/STRUCTURE.md`, `docs/api/USER_GUIDE.md`, and `openspec/specs/data-model/spec.md`.
+6. Update `docs/STRUCTURE.md`, and `docs/api/USER_GUIDE.md`.
 7. Run the full quality gates.
 
 Do not silently leave sample endpoints or sample tables in a production product without documenting why they remain.
@@ -78,4 +78,4 @@ New samples should be:
 - domain-neutral
 - covered by focused tests
 - excluded from production endpoints with `ISampleModule` when they expose routes
-- represented in OpenSpec if they change accepted behavior
+- recorded as an ADR if they change an architecture decision
