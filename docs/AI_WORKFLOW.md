@@ -28,8 +28,9 @@ under `~/.claude/`. With only Claude models available, `/pstack:interrogate` fal
 same-family reviewers, so treat it as a second opinion rather than an independent one.
 
 The grill skills are vendored as plain files under `.claude/skills/` and recorded in
-`skills-lock.json` (same mechanism as the Better Auth skills), so `dotnet new` carries them
-into every product. Update with `npx skills update -p`. Only these are installed: `grilling`,
+`skills-lock.json` (the same lock as the Better Auth skills, which are symlinks into
+`.agents/skills/` instead), so `dotnet new` carries them into every product. Generated
+products pull later updates as described in `docs/FORKING_GUIDE.md` (AI workflow updates). Update with `npx skills update -p`. Only these are installed: `grilling`,
 `grill-me`, `grill-with-docs`, `domain-modeling`, `to-spec`, `setup-matt-pocock-skills`. The
 rest of that collection (`tdd`, `code-review`, `diagnosing-bugs`, ...) overlaps pstack and is
 left out on purpose — two skills competing for one trigger is the problem this setup replaced.

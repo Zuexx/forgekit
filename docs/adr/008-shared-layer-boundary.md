@@ -88,4 +88,4 @@ shared layer's modules and silently map no product endpoints.
 - `docs/STRUCTURE.md` — the layer table and boundary rule
 - `docs/FORKING_GUIDE.md` — the upstream sync workflow
 - The change that introduced this, deleted with the OpenSpec archive:
-  `git show 64ff651 --stat` (`openspec/changes/archive/*-refactor-extract-platform-core/`)
+  `git show e0e19fe --stat` (`openspec/changes/archive/*-refactor-extract-platform-core/`)
