@@ -6,14 +6,15 @@
 forgekit/
 ├── api/                 # C# .NET 10 backend
 ├── app/                 # Next.js frontend
-├── docs/                # Guides, ADRs, implementation plans
-├── openspec/            # Specifications and change proposals
-├── scripts/             # preflight, verify, sync-workflow
-├── .githooks/           # pre-push check for plan → OpenSpec task citations
+├── docs/                # Guides, ADRs, AI workflow
+├── scripts/             # verify (local gate), protect-branch (GitHub ruleset)
+├── .githooks/           # pre-commit: refuses commits made directly on main
+├── .claude/             # pstack plugin pin, project skills (verify-forgekit, grill skills)
 ├── .template.config/    # `dotnet new forgekit` template definition
 ├── data/                # Default shared SQLite database (created on first run)
 ├── compose.yaml         # Optional local Postgres
-└── package.json         # Workflow tooling only (OpenSpec, CodeGraph, grillme)
+├── AGENTS.md            # Instructions for coding agents
+└── package.json         # Repository scripts only (`pnpm verify`); no dependencies
 ```
 
 ---
@@ -24,7 +25,6 @@ forgekit/
 ```
 api/
 ├── ForgeKit.sln
-├── AGENTS.md
 ├── README.md
 ├── Directory.Packages.props          # Central package versions
 ├── Anvil/                            # Shared layer — never renamed by the template
@@ -201,22 +201,8 @@ docs/
 │   ├── logging.md
 │   └── GLOSSARY.md
 ├── adr/                               # Architecture Decision Records (001–008)
-└── superpowers/plans/                 # Implementation plans citing OpenSpec task ids
-```
-
-### `openspec/` — Feature Change Tracking (repository root)
-
-```
-openspec/
-├── config.yaml                        # Schema + project context for planning
-├── specs/                             # Accepted capability specs
-└── changes/                           # One folder per change; shipped ones move to archive/
-    ├── <feature>/
-    │   ├── proposal.md
-    │   ├── design.md
-    │   ├── tasks.md
-    │   └── specs/<area>/spec.md
-    └── ...
+├── agents/                            # Issue tracker and domain-doc rules for the grill skills
+└── AI_WORKFLOW.md                     # pstack + grill skills: install, routes, verification
 ```
 
 ---

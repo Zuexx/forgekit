@@ -1,188 +1,70 @@
 # Agent Instructions
 
-ForgeKit is a full-stack starter kit used as a development base. Products are generated
-from it with `dotnet new forgekit` and then diverge, so changes should stay reusable across
-products rather than being tailored to the sample TODO domain.
+ForgeKit is a full-stack starter kit. Products are generated from it with
+`dotnet new forgekit` and then diverge, so keep changes reusable across products rather than
+tailored to the sample domain.
 
-## Read before changing `api/`
+**Stack.** API: .NET 10 minimal API, EF Core (used directly, ADR-004), MediatR,
+FluentValidation, Result pattern (ADR-006), JWT, Serilog, Scalar. App: Next.js 16 App Router,
+TypeScript, Tailwind, shadcn/ui, Better Auth, Hono RPC, TanStack Query, next-intl. Database:
+SQLite by default, PostgreSQL and SQL Server supported; the API and Better Auth share one
+`Database__Provider` (root `.env`).
 
-The API is split into two layers, and the split is load-bearing:
+## The layer boundary in `api/`
 
-- **`api/Anvil/`** — the shared layer. The template never renames it, so its paths are
-  identical in the base and in every generated product, which is what lets products pull in
-  base improvements with `git checkout upstream/main -- api/Anvil api/Anvil.Tests`. It **must not**
-  reference the product project; that is enforced by the build.
-- **`api/ForgeKit.Api/`** — the product layer, renamed per product.
+- **`api/Anvil/`** is the shared layer. The template never renames it, so products pull base
+  improvements with `git checkout upstream/main -- api/Anvil api/Anvil.Tests`. The build
+  fails if it references the product project.
+- **`api/ForgeKit.Api/`** is the product layer, renamed per product.
 
-A file belongs in Anvil only if its transitive import closure contains no product type. If
-a shared file appears to need a product type, invert the dependency through an interface
-owned by Anvil (see `IDataSeeder`) rather than moving the file into the product layer.
-
-Rationale and consequences: `docs/adr/008-shared-layer-boundary.md`, and the `platform-core`
-specification.
-
-## Planning changes
-
-Specifications live in `openspec/`. Project context, artifact rules, and per-operation
-guidance are in `openspec/config.yaml`, and OpenSpec delivers them at the step they apply
-to — read what it hands you rather than working from memory of this file.
-
-`/opsx:explore` to think a change through, `/opsx:propose` to create one, `/opsx:apply` to
-implement, `/opsx:archive` when it ships.
-
-When a request is too vague for a proposal to state what it includes and excludes, run
-`grillme` first — `pnpm exec grillme` from the repository root. It opens a browser, asks one
-decision question at a time, and writes a Markdown handoff; it implements nothing. That handoff
-is the input to `/opsx:propose`. It is the one gate a human closes: scope gets settled before
-any agent receives the task, which is the boundary the rest of this file exists to hold.
-
-Write a change proposal for new capabilities, breaking changes, architecture shifts, and
-security work. Skip it for bug fixes, typos, dependency bumps, and configuration changes.
-
-### Two loops, and who owns which
-
-OpenSpec decides **what may be built and whether it counts as done**. Superpowers decides
-**how it gets built and whether it was built correctly**. Neither knows the other exists,
-so the seam is the `apply` and `archive` guidance in `openspec/config.yaml`.
-
-Feature-level tasks live in `openspec/changes/<slug>/tasks.md`. Minute-level steps live in
-the Superpowers plan, which cites those task ids under `## OpenSpec Coverage`. Keep the two
-granularities apart; collapsing them makes the citation meaningless.
-
-### Overlapping skills, resolved by trigger
-
-Several skills cover the same ground. They differ in what fires them, which is what decides
-between them:
-
-| Job | Use | Because |
-|---|---|---|
-| Clarify a vague request | `superpowers:brainstorming` | Fires on its own before creative work |
-| Test-first implementation | `superpowers:test-driven-development` | The inner loop already speaks its vocabulary |
-| Execute a plan | `superpowers:subagent-driven-development`, **if its decision tree sends you there** | It routes tightly coupled tasks to manual execution; a task and its own verification are not independent |
-| Review a change | `superpowers:requesting-code-review` | Whichever route the work took, including small changes done inline |
-| Review an arbitrary diff | `/code-review` | Ad-hoc, outside a change |
-
-Reach for `codegraph_explore` before reading files to answer "what does this affect" — it
-returns the callers and the test-coverage gaps that reading cannot, in one call. It indexes
-symbols, so a contract addressed by string — a header, an event name, a DI token, a config
-key — is invisible to it and needs a literal search of its own.
+A file belongs in Anvil only if its transitive import closure contains no product type. If a
+shared file seems to need one, invert the dependency through an Anvil-owned interface (see
+`IDataSeeder`) instead of moving the file. Rationale: `docs/adr/008-shared-layer-boundary.md`.
 
 ## Building and testing
 
 ```bash
-cd api
-dotnet build
-dotnet test          # 193 tests across two projects; 3 skipped by design
-
-cd ../app
-pnpm install
-pnpm check           # tsc --noEmit
-pnpm lint
-pnpm test            # vitest
-pnpm test:e2e        # playwright; needs a built app
+cd api && dotnet build && dotnet test
+cd app && pnpm install && pnpm check && pnpm lint && pnpm test
+pnpm verify                       # the full local gate, from the repository root
 ```
 
-End-to-end tests run against a real database. `Database__Provider` (repository-root `.env`)
-selects it for both the API and the frontend and defaults to SQLite, which needs no setup --
-create the auth schema with `pnpm auth.migration`, then `pnpm build` before `pnpm test:e2e`. To
-run against Postgres or SQL Server instead, set `Database__Provider` accordingly, start that
-provider with `podman compose up -d` (or docker), and point `DATABASE_URL` (Postgres) or the
-matching connection settings at it before migrating.
+`pnpm test:e2e` (in `app/`) needs `pnpm auth.migration` and `pnpm build` first; it runs
+against SQLite unless `Database__Provider` says otherwise (`docs/LOCAL_DEVELOPMENT.md`).
+There is no component-level UI coverage: verify UI changes in the running app with the
+`verify-forgekit` skill and attach its evidence.
 
-`.githooks/pre-push` checks that implementation plans cite OpenSpec task ids that
-actually resolve — the one link between the two systems that nothing else validates.
-Enabling it takes two steps, not one: `dotnet new` does not carry the executable bit, and git
-ignores a hook it cannot execute without reporting anything.
+## Conventions the checks cannot enforce
 
-```bash
-git config core.hooksPath .githooks
-chmod +x .githooks/*
-```
-
-`pnpm verify` runs the full local gate. CI runs the same categories on every pull request, plus
-migration drift checks and secret scanning.
-
-`pnpm preflight` reports whether this workflow is operational here at all — the declared tools,
-whether `openspec/config.yaml` still yields its rules through the installed version, whether the
-CodeGraph index reflects current source, whether the hooks can fire, and whether every capability
-this file and `openspec/config.yaml` name still resolves. Run it after cloning, and when
-something in the workflow behaves as though a piece is missing. Each failure names its fix.
-
-Invoke both through pnpm rather than as `./scripts/*.sh` — in a generated product those files
-arrive without the executable bit.
-
-Frontend unit tests cover `proxies/` — the authorization policy and request-context
-resolution — and the auth config. End-to-end tests cover sign-in through to the database.
-There is no component-level coverage, so UI details still need manual verification.
-
-## The shared workflow
-
-`scripts/preflight.sh`, `scripts/sync-workflow.sh`, `.githooks/pre-push`, `.mcp.json`,
-`.claude/settings.json`, `openspec/rules.yaml`, and `openspec/specs/workflow-toolchain/spec.md`
-are owned by the [forgekit-workflow](https://github.com/Zuexx/forgekit-workflow) repository and
-shared with every ForgeKit-family repo, including the iOS and Android starters. Edit them there,
-not here:
-
-```bash
-pnpm sync-workflow && pnpm preflight
-```
-
-overwrites them and re-splices the shared rules into `openspec/config.yaml` below the marker
-line, so a local edit disappears without a word. What this repository owns is everything above
-that marker — its `context:` block — plus `scripts/verify.sh`, `package.json`, and this file.
-
-**The workflow's own specification is now among the shared files.** Its twelve requirements
-mention no stack, and they govern the iOS and Android starters as much as this repository, so
-they are delivered to each rather than kept here — the repository bound by a requirement should
-be the one that can read it. A change to what the workflow must *do* is therefore proposed and
-archived in forgekit-workflow; an archive written here would be discarded by the next sync.
-Specs describing this stack are unaffected and stay here.
-
-Because `preflight.sh` is now shared verbatim, the stack half of it is declared in
-`package.json` rather than written into the script:
-
-```jsonc
-"workflow": {
-  "sourceGlobs":     ["*.cs", "*.ts", "*.tsx", "..."],  // what counts as source
-  "requiredTools":   ["dotnet"],                        // machine-level tools
-  "nodeSubprojects": ["app"]                            // nested npm projects
-}
-```
-
-Named `workflow`, not `forgekit`: this repo's own `dotnet new` template (below) replaces every
-literal `forgekit` with the product's name, including a JSON key spelled that way, which would
-desync from `preflight.sh` on the first `pnpm sync-workflow` after generation. `workflow`
-contains no substring the template rewrites.
-
-A generated product inherits all of this. It has no `workflow` remote until one is added, and
-`pnpm sync-workflow` says so rather than failing obscurely.
-
-Staying synced is a choice to keep making, not a one-time setup step — see "Staying synced is a
-choice, not an obligation" in forgekit-workflow's own README for when the tradeoff flips and how
-to opt out once this product's own needs have genuinely diverged from the base kit.
-
-## Conventions that are easy to get wrong
-
-- **Migrations are provider-specific.** When the EF model changes, add migrations for all
-  three provider projects. Never reuse one provider's migrations for another. CI fails on
-  pending model changes.
-- **Soft delete is automatic.** Entities implementing `ISoftDelete` get a global query
-  filter from `PlatformDbContext`; do not add filters per entity.
-- **Module discovery needs an explicit assembly.** `RegisterModules` scans the assemblies
-  it is given plus Anvil. A product that forgets to pass its own assembly still builds and
-  silently maps no endpoints.
-- **Commits follow Conventional Commits** (`docs/api/COMMIT_CONVENTION.md`). Branch off
-  main and open a PR so CI runs before merging.
+- **Add migrations for all three providers** when the EF model changes; never reuse one
+  provider's migrations for another. CI catches a missing one, not a wrong one.
+- **Product query filters must be named** — `HasQueryFilter("Name", ...)`. The soft-delete
+  filter is `PlatformDbContext.SoftDeleteFilter`; an anonymous filter on a soft-delete entity
+  fails at model build.
+- **Conventional Commits** (`docs/api/COMMIT_CONVENTION.md`); branch off main and open a PR.
+  Enable the hook that refuses commits on main: `git config core.hooksPath .githooks`.
 - **Never commit local secrets.** `appsettings.Local.json` and `.env.local` are ignored and
-  have committed `.example` counterparts.
+  have `.example` counterparts.
+
+## AI workflow
+
+pstack is installed at project scope (`/pstack:poteto-mode <task>` is the entry point). When
+the decisions are still open — a new product's domain, a new module, auth/tenant/permission
+models, a public API shape — grill first: `/grill-with-docs` → `/to-spec` → pstack. Bug fixes,
+refactors, and dependency bumps skip the grill. Details: `docs/AI_WORKFLOW.md`.
+
+Issues and specs live in GitHub Issues (`docs/agents/issue-tracker.md`); `/to-spec` labels
+them `ready-for-agent`. Domain docs are single-context: a root `GLOSSARY.md` created when the
+first term is resolved, plus `docs/adr/` with three-digit numbering (`docs/agents/domain.md`).
 
 ## Where things are documented
 
 | Topic | File |
 |---|---|
-| Project layout and the layer boundary | `docs/STRUCTURE.md` |
+| Project layout | `docs/STRUCTURE.md` |
 | Generating a product, syncing base updates | `docs/FORKING_GUIDE.md` |
 | Architecture decisions | `docs/adr/` |
+| Platform (technical) terms | `docs/api/GLOSSARY.md` |
 | Configuration and database providers | `docs/api/CONFIGURATION_GUIDE.md` |
-| Structured logging patterns | `docs/api/logging.md` |
+| Structured logging | `docs/api/logging.md` |
 | Local setup | `docs/LOCAL_DEVELOPMENT.md` |

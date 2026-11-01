@@ -63,7 +63,7 @@ test(validation): add integration tests for error responses
 ```
 feat: Added some stuff                    ❌ 沒有 scope，描述不清楚
 Fix: Update Test                          ❌ Type 首字母大寫
-feat(openspec): Create proposal           ❌ scope 太通用
+feat(misc): Create proposal              ❌ scope 太通用
 docs: Phase 8 - Validation Report         ❌ 沒有 scope
 ```
 

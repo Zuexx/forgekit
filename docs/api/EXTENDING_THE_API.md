@@ -699,8 +699,9 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasIndex(o => o.Status);
         builder.HasIndex(o => o.CreatedAt);
 
-        // Query filter for soft delete (inherited from BaseEntity)
-        builder.HasQueryFilter(o => !o.IsDeleted);
+        // No soft-delete filter here: PlatformDbContext adds it to every ISoftDelete entity.
+        // A product filter must be named, e.g. builder.HasQueryFilter("Tenant", o => ...);
+        // an anonymous one on a soft-delete entity fails when the model is built.
     }
 }
 ```

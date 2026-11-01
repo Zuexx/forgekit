@@ -114,6 +114,65 @@ public sealed class PlatformDbContextTests
         (await context.Unfiltered.CountAsync()).ShouldBe(2);
     }
 
+    private sealed class AnonymousFilterContext(DbContextOptions<AnonymousFilterContext> options)
+        : PlatformDbContext(options)
+    {
+        public DbSet<Filtered> Filtered { get; set; } = null!;
+
+        protected override void ConfigureProductModel(ModelBuilder modelBuilder)
+            => modelBuilder.Entity<Filtered>().HasQueryFilter(f => f.Name != "hidden");
+    }
+
+    private sealed class NamedFilterContext(DbContextOptions<NamedFilterContext> options)
+        : PlatformDbContext(options)
+    {
+        public DbSet<Filtered> Filtered { get; set; } = null!;
+
+        protected override void ConfigureProductModel(ModelBuilder modelBuilder)
+            => modelBuilder.Entity<Filtered>().HasQueryFilter("NotHidden", f => f.Name != "hidden");
+    }
+
+    private static TContext Create<TContext>(Func<DbContextOptions<TContext>, TContext> create)
+        where TContext : DbContext
+    {
+        var connection = new SqliteConnection("Data Source=:memory:");
+        connection.Open();
+        var context = create(new DbContextOptionsBuilder<TContext>().UseSqlite(connection).Options);
+        context.Database.EnsureCreated();
+        return context;
+    }
+
+    /// <remarks>
+    /// An anonymous product filter used to replace the soft-delete filter silently, so
+    /// deleted rows leaked. The soft-delete filter is named, and EF refuses to combine a
+    /// named filter with an anonymous one, so the mistake now fails at model build.
+    /// </remarks>
+    [Fact]
+    public void AnonymousProductFilterOnASoftDeleteEntity_FailsWhenTheModelIsBuilt()
+    {
+        Should.Throw<InvalidOperationException>(
+            () => Create<AnonymousFilterContext>(o => new AnonymousFilterContext(o)));
+    }
+
+    [Fact]
+    public async Task NamedProductFilter_AppliesAlongsideSoftDelete()
+    {
+        await using var context = Create<NamedFilterContext>(o => new NamedFilterContext(o));
+        context.Filtered.AddRange(
+            new Filtered { Name = "visible" },
+            new Filtered { Name = "hidden" },
+            new Filtered { Name = "gone", IsDeleted = true, DeletedAt = DateTime.UtcNow, DeletedBy = "test" });
+        await context.SaveChangesAsync();
+
+        var visible = await context.Filtered.ToListAsync();
+        var withDeleted = await context.Filtered
+            .IgnoreQueryFilters([PlatformDbContext.SoftDeleteFilter])
+            .ToListAsync();
+
+        visible.Select(f => f.Name).ShouldBe(["visible"]);
+        withDeleted.Select(f => f.Name).OrderBy(n => n).ShouldBe(["gone", "visible"]);
+    }
+
     [Fact]
     public void CamelCaseConvention_RenamesTablesAndColumns()
     {

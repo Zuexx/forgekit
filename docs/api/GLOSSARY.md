@@ -240,12 +240,15 @@ The time window (default: **30 days**) during which a soft-deleted entity can be
 ---
 
 ### Global Query Filter
-An EF Core feature that automatically applies a filter to all queries for a given entity type. Used to exclude soft-deleted records.
+An EF Core feature that automatically applies a filter to all queries for a given entity type. Used to exclude soft-deleted records. `PlatformDbContext` adds it to every `ISoftDelete` entity under the name `PlatformDbContext.SoftDeleteFilter`; additional product filters must be named too, because EF Core cannot combine an anonymous filter with named ones.
 
 **Example:**
 ```csharp
 modelBuilder.Entity<MyEntity>()
-    .HasQueryFilter(e => !e.IsDeleted);
+    .HasQueryFilter("Tenant", e => e.TenantId == _tenantId);
+
+// Bypass only the soft-delete filter:
+context.MyEntities.IgnoreQueryFilters([PlatformDbContext.SoftDeleteFilter]);
 ```
 
 **Related:** [Soft Delete](#soft-delete), [Entity Framework Core](#entity-framework-core-ef-core)

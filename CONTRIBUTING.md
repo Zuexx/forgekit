@@ -23,7 +23,7 @@ Be respectful and professional. We're building great things together.
 - Read [docs/api/USER_GUIDE.md](docs/api/USER_GUIDE.md)
 - Read [docs/api/EXTENDING_THE_API.md](docs/api/EXTENDING_THE_API.md)
 - Review relevant [ADRs](docs/adr/)
-- Check [AGENTS.md](AGENTS.md) for spec-driven development; the OpenSpec workflow is provided by the `/opsx:*` skills
+- Check [AGENTS.md](AGENTS.md) for the layer boundary and conventions
 
 ### For Frontend (App) Changes
 - Review [app/README.md](app/README.md)
@@ -31,11 +31,11 @@ Be respectful and professional. We're building great things together.
 - Understand the state management setup
 
 ### For Major Changes
-Follow the **spec-driven development** process:
-1. Read [AGENTS.md](AGENTS.md)
-2. Create a proposal in `openspec/changes/`
-3. Get approval before implementation
-4. Update specs after merging
+New capabilities, architecture shifts, and security work are settled before they are built
+([docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)):
+1. `/grill-with-docs` to resolve the open decisions; lasting ones become ADRs in `docs/adr/`
+2. `/to-spec` to file the result as a GitHub issue labelled `ready-for-agent`
+3. Implement against that issue; the PR says `Closes #<issue>`
 
 ## Development Workflow
 
@@ -186,7 +186,7 @@ pnpm dev
 ## Questions?
 
 - Check existing [documentation](./docs/)
-- Review [openspec/](./openspec/) for architectural decisions
+- Review [ADRs](./docs/adr/) for architectural decisions
 - Look at similar code in the codebase
 - Open an issue or discussion
 

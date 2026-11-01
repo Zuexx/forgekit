@@ -1,6 +1,6 @@
 # ForgeKit - Full-Stack Starter Kit
 
-A full-stack starter kit demonstrating project conventions through a TODO service. It includes a .NET 10 API, a Next.js frontend, tests, architecture documentation, and OpenSpec-based change management.
+A full-stack starter kit demonstrating project conventions through a TODO service. It includes a .NET 10 API, a Next.js frontend, tests, architecture documentation, and an AI workflow built on pstack ([docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)).
 
 ## 🏗️ Architecture
 
@@ -191,12 +191,12 @@ pnpm lint
 pnpm build
 ```
 
-CI runs these checks along with strict OpenSpec validation and a full-history Gitleaks scan.
+CI runs these checks along with the Playwright end-to-end tests and a full-history Gitleaks scan.
 
 To run the complete local gate:
 
 ```bash
-./scripts/verify.sh
+pnpm verify
 ```
 
 ### Code Style & Linting
@@ -221,7 +221,7 @@ pnpm lint:fix # ESLint autofix
 See **[STRUCTURE.md](./docs/STRUCTURE.md)** for complete documentation on:
 - API project organization (`ForgeKit.Api/`, `ForgeKit.Api.Tests/`)
 - Frontend structure (`app/`, `components/`, `features/`, `lib/`)
-- Documentation (`docs/`, `openspec/`)
+- Documentation (`docs/`, ADRs in `docs/adr/`)
 - Configuration files and their purposes
 
 ---
@@ -229,7 +229,7 @@ See **[STRUCTURE.md](./docs/STRUCTURE.md)** for complete documentation on:
 ## 🤝 Contributing
 
 1. Read **[CONTRIBUTING.md](./CONTRIBUTING.md)** for guidelines
-2. Check **[AGENTS.md](./AGENTS.md)** and `openspec/config.yaml` for spec-driven development
+2. Check **[AGENTS.md](./AGENTS.md)** and **[docs/AI_WORKFLOW.md](./docs/AI_WORKFLOW.md)** for how changes are planned and verified
 3. Create feature branch: `git checkout -b feature/your-feature`
 4. Commit with convention: `git commit -m "feat: description"`
 5. Push and create a pull request
@@ -249,6 +249,6 @@ MIT. See [LICENSE](LICENSE).
 - **API Questions?** → See [api/README.md](api/README.md) and [docs/api/USER_GUIDE.md](docs/api/USER_GUIDE.md)
 - **App Questions?** → See [app/README.md](app/README.md)
 - **Architecture?** → See [docs/STRUCTURE.md](docs/STRUCTURE.md) and ADRs
-- **Specs & Changes?** → See [openspec/](openspec/) directory
+- **Planning a change?** → See [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)
 
 ---
