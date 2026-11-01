@@ -101,9 +101,24 @@ products need wiring. That turns this check into confirmation rather than invest
 The frontend has no equivalent split, but it renames only 7 files with no directory
 renames, so `git diff upstream/main -- app/` is usually readable enough to apply by hand.
 
+#### AI workflow updates
+
+The pstack pin and the grill skills carry no product name, so they sync by path like Anvil:
+
+```bash
+git checkout upstream/main -- .claude/settings.json skills-lock.json \
+  .claude/skills/grilling .claude/skills/grill-me .claude/skills/grill-with-docs \
+  .claude/skills/domain-modeling .claude/skills/to-spec .claude/skills/setup-matt-pocock-skills
+```
+
+Then run `claude plugin update pstack@pinned-plugins`. If the product has added its own
+skills to `skills-lock.json`, merge that file by hand instead of overwriting it. Do not sync
+`docs/agents/domain.md` or `docs/AI_WORKFLOW.md` wholesale: products edit them (ADR
+numbering, routes), so diff them against upstream and apply what still fits.
+
 Two notes on template output:
 
-- `.claude/skills/*` are symlinks in this repository; the generated project receives real file copies instead.
+- The Better Auth skills in `.claude/skills/` are symlinks into `.agents/skills/`; the generated project receives real file copies instead. The other project skills (the grill skills, `verify-forgekit`) are plain directories.
 - Avoid embedding the project name inside a longer identifier (for example a method named `..ForgeKitEntities()`). The template replaces the token in place, and a dotted project name would produce invalid C#.
 
 ### Manual rename
